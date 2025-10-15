@@ -1,38 +1,41 @@
-# sv
+# ObtAIn
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+## Build Commands
 
-## Creating a project
+Install dependencies: `npm i`
 
-If you're seeing this, you've probably already done this step. Congrats!
+Run the dev server: `npm run dev`
 
-```sh
-# create a new project in the current directory
-npx sv create
+Preview a production build: `npm run preview`
 
-# create a new project in my-app
-npx sv create my-app
-```
+Build and deploy to production with Wrangler: WIP
+
+### Enviornment Variables
+
+See file `.env`, fill out `SECRET_OPENAI_API_KEY` as necessary, it may be filled in already.
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Project Structure
 
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```
+src/
+├── lib/                      # Core libraries & shared utilities
+│   ├── assets/               # Static assets (images, fonts, etc.)
+│   ├── server/               # Server-side wrappers & helpers
+│   ├── types/                # Globally-used TypeScript types
+│   └── ui/                   # UI and display components
+│
+├── routes/                   # Application routes
+│   ├── api/
+│   │   └── v1/
+│   │       └── chat/         # Endpoints for AI chat
+│   └── ...                   # Other routes
+│
+└── ...                       # Svelte-generated global layouts and styles
 ```
 
-## Building
+### Workflow
 
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Please make a new branch with `git checkout -b branch-name` when working on anything.
+PRs will be reviewed within 48 hours.
