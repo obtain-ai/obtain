@@ -1,18 +1,22 @@
 <script>
 	import MenuButton from '$lib/ui/MenuButton.svelte';
+	import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
 
 	export const title = 'ObtAIn';
 </script>
 
-<div class="mx-auto mb-8 min-h-[4lh] w-[80%] rounded-md border-1 border-zinc-200 bg-zinc-600">
-	<p class="p-4">
+<InfoDisplay>
+	{#snippet title()}
+		About ObtAIn
+	{/snippet}
+	{#snippet content()}
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
 		labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
 		laboris nisi ut aliquip ex ea commodo consequat.
-	</p>
-</div>
+	{/snippet}
+</InfoDisplay>
 
-<hr class="mx-auto mb-8 w-[70%] border-1 border-zinc-200" />
+<hr class="mx-auto mt-8 mb-8 w-[70%] border-1 border-zinc-200" />
 
 <div class="grid grid-cols-1 justify-items-center gap-8">
 	<MenuButton title="Promptify" href="/promptify" />
