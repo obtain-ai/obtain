@@ -41,4 +41,30 @@
   /* The main explanation box */
   .news-card {
     text-align: left;
-    line-hei
+    line-height: 1.5;
+  }
+
+  .news-card h2 {
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+  }
+
+  .news-card p {
+    margin: 0.5rem 0;
+  }
+
+  /* The "Latest News" box */
+  .update-card {
+    text-align: left;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .news-card,
+    .update-card {
+      width: 90%;
+      padding: 0.75rem;
+    }
+  }
+</style>
