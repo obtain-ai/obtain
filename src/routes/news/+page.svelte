@@ -1,7 +1,11 @@
 <script lang="ts">
   import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
-  export let data: { articles: any[]; error: string | null };
+  export let data: { articles: any[]; error: string | null; title?: string; pageTitle?: string; subtitle?: string };
+
   const { articles, error } = data;
+
+  // If your layout reads from $page.data.title, it will now show “AI News”.
+  // (No extra work needed here.)
 </script>
 
 {#snippet title()}
@@ -10,18 +14,26 @@
 
 {#snippet content()}
   <div class="flex flex-col gap-6">
+    <!-- small subtitle / weekly update notice -->
+    {#if data.subtitle}
+      <div class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-200">
+        {data.subtitle}
+      </div>
+    {/if}
+
     {#if error}
       <div class="rounded-lg border border-red-400/40 bg-red-900/30 p-3 text-red-200 text-center">
         <strong>Couldn’t load news:</strong> {error}
       </div>
     {/if}
 
-    <!-- Why this matters -->
+    <!-- Why this matters (updated copy) -->
     <div class="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-sm text-gray-200">
       <p class="text-base leading-relaxed">
         <span class="font-bold">Why this matters:</span>
-        Staying current on AI helps you spot real trends (not hype), track new model
-        capabilities, and understand policy/regulatory shifts that impact product work.
+        Keeping up with AI news is important because new tools and features can make everyday tasks easier,
+        from organizing your schedule to learning new skills. Staying informed helps you take advantage of
+        these updates and use AI safely and effectively in your daily life.
       </p>
     </div>
 
@@ -81,5 +93,5 @@
   </style>
 {/snippet}
 
-<!-- Pass snippets to InfoDisplay (no changes to InfoDisplay needed) -->
+<!-- Use your base UI shell -->
 <InfoDisplay {title} {content} />
