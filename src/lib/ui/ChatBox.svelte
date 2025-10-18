@@ -104,11 +104,12 @@
     {/if}
   </div>
 
+  
   <!-- Input Area -->
   <div class="p-4 border-t border-zinc-200 bg-zinc-50 rounded-b-lg">
     <div class="flex gap-2">
       <input
-        class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white"
         type="text"
         bind:value={userInput}
         placeholder="Type your prompt here..."
