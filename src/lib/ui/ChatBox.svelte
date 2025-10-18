@@ -77,11 +77,11 @@
   <div class="flex justify-between items-center p-3 border-b border-zinc-200 bg-zinc-100 rounded-t-lg">
     <h3 class="font-semibold text-zinc-800">Promptify Chat</h3>
     <button 
-      class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-md transition-colors" 
-      on:click={resetChat}
+    class="px-3 py-1 bg-black hover:bg-gray-800 text-white text-sm rounded-md transition-colors" 
+    on:click={resetChat}
     >
-      Reset Chat
-    </button>
+    Reset Chat
+  </button>
   </div>
 
   <!-- Messages Container -->
