@@ -10,7 +10,7 @@
     status?: 'normal' | 'loading' | 'error' 
   }[]>([]);
   let chatContainer: HTMLDivElement;
-  let inputElement: HTMLInputElement; // Add this line
+  let inputElement: HTMLInputElement;
 
   // Generate unique IDs for messages
   function generateId() {
@@ -41,10 +41,12 @@
     const input = userInput;
     userInput = '';
 
-    // Focus the input after sending
+    // Focus immediately after clearing input (before disabled state)
     setTimeout(() => {
-      inputElement.focus();
-    }, 10);
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }, 0);
 
     // Simulate API call (replace this with actual API call later)
     setTimeout(() => {
@@ -55,11 +57,24 @@
             : msg
         )
       );
+      
+      // Focus again after loading is complete
+      setTimeout(() => {
+        if (inputElement) {
+          inputElement.focus();
+        }
+      }, 50);
     }, 1000);
   }
 
   function resetChat() {
     chatMessages.set([]);
+    // Focus input after reset
+    setTimeout(() => {
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }, 50);
   }
 
   // Auto-scroll to bottom when new messages are added
@@ -75,6 +90,15 @@
       event.preventDefault();
       sendMessage();
     }
+  }
+
+  // Focus input when component mounts
+  function focusInput() {
+    setTimeout(() => {
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }, 100);
   }
 </script>
 
@@ -121,6 +145,7 @@
         placeholder="Type your prompt here..."
         on:keydown={handleKeydown}
         disabled={$chatMessages.some(msg => msg.status === 'loading')}
+        on:mount={focusInput}
       />
       <button 
         class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 text-white rounded-md transition-colors font-medium" 
