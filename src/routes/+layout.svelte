@@ -11,7 +11,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="relative min-h-[100vh] overflow-hidden bg-zinc-800 text-zinc-200">
+<div class="relative min-h-[100vh] overflow-y-auto bg-zinc-800 text-zinc-200">
 	{#key page.url.pathname}
 		<div
 			in:fly={{ x: 300, duration: 300 }}
