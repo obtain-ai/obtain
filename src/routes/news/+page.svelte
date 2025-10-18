@@ -7,21 +7,20 @@
 
 <InfoDisplay
   title={() => (
-    <>
-      <span>AI News</span>
-    </>
+    <span>AI News</span>
   )}
   content={() => (
-    <>
-      <!-- Error message -->
+    <div class="flex flex-col gap-6">
+
+      <!-- Error Message -->
       {#if error}
-        <div class="rounded-lg border border-red-400/40 bg-red-900/30 p-3 text-red-200 text-center mb-4">
+        <div class="rounded-lg border border-red-400/40 bg-red-900/30 p-3 text-red-200 text-center">
           <strong>Couldn’t load news:</strong> {error}
         </div>
       {/if}
 
       <!-- Why this matters -->
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-sm mb-6 text-gray-200">
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-sm text-gray-200">
         <p class="text-base leading-relaxed">
           <span class="font-bold">Why this matters:</span>
           Staying current on AI helps you spot real trends (not hype), track new model
@@ -29,7 +28,7 @@
         </p>
       </div>
 
-      <!-- News blocks -->
+      <!-- News Cards -->
       {#if articles.length === 0 && !error}
         <div class="rounded-lg border border-white/10 bg-white/5 p-4 text-gray-300 text-center">
           No articles available right now. Try again shortly.
@@ -73,7 +72,8 @@
           </article>
         {/each}
       </div>
-    </>
+
+    </div>
   )}
 />
 
