@@ -38,10 +38,10 @@
 			-->
 			>
 
-			{@render title()}
+			{title}
 		</span>
 	{/if}
 	<p>
-		{@render content()}
+		{content}
 	</p>
 </div>
