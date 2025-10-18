@@ -26,6 +26,6 @@
 		Promptify Chatbot
 	{/snippet}
 	{#snippet content()}
-		<CHatBox />
+		<ChatBox />
 	{/snippet}
 </InfoDisplay>
