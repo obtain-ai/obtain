@@ -10,4 +10,9 @@ declare global {
 	}
 }
 
+declare module '$env/static/private' {
+  export const NEWS_API_KEY: string;
+  export const TLDR_API_KEY: string;
+}
+
 export {};
