@@ -19,3 +19,12 @@
 		Think of something you might want help with from a chatbot, then enter your prompt below. Our chatbot will give you feedback and show you how to make your prompt more precise so you can get clearer, more effective results.
 	{/snippet}
 </InfoDisplay>
+
+<InfoDisplay>
+	{#snippet title()}
+		Promptify Chatbot
+	{/snippet}
+	{#snippet content()}
+		CHATBOT HERE
+	{/snippet}
+</InfoDisplay>
