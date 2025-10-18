@@ -72,7 +72,7 @@
   }
 </script>
 
-<div class="flex flex-col w-full h-[350px] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
+<div class="flex flex-col w-full min-h-[500px] max-h-[80vh] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
   <!-- Reset Button -->
   <div class="flex justify-between items-center p-3 border-b border-zinc-200 bg-zinc-100 rounded-t-lg">
     <h3 class="font-semibold text-zinc-800">Promptify Chat</h3>
