@@ -1,168 +1,87 @@
 <script lang="ts">
-  // Define article type
-  type Article = {
-    title: string;
-    url: string;
-    description?: string;
-    summary?: string;
-    source?: string;
-  };
+  export let data: { articles: any[]; error: string | null };
 
-  // Receive articles from +page.ts
-  export let data: { articles: Article[] };
-  const articles: Article[] = data?.articles ?? [];
+  const { articles, error } = data;
 </script>
 
-<!-- ✅ Page Title -->
-<h1 class="page-title">AI News</h1>
-
-<!-- ✅ "Why this Matters" section -->
-<section class="card card--primary">
-  <h2 class="bold-heading">Why this Matters</h2>
-  <p>
-    Keeping up with AI news is important because new tools and features can make everyday
-    tasks easier, from organizing your schedule to learning new skills. Staying informed
-    helps you take advantage of these updates and use AI safely and effectively in your daily life.
+<!-- Top section: AI News -->
+<section class="mx-auto max-w-5xl px-4 py-6">
+  <h1 class="text-2xl font-semibold tracking-tight">AI News</h1>
+  <p class="mt-1 text-sm text-gray-500">
+    Fresh headlines on artificial intelligence from trusted tech outlets.
   </p>
+
+  {#if error}
+    <div class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-red-700">
+      <strong>Couldn’t load news.</strong> {error}
+    </div>
+  {/if}
 </section>
 
-<!-- ✅ Update box -->
-<section class="card card--update">
-  <p><strong>Latest news on artificial intelligence — updated automatically from trusted sources.</strong></p>
+<!-- “Why this matters” block (bold label as requested) -->
+<section class="mx-auto max-w-5xl px-4">
+  <div class="rounded-2xl border bg-white p-5 shadow-sm">
+    <p class="text-base leading-relaxed">
+      <span class="font-bold">Why this matters:</span>
+      Staying current on AI helps you spot real trends (not hype), track new
+      model capabilities, and understand policy/regulatory shifts that impact product work.
+    </p>
+  </div>
 </section>
 
-<!-- ✅ Articles -->
-{#if !articles.length}
-  <p class="status">No articles available right now.</p>
-{:else}
-  <div class="articles">
+<!-- News cards (keep your boxes at the bottom of the page) -->
+<section class="mx-auto max-w-5xl px-4 py-6">
+  {#if articles.length === 0 && !error}
+    <div class="rounded-lg border bg-white p-4 text-gray-600">
+      No articles available right now. Try again shortly.
+    </div>
+  {/if}
+
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     {#each articles as a}
-      <article class="card card--article">
-        <a
-          href={a.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="article__title"
-        >
-          {a.title}
-        </a>
-
-        {#if a.source}
-          <div class="article__meta"><span class="chip">{a.source}</span></div>
+      <article class="group relative overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
+        {#if a.imageUrl}
+          <a href={a.url} target="_blank" rel="noopener noreferrer">
+            <img src={a.imageUrl} alt={a.title} class="h-40 w-full object-cover" />
+          </a>
         {/if}
 
-        {#if a.description}
-          <p class="article__description">{a.description}</p>
-        {/if}
+        <div class="p-4">
+          <a href={a.url} target="_blank" rel="noopener noreferrer" class="block">
+            <h2 class="line-clamp-2 text-base font-semibold group-hover:underline">
+              {a.title}
+            </h2>
+          </a>
+          <p class="mt-1 text-xs text-gray-500">
+            {a.source}{#if a.publishedAt} • {new Date(a.publishedAt).toLocaleString()}{/if}
+          </p>
 
-        {#if a.summary}
-          <p class="article__summary">{a.summary}</p>
-        {/if}
+          <p class="mt-2 line-clamp-4 text-sm text-gray-700">
+            {a.summary || a.description || 'Summary unavailable.'}
+          </p>
+
+          <div class="mt-3">
+            <a
+              href={a.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium hover:bg-gray-50"
+            >
+              Read full article →
+            </a>
+          </div>
+        </div>
       </article>
     {/each}
   </div>
-{/if}
+</section>
 
 <style>
-  /* ✅ Page title styling */
-  .page-title {
-    margin: 2rem 0 1.5rem;
-    text-align: center;
-    font-size: 2.2rem;
-    font-weight: 800;
-    color: #fff;
+  /* if your base UI already has Tailwind, this is minimal */
+  .line-clamp-2 {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
-
-  /* Shared card styles */
-  .card {
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.06);
-    width: 80%;
-    max-width: 800px;
-    margin: 1rem auto;
-    padding: 1rem 1.25rem;
-    color: #f3f3f3;
-    text-align: left;
-    line-height: 1.5;
-  }
-
-  /* ✅ Make “Why this Matters” bold */
-  .bold-heading {
-    font-weight: 800;
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .card--update {
-    font-weight: 600;
-  }
-
-  .status {
-    text-align: center;
-    color: #ccc;
-    margin: 2rem 0;
-  }
-
-  .articles {
-    margin-top: 1rem;
-  }
-
-  .card--article {
-    transition: background 0.2s ease, border-color 0.2s ease;
-  }
-
-  .card--article:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.35);
-  }
-
-  .article__title {
-    display: inline-block;
-    font-weight: 800;
-    font-size: 1.125rem;
-    color: #fff;
-    text-decoration: none;
-    margin-bottom: 0.35rem;
-  }
-
-  .article__title:hover {
-    text-decoration: underline;
-  }
-
-  .article__meta {
-    margin: 0.1rem 0 0.5rem 0;
-  }
-
-  .chip {
-    display: inline-block;
-    font-size: 0.75rem;
-    opacity: 0.9;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 999px;
-    padding: 0.1rem 0.5rem;
-    margin-right: 0.35rem;
-  }
-
-  .article__description {
-    color: #ddd;
-    font-size: 0.95rem;
-    margin: 0.25rem 0 0.4rem 0;
-  }
-
-  .article__summary {
-    color: #ccc;
-    font-size: 0.95rem;
-    margin: 0.15rem 0 0;
-  }
-
-  @media (max-width: 768px) {
-    .card {
-      width: 90%;
-      padding: 0.85rem;
-    }
-    .page-title {
-      font-size: 1.8rem;
-    }
+  .line-clamp-4 {
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
   }
 </style>
