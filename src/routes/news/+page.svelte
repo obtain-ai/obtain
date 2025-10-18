@@ -1,4 +1,5 @@
 <script lang="ts">
+  // Define article type
   type Article = {
     title: string;
     url: string;
@@ -7,14 +8,17 @@
     source?: string;
   };
 
+  // Receive articles from +page.ts
   export let data: { articles: Article[] };
   const articles: Article[] = data?.articles ?? [];
 </script>
 
-<h1>AI News</h1>
+<!-- ✅ Page Title -->
+<h1 class="page-title">AI News</h1>
 
+<!-- ✅ "Why this Matters" section -->
 <section class="card card--primary">
-  <h2>Why this Matters</h2>
+  <h2 class="bold-heading">Why this Matters</h2>
   <p>
     Keeping up with AI news is important because new tools and features can make everyday
     tasks easier, from organizing your schedule to learning new skills. Staying informed
@@ -22,10 +26,12 @@
   </p>
 </section>
 
+<!-- ✅ Update box -->
 <section class="card card--update">
   <p><strong>Latest news on artificial intelligence — updated automatically from trusted sources.</strong></p>
 </section>
 
+<!-- ✅ Articles -->
 {#if !articles.length}
   <p class="status">No articles available right now.</p>
 {:else}
@@ -37,7 +43,6 @@
           target="_blank"
           rel="noopener noreferrer"
           class="article__title"
-          aria-label={`Open article: ${a.title}`}
         >
           {a.title}
         </a>
@@ -59,15 +64,16 @@
 {/if}
 
 <style>
-  /* Title */
-  h1 {
+  /* ✅ Page title styling */
+  .page-title {
     margin: 2rem 0 1.5rem;
     text-align: center;
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #fff;
   }
 
-  /* Base card */
+  /* Shared card styles */
   .card {
     border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 10px;
@@ -81,11 +87,16 @@
     line-height: 1.5;
   }
 
-  .card--primary h2 {
+  /* ✅ Make “Why this Matters” bold */
+  .bold-heading {
+    font-weight: 800;
+    font-size: 1.3rem;
     margin-bottom: 0.5rem;
-    font-size: 1.25rem;
   }
-  .card--update { font-weight: 600; }
+
+  .card--update {
+    font-weight: 600;
+  }
 
   .status {
     text-align: center;
@@ -93,9 +104,14 @@
     margin: 2rem 0;
   }
 
-  .articles { margin-top: 1rem; }
+  .articles {
+    margin-top: 1rem;
+  }
 
-  .card--article { transition: background 0.2s ease, border-color 0.2s ease; }
+  .card--article {
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
   .card--article:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.35);
@@ -109,9 +125,15 @@
     text-decoration: none;
     margin-bottom: 0.35rem;
   }
-  .article__title:hover { text-decoration: underline; }
 
-  .article__meta { margin: 0.1rem 0 0.5rem 0; }
+  .article__title:hover {
+    text-decoration: underline;
+  }
+
+  .article__meta {
+    margin: 0.1rem 0 0.5rem 0;
+  }
+
   .chip {
     display: inline-block;
     font-size: 0.75rem;
@@ -135,7 +157,12 @@
   }
 
   @media (max-width: 768px) {
-    .card { width: 90%; padding: 0.85rem; }
-    .article__title { font-size: 1.05rem; }
+    .card {
+      width: 90%;
+      padding: 0.85rem;
+    }
+    .page-title {
+      font-size: 1.8rem;
+    }
   }
 </style>
