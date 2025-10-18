@@ -36,7 +36,7 @@
 
   <div bind:this={chatContainer} class="flex-1 overflow-y-auto mb-2 space-y-1">
     {#each $chatMessages as msg (msg)}
-      <MessageBubble {msg.user} text={msg.text} status={msg.status} />
+      <MessageBubble {...msg} />
     {/each}
   </div>
 
