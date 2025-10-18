@@ -1,6 +1,5 @@
 <script lang="ts">
 	import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
-	import ChatBox from '$lib/ui/ChatBox.svelte';
 </script>
 
 <InfoDisplay>
@@ -24,3 +23,4 @@
 <div class="mx-auto mb-4 w-[80%]">
 	<ChatBox />
 </div>
+
