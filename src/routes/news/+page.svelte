@@ -20,6 +20,5 @@
 	{/snippet}
 </InfoDisplay>
 
-</div>
 
 
