@@ -22,9 +22,6 @@
 </InfoDisplay>
 
 <InfoDisplay>
-	{#snippet title()}
-		Promptify Chatbot
-	{/snippet}
 	{#snippet content()}
 		<ChatBox />
 	{/snippet}
