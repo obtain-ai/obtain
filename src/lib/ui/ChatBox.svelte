@@ -10,6 +10,7 @@
     status?: 'normal' | 'loading' | 'error' 
   }[]>([]);
   let chatContainer: HTMLDivElement;
+  let inputElement: HTMLInputElement; // Add this line
 
   // Generate unique IDs for messages
   function generateId() {
@@ -39,6 +40,11 @@
     
     const input = userInput;
     userInput = '';
+
+    // Focus the input after sending
+    setTimeout(() => {
+      inputElement.focus();
+    }, 10);
 
     // Simulate API call (replace this with actual API call later)
     setTimeout(() => {
@@ -72,16 +78,16 @@
   }
 </script>
 
-<div class="flex flex-col w-full min-h-[500px] max-h-[80vh] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
+<div class="flex flex-col w-full h-[400px] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
   <!-- Reset Button -->
   <div class="flex justify-between items-center p-3 border-b border-zinc-200 bg-zinc-100 rounded-t-lg">
     <h3 class="font-semibold text-zinc-800">Promptify Chat</h3>
     <button 
-    class="px-3 py-1 bg-black hover:bg-gray-800 text-white text-sm rounded-md transition-colors" 
-    on:click={resetChat}
+      class="px-3 py-1 bg-black hover:bg-gray-800 text-white text-sm rounded-md transition-colors" 
+      on:click={resetChat}
     >
-    Reset Chat
-  </button>
+      Reset Chat
+    </button>
   </div>
 
   <!-- Messages Container -->
@@ -104,11 +110,11 @@
     {/if}
   </div>
 
-  
   <!-- Input Area -->
   <div class="p-4 border-t border-zinc-200 bg-zinc-50 rounded-b-lg">
     <div class="flex gap-2">
       <input
+        bind:this={inputElement}
         class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white"
         type="text"
         bind:value={userInput}
