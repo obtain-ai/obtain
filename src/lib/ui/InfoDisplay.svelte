@@ -1,12 +1,12 @@
 <script lang="ts">
-	let { title, content } = $props();
+	let { title, content }: { title: Snippet; content: Snippet } = $props();
 </script>
 
 <div
 	class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border-1 border-zinc-200 bg-zinc-600 p-4"
 >
 	{#if title}
-		<span class="flex flex-row items-center gap-2">
+		<span class="flex flex-row items-center gap-2 font-bold text-lg">
 			<svg
 				width="18px"
 				height="18px"
