@@ -13,10 +13,9 @@
 
 <InfoDisplay>
 	{#snippet title()}
-		How to Use
+		Instructions:
 	{/snippet}
 	{#snippet content()}
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-		labore et dolore magna aliqua.
+		Think of something you might want help with from a chatbot, then enter your prompt below. Our chatbot will give you feedback and show you how to make your prompt more precise so you can get clearer, more effective results.
 	{/snippet}
 </InfoDisplay>
