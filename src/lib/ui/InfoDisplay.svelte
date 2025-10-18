@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { title, content }: { title: Snippet; content: Snippet } = $props();
+	let { title, content } = $props();
 </script>
 
 <div
@@ -7,6 +7,7 @@
 >
 	{#if title}
 		<span class="flex flex-row items-center gap-2 font-bold text-lg">
+			<!--
 			<svg
 				width="18px"
 				height="18px"
@@ -34,6 +35,7 @@
 					stroke-linecap="round"
 					stroke-linejoin="round"
 				></path></svg
+			-->
 			>
 
 			{@render title()}
