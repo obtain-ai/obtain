@@ -4,7 +4,7 @@
 
 <InfoDisplay>
 	{#snippet title()}
-		About Promptify
+		Why this Matters:
 	{/snippet}
 	{#snippet content()}
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
