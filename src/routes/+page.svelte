@@ -10,9 +10,7 @@
 		About ObtAIn
 	{/snippet}
 	{#snippet content()}
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-		labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-		laboris nisi ut aliquip ex ea commodo consequat.
+		ObtAIn is here to help you learn how to optimize your use of AI for your benefit. Whether you’re just starting or looking to level up, ObtAIn teaches you how to maximize AI’s potential and make it work for you.
 	{/snippet}
 </InfoDisplay>
 
