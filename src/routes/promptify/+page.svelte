@@ -1,5 +1,6 @@
 <script lang="ts">
 	import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
+	import ChatBox from '$lib/ui/ChatBox.svelte';
 </script>
 
 <InfoDisplay>
@@ -25,6 +26,6 @@
 		Promptify Chatbot
 	{/snippet}
 	{#snippet content()}
-		CHATBOT HERE
+		<CHatBox />
 	{/snippet}
 </InfoDisplay>
