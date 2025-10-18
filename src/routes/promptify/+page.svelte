@@ -21,8 +21,4 @@
 	{/snippet}
 </InfoDisplay>
 
-<InfoDisplay>
-	{#snippet content()}
-		<ChatBox />
-	{/snippet}
-</InfoDisplay>
+<ChatBox />
