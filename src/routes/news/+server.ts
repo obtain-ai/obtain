@@ -3,20 +3,32 @@ import type { RequestHandler } from './$types';
 import { NEWSAPI_KEY, TLDR_RAPIDAPI_KEY } from '$env/static/private';
 
 const NEWS_API_URL =
-  `https://newsapi.org/v2/top-headlines` +
-  `?country=us&category=technology&q=artificial%20intelligence&apiKey=${NEWSAPI_KEY}`;
+  `https://newsapi.org/v2/top-headlines?country=us&category=technology&q=artificial%20intelligence&apiKey=${NEWSAPI_KEY}`;
 
 const TLDR_API_URL =
   'https://tldrthis.p.rapidapi.com/v1/model/abstractive/summarize-text/';
 
+function safeJson(text: string) {
+  try { return JSON.parse(text); } catch { return null; }
+}
+
 export const GET: RequestHandler = async () => {
   try {
-    // 1) fetch news
+    // 1) Fetch news
     const newsRes = await fetch(NEWS_API_URL);
-    const newsData = await newsRes.json();
-    const raw = Array.isArray(newsData?.articles) ? newsData.articles.slice(0, 6) : [];
+    const newsText = await newsRes.text();
+    const newsData = safeJson(newsText);
 
-    // 2) summarize each article
+    if (!newsRes.ok || !newsData || !Array.isArray(newsData.articles)) {
+      return new Response(JSON.stringify({
+        articles: [],
+        error: `News API error (${newsRes.status})`
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    const raw = newsData.articles.slice(0, 6);
+
+    // 2) Summarize (tolerate failures; fall back to description)
     const articles = await Promise.all(
       raw.map(async (a: any) => {
         const base = {
@@ -41,9 +53,11 @@ export const GET: RequestHandler = async () => {
             })
           });
 
-          const sumData = await sumRes.json();
+          const sumText = await sumRes.text();
+          const sumData = safeJson(sumText);
+
           const summary =
-            typeof sumData?.summary === 'string' && sumData.summary.trim()
+            sumRes.ok && typeof sumData?.summary === 'string' && sumData.summary.trim()
               ? sumData.summary.trim()
               : (base.description || 'Summary unavailable.');
 
@@ -58,10 +72,11 @@ export const GET: RequestHandler = async () => {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
+
   } catch (e: any) {
-    return new Response(JSON.stringify({ error: e?.message || 'Fetch failed' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(JSON.stringify({
+      articles: [],
+      error: e?.message || 'Server route failed'
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
 };
