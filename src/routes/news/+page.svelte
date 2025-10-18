@@ -20,7 +20,6 @@
 	{/snippet}
 </InfoDisplay>
 
-<div class="mx-auto mb-4 w-[80%]">
-	<ChatBox />
 </div>
+
 
