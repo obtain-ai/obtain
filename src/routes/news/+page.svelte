@@ -12,13 +12,11 @@
 </InfoDisplay>
 
 <InfoDisplay>
-	{#snippet title()}
-		Instructions:
-	{/snippet}
 	{#snippet content()}
 		Latest news on artificial intelligence will be updated weekly here!
 	{/snippet}
 </InfoDisplay>
+
 
 
 
