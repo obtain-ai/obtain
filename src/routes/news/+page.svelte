@@ -38,7 +38,16 @@
   <title>AI News - ObtAin</title>
 </svelte:head>
 
-<div class="min-h-screen bg-white text-zinc-900 dark:bg-zinc-900 dark:text-white transition-colors duration-300">
+<div class="min-h-screen bg-zinc-900 text-white dark:bg-zinc-900 dark:text-white transition-colors duration-300">
+  <!-- Back Button -->
+  <div class="absolute top-4 left-4 z-10">
+    <a href="/" class="p-3 rounded-full bg-zinc-800 text-white hover:bg-zinc-700 transition-all duration-200 transform hover:scale-110 border border-zinc-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </a>
+  </div>
+
   <!-- Theme Toggle -->
   <div class="absolute top-4 right-4 z-10">
     <ThemeToggle />
@@ -72,16 +81,16 @@
 
   <!-- Weekly date header - EXACT same styling as InfoDisplay -->
   {#if weekStart && !loading && !error}
-    <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-200 bg-zinc-100 p-6 shadow-sm
+    <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-700 bg-zinc-800 p-6 shadow-sm
                 dark:border-zinc-700 dark:bg-zinc-800 transition-colors duration-300">
-      <span class="flex flex-row items-center gap-2 font-bold text-lg text-zinc-900 dark:text-white">
+      <span class="flex flex-row items-center gap-2 font-bold text-lg text-white dark:text-white">
         Week of {weekStart}
       </span>
     </div>
   {/if}
 
   <!-- Refresh Button - EXACT same styling as InfoDisplay -->
-  <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-200 bg-zinc-100 p-6 shadow-sm
+  <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-700 bg-zinc-800 p-6 shadow-sm
               dark:border-zinc-700 dark:bg-zinc-800 transition-colors duration-300">
     <Button on:click={fetchNews} variant="primary">
       {loading ? 'Loading...' : 'Load News'}
@@ -93,23 +102,23 @@
     {#if loading}
       <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p class="mt-2 text-zinc-500 dark:text-zinc-400">Loading latest AI news...</p>
+        <p class="mt-2 text-zinc-400 dark:text-zinc-400">Loading latest AI news...</p>
       </div>
     {:else if error}
-      <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-red-500 bg-red-100 p-6 shadow-sm
+      <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-red-500 bg-red-900 p-6 shadow-sm
                   dark:bg-red-900 dark:border-red-500 transition-colors duration-300">
-        <span class="flex flex-row items-center gap-2 font-bold text-lg text-red-700 dark:text-red-100">
+        <span class="flex flex-row items-center gap-2 font-bold text-lg text-red-100 dark:text-red-100">
           Error
         </span>
-        <p class="text-red-600 dark:text-red-200">Error: {error}</p>
+        <p class="text-red-200 dark:text-red-200">Error: {error}</p>
       </div>
     {:else if articles.length === 0}
-      <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-200 bg-zinc-100 p-6 shadow-sm
+      <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-700 bg-zinc-800 p-6 shadow-sm
                   dark:border-zinc-700 dark:bg-zinc-800 transition-colors duration-300">
-        <span class="flex flex-row items-center gap-2 font-bold text-lg text-zinc-900 dark:text-white">
+        <span class="flex flex-row items-center gap-2 font-bold text-lg text-white dark:text-white">
           No Articles Loaded
         </span>
-        <p class="text-zinc-700 dark:text-zinc-300">
+        <p class="text-zinc-300 dark:text-zinc-300">
           Click the "Load News" button above to load the latest AI news articles.
         </p>
       </div>
@@ -117,14 +126,14 @@
       <div class="space-y-6">
         {#each articles as article (article.url)}
           <!-- EXACT same styling as InfoDisplay components -->
-          <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-200 bg-zinc-100 p-6 shadow-sm hover:shadow-md transition-all duration-200
+          <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-700 bg-zinc-800 p-6 shadow-sm hover:shadow-md transition-all duration-200
                       dark:border-zinc-700 dark:bg-zinc-800">
-            <h2 class="flex flex-row items-center gap-2 font-bold text-lg text-zinc-900 dark:text-white">
+            <h2 class="flex flex-row items-center gap-2 font-bold text-lg text-white dark:text-white">
               <a 
                 href={article.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                class="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200
+                class="text-blue-400 hover:text-blue-300 hover:underline transition-colors duration-200
                        dark:text-blue-400 dark:hover:text-blue-300"
               >
                 {article.title}
@@ -132,12 +141,12 @@
             </h2>
             
             {#if article.summary && article.summary !== 'No description available.'}
-              <p class="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              <p class="text-zinc-300 dark:text-zinc-300 leading-relaxed">
                 {article.summary}
               </p>
             {/if}
             
-            <div class="flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">
+            <div class="flex items-center justify-between text-sm text-zinc-400 dark:text-zinc-400">
               <span class="font-medium">{article.source}</span>
               <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
             </div>
@@ -147,4 +156,3 @@
     {/if}
   </div>
 </div>
-
