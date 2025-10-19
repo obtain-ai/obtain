@@ -29,8 +29,8 @@
 
 <button
   on:click={cycleTheme}
-  class="p-3 rounded-full bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-all duration-200 transform hover:scale-110 border border-zinc-200
-         dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:border-zinc-700"
+  class="p-3 rounded-full bg-zinc-800 text-white hover:bg-zinc-700 transition-all duration-200 transform hover:scale-110 border border-zinc-700
+         dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 dark:border-zinc-700"
   aria-label="Toggle theme"
   title="Current: {currentPreference} mode"
 >
