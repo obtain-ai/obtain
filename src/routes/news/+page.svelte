@@ -4,6 +4,7 @@
   import type { NewsArticle } from './types';
 
   let articles: NewsArticle[] = [];
+  let weekStart: string = '';
   let loading = true;
   let error = '';
 
@@ -13,7 +14,9 @@
       if (!response.ok) {
         throw new Error('Failed to fetch news');
       }
-      articles = await response.json();
+      const data = await response.json();
+      articles = data.articles || [];
+      weekStart = data.weekStart || '';
     } catch (err) {
       error = err instanceof Error ? err.message : 'An error occurred';
     } finally {
@@ -41,7 +44,19 @@
   {/snippet}
 </InfoDisplay>
 
-<!-- New news articles section -->
+<!-- Weekly date header -->
+{#if weekStart && !loading && !error}
+  <div class="container mx-auto px-4 py-4">
+    <div class="text-center">
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">
+        Week of {weekStart}
+      </h2>
+      <div class="w-24 h-1 bg-blue-600 mx-auto rounded"></div>
+    </div>
+  </div>
+{/if}
+
+<!-- News articles section -->
 <div class="container mx-auto px-4 py-8">
   {#if loading}
     <div class="text-center">
@@ -54,7 +69,7 @@
     </div>
   {:else if articles.length === 0}
     <div class="text-center text-gray-600">
-      <p>No news articles available at the moment.</p>
+      <p>No AI news articles available for this week.</p>
     </div>
   {:else}
     <div class="space-y-6">
@@ -71,7 +86,7 @@
             </a>
           </h2>
           
-          {#if article.summary}
+          {#if article.summary && article.summary !== 'No description available.'}
             <p class="text-gray-700 leading-relaxed mb-3">
               {article.summary}
             </p>
