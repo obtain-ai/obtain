@@ -15,8 +15,10 @@
         throw new Error('Failed to fetch news');
       }
       const data = await response.json();
+      console.log('📊 API Response data:', data); // Debug log
       articles = data.articles || [];
       weekStart = data.weekStart || '';
+      console.log('📅 Week start received:', weekStart); // Debug log
     } catch (err) {
       error = err instanceof Error ? err.message : 'An error occurred';
     } finally {
@@ -52,6 +54,13 @@
         Week of {weekStart}
       </h2>
       <div class="w-24 h-1 bg-blue-600 mx-auto rounded"></div>
+    </div>
+  </div>
+{:else}
+  <!-- Debug: Show when weekStart is not available -->
+  <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border-1 border-red-200 p-4 bg-red-50">
+    <div class="text-center">
+      <p class="text-sm text-red-600">Debug: weekStart = "{weekStart}", loading = {loading}, error = "{error}"</p>
     </div>
   </div>
 {/if}
