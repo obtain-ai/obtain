@@ -1,5 +1,6 @@
 export interface NewsArticle {
   title: string;
+  originalTitle?: string;
   url: string;
   source: string;
   publishedAt: string;
@@ -18,8 +19,4 @@ export interface NewsApiResponse {
     publishedAt: string;
     description?: string;
   }[];
-}
-
-export interface TLDRApiResponse {
-  summary: string;
 }
