@@ -1,4 +1,4 @@
-<script>
+2<script>
 	import MenuButton from '$lib/ui/MenuButton.svelte';
 	import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
 
@@ -19,6 +19,6 @@
 <div class="grid grid-cols-1 justify-items-center gap-8">
 	<MenuButton title="Promptify" href="/promptify" />
 	<MenuButton title="AI News" href="/news" />
-	<MenuButton title="Other Button 1" />
+	<MenuButton title="News2" hred="/news2" />
 	<MenuButton title="Other Button 2" />
 </div>
