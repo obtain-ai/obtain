@@ -22,20 +22,18 @@ interface NewsApiResponse {
 function getMondayOfWeek(date: Date): Date {
   const d = new Date(date);
   const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   return new Date(d.setDate(diff));
 }
 
 // Function to summarize titles (shorten to avoid copyright issues)
 function summarizeTitle(title: string): string {
-  // Remove common prefixes and suffixes
   let cleanTitle = title
     .replace(/^(Breaking|News|Update|Report|Analysis):\s*/i, '')
     .replace(/\s*-\s*(Reuters|AP|AFP|CNN|BBC|Forbes|TechCrunch|The Verge).*$/i, '')
     .replace(/\s*\|.*$/i, '')
     .trim();
   
-  // If still too long, truncate at word boundary
   if (cleanTitle.length > 80) {
     cleanTitle = cleanTitle.substring(0, 80);
     const lastSpace = cleanTitle.lastIndexOf(' ');
@@ -48,7 +46,7 @@ function summarizeTitle(title: string): string {
   return cleanTitle;
 }
 
-// Function to check if article is AI-related
+// Enhanced function to check if article is AI-related
 function isAIRelated(article: NewsApiArticle): boolean {
   const aiKeywords = [
     'artificial intelligence', 'ai', 'machine learning', 'ml', 'deep learning',
@@ -56,11 +54,28 @@ function isAIRelated(article: NewsApiArticle): boolean {
     'automation', 'robotics', 'computer vision', 'nlp', 'natural language processing',
     'algorithm', 'data science', 'predictive analytics', 'cognitive computing',
     'generative ai', 'transformer', 'bert', 'claude', 'gemini', 'copilot',
-    'autonomous', 'intelligent system', 'ai model', 'ai tool', 'ai platform'
+    'autonomous', 'intelligent system', 'ai model', 'ai tool', 'ai platform',
+    'machine intelligence', 'neural', 'deep neural', 'artificial neural'
+  ];
+  
+  // Keywords to exclude (sports, non-tech topics)
+  const excludeKeywords = [
+    'football', 'soccer', 'basketball', 'tennis', 'baseball', 'nba', 'nfl', 'mlb',
+    'fifa', 'champions league', 'premier league', 'bundesliga', 'serie a',
+    'cricket', 'rugby', 'hockey', 'golf', 'olympics', 'world cup',
+    'deportivo', 'atletico', 'real madrid', 'barcelona', 'manchester',
+    'greenwood', 'marlos moreno', 'dairon asprilla', 'papin'
   ];
   
   const textToCheck = `${article.title} ${article.description || ''}`.toLowerCase();
   
+  // First check if it contains exclusion keywords
+  const containsExclusion = excludeKeywords.some(keyword => textToCheck.includes(keyword));
+  if (containsExclusion) {
+    return false;
+  }
+  
+  // Then check for AI keywords
   return aiKeywords.some(keyword => textToCheck.includes(keyword));
 }
 
@@ -70,15 +85,15 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   
   // Get current week's Monday
   const monday = getMondayOfWeek(new Date());
-  const fromDate = monday.toISOString().split('T')[0]; // YYYY-MM-DD format
-  const toDate = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // Sunday
+  const fromDate = monday.toISOString().split('T')[0];
+  const toDate = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   
   console.log('📅 Date range:', fromDate, 'to', toDate);
   
-  // Enhanced search query for better AI filtering
+  // Enhanced search query for better AI filtering + English only
   const searchQuery = 'artificial intelligence OR "machine learning" OR "deep learning" OR "neural network" OR "AI model" OR "generative AI" OR "ChatGPT" OR "OpenAI"';
   
-  const newsApiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(searchQuery)}&from=${fromDate}&to=${toDate}&sortBy=publishedAt&pageSize=50&apiKey=${NEWS_API_KEY}`;
+  const newsApiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(searchQuery)}&from=${fromDate}&to=${toDate}&language=en&sortBy=publishedAt&pageSize=50&apiKey=${NEWS_API_KEY}`;
   console.log('🌐 News API URL:', newsApiUrl.replace(NEWS_API_KEY, 'HIDDEN_KEY'));
   
   try {
@@ -122,7 +137,7 @@ export const GET: RequestHandler = async () => {
       
       return {
         title: summarizeTitle(article.title),
-        originalTitle: article.title, // Keep original for reference
+        originalTitle: article.title,
         url: article.url,
         source: article.source.name,
         publishedAt: article.publishedAt,
@@ -140,7 +155,6 @@ export const GET: RequestHandler = async () => {
     console.log('📅 Week start calculated:', weekStart);
     console.log('✅ Successfully processed all articles:', processedArticles.length);
     
-    // Return the data in the correct structure
     return json({
       articles: processedArticles,
       weekStart: weekStart
