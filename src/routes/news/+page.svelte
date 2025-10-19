@@ -44,11 +44,11 @@
   {/snippet}
 </InfoDisplay>
 
-<!-- Weekly date header -->
+<!-- Weekly date header - using same styling as InfoDisplay -->
 {#if weekStart && !loading && !error}
-  <div class="container mx-auto px-4 py-4">
+  <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border-1 border-zinc-200 p-4">
     <div class="text-center">
-      <h2 class="text-2xl font-bold text-gray-800 mb-2">
+      <h2 class="text-xl font-bold text-gray-800 mb-2">
         Week of {weekStart}
       </h2>
       <div class="w-24 h-1 bg-blue-600 mx-auto rounded"></div>
@@ -56,7 +56,7 @@
   </div>
 {/if}
 
-<!-- News articles section -->
+<!-- News articles section with same width as InfoDisplay -->
 <div class="container mx-auto px-4 py-8">
   {#if loading}
     <div class="text-center">
@@ -74,7 +74,8 @@
   {:else}
     <div class="space-y-6">
       {#each articles as article (article.url)}
-        <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-6">
+        <!-- Using same width and styling as InfoDisplay components -->
+        <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border-1 border-zinc-200 p-6 bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
           <h2 class="text-xl font-bold mb-3 leading-tight">
             <a 
               href={article.url} 
