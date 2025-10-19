@@ -22,6 +22,14 @@ interface TLDRApiResponse {
   summary: string;
 }
 
+// Function to get Monday of current week
+function getMondayOfWeek(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff));
+}
+
 async function getNewsArticles(): Promise<NewsApiArticle[]> {
   console.log('🔍 Starting News API call...');
   console.log('🔑 NEWS_API_KEY exists:', !!NEWS_API_KEY);
@@ -102,43 +110,3 @@ export const GET: RequestHandler = async () => {
     const articles = await getNewsArticles();
     
     // Process articles and get summaries
-    console.log('📝 Step 2: Processing articles and getting summaries...');
-    const processedArticles = await Promise.all(
-      articles.map(async (article, index) => {
-        console.log(`📄 Processing article ${index + 1}/${articles.length}: ${article.title.substring(0, 50)}...`);
-        
-        let summary = '';
-        
-        // Use description from News API if available, otherwise use title
-        const textToSummarize = article.description || article.title;
-        
-        if (textToSummarize) {
-          try {
-            summary = await getSummary(textToSummarize);
-          } catch (error) {
-            console.error(`❌ Error getting summary for article ${index + 1}:`, error);
-            // Fallback to original description if summarization fails
-            summary = article.description || '';
-          }
-        }
-        
-        return {
-          title: article.title,
-          url: article.url,
-          source: article.source.name,
-          publishedAt: article.publishedAt,
-          summary: summary
-        };
-      })
-    );
-    
-    console.log('✅ Successfully processed all articles:', processedArticles.length);
-    return json(processedArticles);
-  } catch (error) {
-    console.error('❌ Fatal error in API endpoint:', error);
-    return json(
-      { error: 'Failed to fetch news', details: error.message },
-      { status: 500 }
-    );
-  }
-};
