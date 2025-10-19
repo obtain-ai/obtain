@@ -110,3 +110,56 @@ export const GET: RequestHandler = async () => {
     const articles = await getNewsArticles();
     
     // Process articles and get summaries
+    console.log('📝 Step 2: Processing articles and getting summaries...');
+    const processedArticles = await Promise.all(
+      articles.map(async (article, index) => {
+        console.log(`📄 Processing article ${index + 1}/${articles.length}: ${article.title.substring(0, 50)}...`);
+        
+        let summary = '';
+        
+        // Use description from News API if available, otherwise use title
+        const textToSummarize = article.description || article.title;
+        
+        if (textToSummarize) {
+          try {
+            summary = await getSummary(textToSummarize);
+          } catch (error) {
+            console.error(`❌ Error getting summary for article ${index + 1}:`, error);
+            // Fallback to original description if summarization fails
+            summary = article.description || '';
+          }
+        }
+        
+        return {
+          title: article.title,
+          url: article.url,
+          source: article.source.name,
+          publishedAt: article.publishedAt,
+          summary: summary
+        };
+      })
+    );
+    
+    // Get Monday of current week for display
+    const monday = getMondayOfWeek(new Date());
+    const weekStart = monday.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    console.log('📅 Week start calculated:', weekStart);
+    console.log('✅ Successfully processed all articles:', processedArticles.length);
+    
+    // Return both articles AND weekStart
+    return json({
+      articles: processedArticles,
+      weekStart: weekStart
+    });
+  } catch (error) {
+    console.error('❌ Fatal error in API endpoint:', error);
+    return json(
+      { error: 'Failed to fetch news', details: error.message },
+      { status: 500 }
+    );
+  }
+};
