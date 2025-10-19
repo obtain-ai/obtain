@@ -17,25 +17,8 @@
     return Math.random().toString(36).substr(2, 9);
   }
 
-  async function sendMessage() {
+  function sendMessage() {
     if (!userInput.trim()) return;
-    
-    const input = userInput.trim();
-    userInput = '';
-
-    // Check content appropriateness first
-    const contentCheck = await checkContentAppropriateness(input);
-    
-    if (!contentCheck.isAppropriate) {
-      // Add inappropriate content warning
-      chatMessages.update(msgs => [...msgs, { 
-        id: generateId(), 
-        user: 'bot', 
-        text: `⚠️ **Content Warning**: ${contentCheck.feedback}\n\nPlease write a prompt that's appropriate for all audiences. Focus on helpful, constructive prompts.`,
-        status: 'normal'
-      }]);
-      return;
-    }
     
     const messageId = generateId();
     const userMessageId = generateId();
@@ -44,7 +27,7 @@
     chatMessages.update(msgs => [...msgs, { 
       id: userMessageId, 
       user: 'you', 
-      text: input
+      text: userInput.trim() 
     }]);
     
     // Add loading bot message
@@ -54,6 +37,9 @@
       text: '', 
       status: 'loading' 
     }]);
+    
+    const input = userInput;
+    userInput = '';
 
     // Focus immediately after clearing input (before disabled state)
     setTimeout(() => {
@@ -79,70 +65,6 @@
         }
       }, 50);
     }, 1000);
-  }
-
-  async function checkContentAppropriateness(prompt: string): Promise<{isAppropriate: boolean, feedback: string}> {
-    // TODO: Replace with your API key
-    const API_KEY = 'YOUR_API_KEY_HERE';
-    const API_URL = 'https://api.openai.com/v1/chat/completions';
-    
-    const contentCheckPrompt = `
-Check if this prompt contains inappropriate content for a family-friendly prompt improvement tool. Look for:
-- Violence, blood, gore, or graphic content
-- Sexual content or innuendo
-- Profanity or offensive language
-- Drug/alcohol references
-- Dark themes (death, suicide, etc.)
-- Any content not suitable for ages 13+
-
-User's Prompt: "${prompt}"
-
-Respond in this exact JSON format:
-{
-  "isAppropriate": [true or false],
-  "feedback": "[brief explanation if inappropriate, or 'Content is appropriate' if okay]"
-}`;
-
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a content moderator for a family-friendly prompt improvement tool. Always respond with valid JSON.'
-            },
-            {
-              role: 'user',
-              content: contentCheckPrompt
-            }
-          ],
-          temperature: 0.1,
-          max_tokens: 100
-        })
-      });
-      
-      const data = await response.json();
-      const checkText = data.choices[0].message.content;
-      
-      // Parse JSON response
-      const contentCheck = JSON.parse(checkText);
-      return contentCheck;
-      
-    } catch (error) {
-      console.error('Content check API error:', error);
-      
-      // Fallback - assume appropriate if API fails
-      return {
-        isAppropriate: true,
-        feedback: 'Content check unavailable'
-      };
-    }
   }
 
   function resetChat() {
