@@ -1,22 +1,69 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* Global styles for smooth theme transitions */
 html {
-	font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-h1 {
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-h2 {
+/* Custom scrollbar for both themes */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-h3 {
+::-webkit-scrollbar-track {
+  background: #f4f4f5; /* zinc-100 */
 }
 
-p {
+::-webkit-scrollbar-thumb {
+  background: #a1a1aa; /* zinc-400 */
+  border-radius: 4px;
 }
 
-.title {
-	@apply text-4xl font-semibold text-shadow-sm/30 text-shadow-zinc-200;
+::-webkit-scrollbar-thumb:hover {
+  background: #71717a; /* zinc-500 */
+}
+
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-track {
+    background: #27272a; /* zinc-800 */
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #52525b; /* zinc-600 */
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #71717a; /* zinc-500 */
+  }
+}
+
+/* Dark class scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #27272a; /* zinc-800 */
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #52525b; /* zinc-600 */
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #71717a; /* zinc-500 */
+}
+
+/* Smooth focus transitions */
+*:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+*:focus-visible {
+  outline: 2px solid #3b82f6; /* blue-500 */
+  outline-offset: 2px;
 }
