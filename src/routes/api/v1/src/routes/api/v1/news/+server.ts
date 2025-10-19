@@ -59,6 +59,7 @@ async function getSummary(text: string): Promise<string> {
   return data.summary;
 }
 
+// THIS IS THE MISSING PART - THE ACTUAL API ENDPOINT HANDLER
 export const GET: RequestHandler = async () => {
   try {
     // Get news articles from News API
