@@ -13,10 +13,9 @@
   
   interface PromptEvaluation {
     specificity: number; // 1-10
-    relevance: number;   // 1-10
-    creativity: number;   // 1-10
-    overallScore: number; // 1-10
+    overallScore: number; // Same as specificity
     feedback: string;
+    isAppropriate: boolean;
   }
   
   interface ChatMessage {
@@ -148,7 +147,22 @@
     userInput = '';
     
     try {
-      // Evaluate the prompt using AI API
+      // Check content appropriateness first
+      const contentCheck = await checkContentAppropriateness(input);
+      
+      if (!contentCheck.isAppropriate) {
+        // Add inappropriate content warning
+        chatMessages.update(msgs => [...msgs, {
+          id: `ai_${Date.now()}`,
+          type: 'ai',
+          content: `⚠️ **Content Warning**: ${contentCheck.feedback}\n\nPlease write a prompt that's appropriate for all audiences. Focus on creative problem-solving and positive actions.`,
+          timestamp: new Date()
+        }]);
+        isLoading.set(false);
+        return;
+      }
+      
+      // Evaluate the prompt using AI API (only specificity)
       const evaluation = await evaluatePromptWithAI(input, $currentScenario);
       
       // Generate story response using AI API
@@ -185,29 +199,26 @@
     }
   }
   
-  async function evaluatePromptWithAI(prompt: string, scenario: StoryScenario): Promise<PromptEvaluation> {
+  async function checkContentAppropriateness(prompt: string): Promise<{isAppropriate: boolean, feedback: string}> {
     // TODO: Replace with your API key
-    const API_KEY = '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';
-    const API_URL = 'https://api.openai.com/v1/chat/completions'; // or your preferred API
+    const API_KEY = 'YOUR_API_KEY_HERE';
+    const API_URL = 'https://api.openai.com/v1/chat/completions';
     
-    const evaluationPrompt = `
-Evaluate this prompt for a story scenario. Rate each aspect from 1-10 and provide feedback.
+    const contentCheckPrompt = `
+Check if this prompt contains inappropriate content for a family-friendly story game. Look for:
+- Violence, blood, gore, or graphic content
+- Sexual content or innuendo
+- Profanity or offensive language
+- Drug/alcohol references
+- Dark themes (death, suicide, etc.)
+- Any content not suitable for ages 13+
 
-Scenario: ${scenario.title} - ${scenario.initialContext}
 User's Prompt: "${prompt}"
-
-Rate the prompt on:
-1. Specificity (1-10): How clear and detailed is the prompt?
-2. Relevance (1-10): How well does it relate to the scenario?
-3. Creativity (1-10): How original and interesting is the approach?
 
 Respond in this exact JSON format:
 {
-  "specificity": [number],
-  "relevance": [number], 
-  "creativity": [number],
-  "overallScore": [average of the three scores],
-  "feedback": "[constructive feedback message]"
+  "isAppropriate": [true or false],
+  "feedback": "[brief explanation if inappropriate, or 'Content is appropriate' if okay]"
 }`;
 
     try {
@@ -222,60 +233,64 @@ Respond in this exact JSON format:
           messages: [
             {
               role: 'system',
-              content: 'You are an expert prompt evaluator. Always respond with valid JSON.'
+              content: 'You are a content moderator for a family-friendly story game. Always respond with valid JSON.'
             },
             {
               role: 'user',
-              content: evaluationPrompt
+              content: contentCheckPrompt
             }
           ],
-          temperature: 0.3,
-          max_tokens: 300
+          temperature: 0.1,
+          max_tokens: 100
         })
       });
       
       const data = await response.json();
-      const evaluationText = data.choices[0].message.content;
+      const checkText = data.choices[0].message.content;
       
       // Parse JSON response
-      const evaluation = JSON.parse(evaluationText);
-      return evaluation;
+      const contentCheck = JSON.parse(checkText);
+      return contentCheck;
       
     } catch (error) {
-      console.error('Evaluation API error:', error);
+      console.error('Content check API error:', error);
       
-      // Fallback evaluation
+      // Fallback - assume appropriate if API fails
       return {
-        specificity: 5,
-        relevance: 5,
-        creativity: 5,
-        overallScore: 5,
-        feedback: 'Unable to evaluate prompt. Please try again.'
+        isAppropriate: true,
+        feedback: 'Content check unavailable'
       };
     }
   }
   
-  async function generateStoryResponseWithAI(prompt: string, evaluation: PromptEvaluation, scenario: StoryScenario): Promise<string> {
+  async function evaluatePromptWithAI(prompt: string, scenario: StoryScenario): Promise<PromptEvaluation> {
     // TODO: Replace with your API key
-    const API_KEY = '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';
-    const API_URL = 'https://api.openai.com/v1/chat/completions'; // or your preferred API
+    const API_KEY = 'YOUR_API_KEY_HERE';
+    const API_URL = 'https://api.openai.com/v1/chat/completions';
     
-    const storyPrompt = `
-You are a creative storyteller. Continue this story based on the user's prompt and their prompt quality score.
+    const evaluationPrompt = `
+Evaluate this prompt based ONLY on specificity and clarity. Specificity includes:
+- How clear and detailed the prompt is
+- Whether it provides enough context
+- If it specifies what actions to take
+- If it includes relevant details
+- How well-structured the prompt is
 
-Scenario: ${scenario.title}
-Context: ${scenario.initialContext}
+Scenario: ${scenario.title} - ${scenario.initialContext}
 User's Prompt: "${prompt}"
-Prompt Quality Score: ${evaluation.overallScore}/10
 
-${evaluation.overallScore >= 8 ? 
-  'HIGH QUALITY PROMPT: Write an exciting, successful story continuation with positive outcomes, character success, and engaging plot developments.' :
-  evaluation.overallScore >= 6 ?
-  'MEDIUM QUALITY PROMPT: Write a story continuation that progresses but with some challenges, awkward moments, or minor setbacks.' :
-  'LOW QUALITY PROMPT: Write a story continuation with chaotic events, character failures, or unexpected obstacles due to the vague prompt.'
-}
+Rate the prompt on SPECIFICITY only (1-10):
+- 1-3: Very vague, unclear, lacks context
+- 4-6: Somewhat clear but missing important details
+- 7-8: Clear and well-structured with good context
+- 9-10: Excellent specificity with comprehensive context and clear actions
 
-Keep the response to 2-3 sentences. Make it engaging and continue the story naturally.`;
+Respond in this exact JSON format:
+{
+  "specificity": [number 1-10],
+  "overallScore": [same as specificity],
+  "feedback": "[constructive feedback on how to improve specificity and context]"
+}`;
 
     try {
       const response = await fetch(API_URL, {
@@ -289,7 +304,76 @@ Keep the response to 2-3 sentences. Make it engaging and continue the story natu
           messages: [
             {
               role: 'system',
-              content: 'You are a creative storyteller who adapts story outcomes based on prompt quality.'
+              content: 'You are an expert prompt evaluator focusing on specificity and clarity. Always respond with valid JSON.'
+            },
+            {
+              role: 'user',
+              content: evaluationPrompt
+            }
+          ],
+          temperature: 0.3,
+          max_tokens: 200
+        })
+      });
+      
+      const data = await response.json();
+      const evaluationText = data.choices[0].message.content;
+      
+      // Parse JSON response
+      const evaluation = JSON.parse(evaluationText);
+      evaluation.isAppropriate = true; // Already checked above
+      return evaluation;
+      
+    } catch (error) {
+      console.error('Evaluation API error:', error);
+      
+      // Fallback evaluation
+      return {
+        specificity: 5,
+        overallScore: 5,
+        feedback: 'Unable to evaluate prompt. Please try again.',
+        isAppropriate: true
+      };
+    }
+  }
+  
+  async function generateStoryResponseWithAI(prompt: string, evaluation: PromptEvaluation, scenario: StoryScenario): Promise<string> {
+    // TODO: Replace with your API key
+    const API_KEY = 'YOUR_API_KEY_HERE';
+    const API_URL = 'https://api.openai.com/v1/chat/completions';
+    
+    const storyPrompt = `
+You are a creative storyteller for a family-friendly story game. Continue this story based on the user's prompt and their specificity score.
+
+Scenario: ${scenario.title}
+Context: ${scenario.initialContext}
+User's Prompt: "${prompt}"
+Specificity Score: ${evaluation.specificity}/10
+
+IMPORTANT: Keep all content appropriate for ages 13+. No violence, blood, sexual content, or dark themes.
+
+${evaluation.specificity >= 8 ? 
+  'HIGH SPECIFICITY: Write an exciting, successful story continuation with positive outcomes, character success, and engaging plot developments.' :
+  evaluation.specificity >= 6 ?
+  'MEDIUM SPECIFICITY: Write a story continuation that progresses but with some challenges or minor setbacks due to unclear instructions.' :
+  'LOW SPECIFICITY: Write a story continuation with some confusion or obstacles due to the vague prompt, but keep it positive and family-friendly.'
+}
+
+Keep the response to 2-3 sentences. Make it engaging, positive, and continue the story naturally while maintaining appropriate content.`;
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a creative storyteller for a family-friendly story game. Always keep content appropriate for ages 13+.'
             },
             {
               role: 'user',
@@ -462,21 +546,16 @@ Keep the response to 2-3 sentences. Make it engaging and continue the story natu
                 <div class="flex items-center gap-2 mb-1">
                   <span class="text-xs font-semibold">Prompt Score:</span>
                   <span class="text-xs font-bold {
-                    msg.evaluation.overallScore >= 8 ? 'text-green-600' :
-                    msg.evaluation.overallScore >= 6 ? 'text-yellow-600' :
+                    msg.evaluation.specificity >= 8 ? 'text-green-600' :
+                    msg.evaluation.specificity >= 6 ? 'text-yellow-600' :
                     'text-red-600'
                   }">
-                    {msg.evaluation.overallScore}/10
+                    {msg.evaluation.specificity}/10
                   </span>
                 </div>
-                <div class="text-xs text-zinc-600 mb-1">
-                  Specificity: {msg.evaluation.specificity}/10 | 
-                  Relevance: {msg.evaluation.relevance}/10 | 
-                  Creativity: {msg.evaluation.creativity}/10
-                </div>
                 <div class="text-xs font-medium {
-                  msg.evaluation.overallScore >= 8 ? 'text-green-700' :
-                  msg.evaluation.overallScore >= 6 ? 'text-yellow-700' :
+                  msg.evaluation.specificity >= 8 ? 'text-green-700' :
+                  msg.evaluation.specificity >= 6 ? 'text-yellow-700' :
                   'text-red-700'
                 }">
                   {msg.evaluation.feedback}
