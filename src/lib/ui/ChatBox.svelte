@@ -1,5 +1,6 @@
 <!-- lib/ui/ChatBox.svelte -->
 <script lang="ts">
+  import { writable } from 'svelte/store'; // ADD THIS IMPORT
   import MessageBubble from './MessageBubble.svelte';
   
   interface ChatMessage {
