@@ -7,9 +7,10 @@
 
   let articles: NewsArticle[] = [];
   let weekStart: string = '';
-  let loading = true;
+  let loading = false; // Start with false - no automatic loading
   let error = '';
 
+  // This function ONLY runs when manually called (refresh button)
   async function fetchNews() {
     loading = true;
     error = '';
@@ -30,9 +31,7 @@
     }
   }
 
-  onMount(() => {
-    fetchNews(); // Initial load
-  });
+  // NO onMount - news is truly static until refresh button is pressed
 </script>
 
 <svelte:head>
@@ -79,24 +78,13 @@
         Week of {weekStart}
       </span>
     </div>
-  {:else}
-    <!-- Debug box -->
-    <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-red-500 bg-red-100 p-6 shadow-sm
-                dark:bg-red-900 dark:border-red-500 transition-colors duration-300">
-      <span class="flex flex-row items-center gap-2 font-bold text-lg text-red-700 dark:text-red-100">
-        Debug Info
-      </span>
-      <p class="text-red-600 dark:text-red-200">
-        weekStart: "{weekStart}", loading: {loading}, error: "{error}"
-      </p>
-    </div>
   {/if}
 
   <!-- Refresh Button - EXACT same styling as InfoDisplay -->
   <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-200 bg-zinc-100 p-6 shadow-sm
               dark:border-zinc-700 dark:bg-zinc-800 transition-colors duration-300">
     <Button on:click={fetchNews} variant="primary">
-      {loading ? 'Loading...' : 'Refresh News'}
+      {loading ? 'Loading...' : 'Load News'}
     </Button>
   </div>
 
@@ -119,9 +107,11 @@
       <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-200 bg-zinc-100 p-6 shadow-sm
                   dark:border-zinc-700 dark:bg-zinc-800 transition-colors duration-300">
         <span class="flex flex-row items-center gap-2 font-bold text-lg text-zinc-900 dark:text-white">
-          No Articles
+          No Articles Loaded
         </span>
-        <p class="text-zinc-700 dark:text-zinc-300">No AI news articles available for this week.</p>
+        <p class="text-zinc-700 dark:text-zinc-300">
+          Click the "Load News" button above to load the latest AI news articles.
+        </p>
       </div>
     {:else}
       <div class="space-y-6">
