@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { NEWS_API_KEY } from '$env/static/private';
+import { NEWS_API_KEY, TLDR_API_KEY } from '$env/static/private';
 
 interface NewsApiArticle {
   title: string;
@@ -18,87 +18,22 @@ interface NewsApiResponse {
   articles: NewsApiArticle[];
 }
 
-// Function to get Monday of current week
-function getMondayOfWeek(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff));
-}
-
-// Function to summarize titles (shorten to avoid copyright issues)
-function summarizeTitle(title: string): string {
-  let cleanTitle = title
-    .replace(/^(Breaking|News|Update|Report|Analysis):\s*/i, '')
-    .replace(/\s*-\s*(Reuters|AP|AFP|CNN|BBC|Forbes|TechCrunch|The Verge).*$/i, '')
-    .replace(/\s*\|.*$/i, '')
-    .trim();
-  
-  if (cleanTitle.length > 80) {
-    cleanTitle = cleanTitle.substring(0, 80);
-    const lastSpace = cleanTitle.lastIndexOf(' ');
-    if (lastSpace > 50) {
-      cleanTitle = cleanTitle.substring(0, lastSpace);
-    }
-    cleanTitle += '...';
-  }
-  
-  return cleanTitle;
-}
-
-// Enhanced function to check if article is AI-related
-function isAIRelated(article: NewsApiArticle): boolean {
-  const aiKeywords = [
-    'artificial intelligence', 'ai', 'machine learning', 'ml', 'deep learning',
-    'neural network', 'chatgpt', 'openai', 'gpt', 'llm', 'large language model',
-    'automation', 'robotics', 'computer vision', 'nlp', 'natural language processing',
-    'algorithm', 'data science', 'predictive analytics', 'cognitive computing',
-    'generative ai', 'transformer', 'bert', 'claude', 'gemini', 'copilot',
-    'autonomous', 'intelligent system', 'ai model', 'ai tool', 'ai platform',
-    'machine intelligence', 'neural', 'deep neural', 'artificial neural'
-  ];
-  
-  // Keywords to exclude (sports, non-tech topics)
-  const excludeKeywords = [
-    'football', 'soccer', 'basketball', 'tennis', 'baseball', 'nba', 'nfl', 'mlb',
-    'fifa', 'champions league', 'premier league', 'bundesliga', 'serie a',
-    'cricket', 'rugby', 'hockey', 'golf', 'olympics', 'world cup',
-    'deportivo', 'atletico', 'real madrid', 'barcelona', 'manchester',
-    'greenwood', 'marlos moreno', 'dairon asprilla', 'papin'
-  ];
-  
-  const textToCheck = `${article.title} ${article.description || ''}`.toLowerCase();
-  
-  // First check if it contains exclusion keywords
-  const containsExclusion = excludeKeywords.some(keyword => textToCheck.includes(keyword));
-  if (containsExclusion) {
-    return false;
-  }
-  
-  // Then check for AI keywords
-  return aiKeywords.some(keyword => textToCheck.includes(keyword));
+interface TLDRApiResponse {
+  summary: string;
 }
 
 async function getNewsArticles(): Promise<NewsApiArticle[]> {
   console.log('🔍 Starting News API call...');
   console.log('🔑 NEWS_API_KEY exists:', !!NEWS_API_KEY);
+  console.log('🔑 NEWS_API_KEY length:', NEWS_API_KEY?.length || 0);
   
-  // Get current week's Monday
-  const monday = getMondayOfWeek(new Date());
-  const fromDate = monday.toISOString().split('T')[0];
-  const toDate = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  
-  console.log('📅 Date range:', fromDate, 'to', toDate);
-  
-  // Enhanced search query for better AI filtering + English only
-  const searchQuery = 'artificial intelligence OR "machine learning" OR "deep learning" OR "neural network" OR "AI model" OR "generative AI" OR "ChatGPT" OR "OpenAI"';
-  
-  const newsApiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(searchQuery)}&from=${fromDate}&to=${toDate}&language=en&sortBy=publishedAt&pageSize=50&apiKey=${NEWS_API_KEY}`;
+  const newsApiUrl = `https://newsapi.org/v2/everything?q=artificial%20intelligence&sortBy=publishedAt&pageSize=10&apiKey=${NEWS_API_KEY}`;
   console.log('🌐 News API URL:', newsApiUrl.replace(NEWS_API_KEY, 'HIDDEN_KEY'));
   
   try {
     const response = await fetch(newsApiUrl);
     console.log('📡 News API Response Status:', response.status);
+    console.log('📡 News API Response OK:', response.ok);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -108,57 +43,97 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
     
     const data: NewsApiResponse = await response.json();
     console.log('✅ News API Success - Articles found:', data.articles?.length || 0);
-    
-    // Filter for AI-related articles and limit to 10
-    const aiArticles = data.articles
-      .filter(isAIRelated)
-      .slice(0, 10);
-    
-    console.log('🤖 AI-related articles after filtering:', aiArticles.length);
-    return aiArticles;
+    return data.articles;
   } catch (error) {
     console.error('❌ News API Fetch Error:', error);
     throw error;
   }
 }
 
+async function getSummary(text: string): Promise<string> {
+  console.log('🔍 Starting TLDR API call...');
+  console.log('🔑 TLDR_API_KEY exists:', !!TLDR_API_KEY);
+  console.log('🔑 TLDR_API_KEY length:', TLDR_API_KEY?.length || 0);
+  console.log('📝 Text to summarize length:', text?.length || 0);
+  
+  const tldrUrl = 'https://tldr-this.p.rapidapi.com/summarize';
+  
+  try {
+    const response = await fetch(tldrUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-RapidAPI-Key': TLDR_API_KEY,
+        'X-RapidAPI-Host': 'tldr-this.p.rapidapi.com'
+      },
+      body: JSON.stringify({
+        text: text,
+        max_sentences: 3
+      })
+    });
+    
+    console.log('📡 TLDR API Response Status:', response.status);
+    console.log('📡 TLDR API Response OK:', response.ok);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ TLDR API Error Response:', errorText);
+      return ''; // Return empty string if summarization fails
+    }
+    
+    const data: TLDRApiResponse = await response.json();
+    console.log('✅ TLDR API Success - Summary length:', data.summary?.length || 0);
+    return data.summary;
+  } catch (error) {
+    console.error('❌ TLDR API Fetch Error:', error);
+    return ''; // Return empty string if summarization fails
+  }
+}
+
 export const GET: RequestHandler = async () => {
   console.log('🚀 API Endpoint called: /api/v1/news');
+  console.log('🔑 Environment check:');
+  console.log('  - NEWS_API_KEY exists:', !!NEWS_API_KEY);
+  console.log('  - TLDR_API_KEY exists:', !!TLDR_API_KEY);
   
   try {
     // Get news articles from News API
     console.log('📰 Step 1: Fetching news articles...');
     const articles = await getNewsArticles();
     
-    // Process articles with title summarization
-    console.log('📝 Step 2: Processing articles...');
-    const processedArticles = articles.map((article, index) => {
-      console.log(`📄 Processing article ${index + 1}/${articles.length}: ${article.title.substring(0, 50)}...`);
-      
-      return {
-        title: summarizeTitle(article.title),
-        originalTitle: article.title,
-        url: article.url,
-        source: article.source.name,
-        publishedAt: article.publishedAt,
-        summary: article.description || 'No description available.'
-      };
-    });
+    // Process articles and get summaries
+    console.log('📝 Step 2: Processing articles and getting summaries...');
+    const processedArticles = await Promise.all(
+      articles.map(async (article, index) => {
+        console.log(`📄 Processing article ${index + 1}/${articles.length}: ${article.title.substring(0, 50)}...`);
+        
+        let summary = '';
+        
+        // Use description from News API if available, otherwise use title
+        const textToSummarize = article.description || article.title;
+        
+        if (textToSummarize) {
+          try {
+            summary = await getSummary(textToSummarize);
+          } catch (error) {
+            console.error(`❌ Error getting summary for article ${index + 1}:`, error);
+            // Fallback to original description if summarization fails
+            summary = article.description || '';
+          }
+        }
+        
+        return {
+          title: article.title,
+          url: article.url,
+          source: article.source.name,
+          publishedAt: article.publishedAt,
+          summary: summary
+        };
+      })
+    );
     
-    // Get Monday of current week for display
-    const monday = getMondayOfWeek(new Date());
-    const weekStart = monday.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    
-    console.log('📅 Week start calculated:', weekStart);
     console.log('✅ Successfully processed all articles:', processedArticles.length);
-    
-    return json({
-      articles: processedArticles,
-      weekStart: weekStart
-    });
+    return json(processedArticles);
   } catch (error) {
     console.error('❌ Fatal error in API endpoint:', error);
     return json(
