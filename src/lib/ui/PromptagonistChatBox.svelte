@@ -2,7 +2,7 @@
 <script lang="ts">
   import ChatBox from './ChatBox.svelte';
   import { onMount } from 'svelte';
-  import { currentScenario } from '$lib/stores/promptagonistStore'; // You'll need to create this store
+  import { currentScenario } from '$lib/stores/promptagonistStore';
   
   let chatBoxRef: ChatBox;
   
@@ -74,7 +74,7 @@
   
   async function processPromptWithAI(prompt: string, scenario: any): Promise<{storyResponse: string, evaluation: any}> {
     // TODO: Replace with your API key
-    const API_KEY = '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';
+    const API_KEY = 'YOUR_API_KEY_HERE'; // REMOVE YOUR REAL KEY!
     const API_URL = 'https://api.openai.com/v1/chat/completions';
     
     const combinedPrompt = `
@@ -114,13 +114,6 @@ Rate specificity from 1-10:
 
 STEP 3: Story Generation (only if content is appropriate)
 Continue the story based on the specificity score:
-
-${evaluation.specificity >= 8 ? 
-  'HIGH SPECIFICITY: Write an exciting, successful story continuation with positive outcomes, character success, and engaging plot developments.' :
-  evaluation.specificity >= 6 ?
-  'MEDIUM SPECIFICITY: Write a story continuation that progresses but with some challenges or minor setbacks due to unclear instructions.' :
-  'LOW SPECIFICITY: Write a story continuation with some confusion or obstacles due to the vague prompt, but keep it positive and family-friendly.'
-}
 
 IMPORTANT: Keep all content appropriate for ages 13+. No violence, blood, sexual content, or dark themes.
 
