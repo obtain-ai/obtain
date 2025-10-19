@@ -35,12 +35,12 @@
 	{#snippet content()}
 		Click Generate Scenario to start.<br><br>
 		For each step, you can:<br>
-		• Try a sample prompt (Vague, Structured, or Role-based) and<br>
-		• Write your own prompt in the input box.<br>
-		• Compare the AI's answers. Notice how small wording changes affect results.<br>
-		• Read the Takeaways for quick tips (clarity, constraints, role, audience, format).<br>
-		• Tell the chatbox to continue to move to the next step of the scenario.<br>
-		• Use ↻ Refresh anytime for a new scenario
+			• Try a sample prompt (Vague, Structured, or Role-based) and<br>
+			• Write your own prompt in the input box.<br>
+			• Compare the AI's answers. Notice how small wording changes affect results.<br>
+			• Read the Takeaways for quick tips (clarity, constraints, role, audience, format).<br>
+			• Tell the chatbox to continue to move to the next step of the scenario.<br>
+			• Use ↻ Refresh anytime for a new scenario
 	{/snippet}
 </InfoDisplay>
 
