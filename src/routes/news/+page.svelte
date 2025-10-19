@@ -1,113 +1,57 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { theme } from '$lib/stores/themeStore';
   import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
-  import type { NewsArticle } from './types';
+  import Button from '$lib/ui/Button.svelte';
+  import ThemeToggle from '$lib/ui/ThemeToggle.svelte';
 
-  let articles: NewsArticle[] = [];
-  let weekStart: string = '';
-  let loading = true;
-  let error = '';
+  let currentTheme: 'light' | 'dark';
 
-  onMount(async () => {
-    try {
-      const response = await fetch('/api/v1/news');
-      if (!response.ok) {
-        throw new Error('Failed to fetch news');
-      }
-      const data = await response.json();
-      console.log('📊 API Response data:', data); // Debug log
-      articles = data.articles || [];
-      weekStart = data.weekStart || '';
-      console.log('📅 Week start received:', weekStart); // Debug log
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'An error occurred';
-    } finally {
-      loading = false;
-    }
+  onMount(() => {
+    theme.subscribe(value => {
+      currentTheme = value;
+    });
   });
 </script>
 
-<!-- Your existing InfoDisplay components -->
-<InfoDisplay>
-  {#snippet title()}
-    Why this Matters:
-  {/snippet}
-  {#snippet content()}
-    Keeping up with AI news is important because new tools and features can make everyday tasks more efficient and help you stay ahead of technological trends.
-  {/snippet}
-</InfoDisplay>
+<svelte:head>
+  <title>ObtAin - Your AI Learning Companion</title>
+</svelte:head>
 
-<InfoDisplay>
-  {#snippet title()}
-    Instructions:
-  {/snippet}
-  {#snippet content()}
-    Latest news on artificial intelligence will be updated weekly here!
-  {/snippet}
-</InfoDisplay>
-
-<!-- Weekly date header - using same styling as InfoDisplay -->
-{#if weekStart && !loading && !error}
-  <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border-1 border-zinc-200 p-4">
-    <div class="text-center">
-      <h2 class="text-xl font-bold text-gray-800 mb-2">
-        Week of {weekStart}
-      </h2>
-      <div class="w-24 h-1 bg-blue-600 mx-auto rounded"></div>
-    </div>
+<div class="min-h-screen bg-white text-zinc-900 dark:bg-zinc-900 dark:text-white flex flex-col items-center py-12 px-4 transition-colors duration-300">
+  <!-- Theme Toggle -->
+  <div class="absolute top-4 right-4">
+    <ThemeToggle />
   </div>
-{:else}
-  <!-- Debug: Show when weekStart is not available -->
-  <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border-1 border-red-200 p-4 bg-red-50">
-    <div class="text-center">
-      <p class="text-sm text-red-600">Debug: weekStart = "{weekStart}", loading = {loading}, error = "{error}"</p>
-    </div>
-  </div>
-{/if}
 
-<!-- News articles section with same width as InfoDisplay -->
-<div class="container mx-auto px-4 py-8">
-  {#if loading}
-    <div class="text-center">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <p class="mt-2 text-gray-600">Loading latest AI news...</p>
-    </div>
-  {:else if error}
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      <p>Error: {error}</p>
-    </div>
-  {:else if articles.length === 0}
-    <div class="text-center text-gray-600">
-      <p>No AI news articles available for this week.</p>
-    </div>
-  {:else}
-    <div class="space-y-6">
-      {#each articles as article (article.url)}
-        <!-- Using same width and styling as InfoDisplay components -->
-        <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border-1 border-zinc-200 p-6 bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
-          <h2 class="text-xl font-bold mb-3 leading-tight">
-            <a 
-              href={article.url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="text-blue-600 hover:text-blue-800 hover:underline"
-            >
-              {article.title}
-            </a>
-          </h2>
-          
-          {#if article.summary && article.summary !== 'No description available.'}
-            <p class="text-gray-700 leading-relaxed mb-3">
-              {article.summary}
-            </p>
-          {/if}
-          
-          <div class="flex items-center justify-between text-sm text-gray-500">
-            <span class="font-medium">{article.source}</span>
-            <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
-          </div>
-        </div>
-      {/each}
-    </div>
-  {/if}
+  <!-- Main Title -->
+  <h1 class="text-6xl md:text-7xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
+    ObtAin
+  </h1>
+
+  <!-- Subtitle -->
+  <p class="text-xl md:text-2xl text-zinc-500 dark:text-zinc-400 mb-12">
+    Your AI Learning Companion
+  </p>
+
+  <!-- About ObtAin Section -->
+  <div class="w-[80%] max-w-2xl mb-8">
+    <InfoDisplay>
+      {#snippet title()}
+        About ObtAin
+      {/snippet}
+      {#snippet content()}
+        ObtAin is here to help you learn how to optimize your use of AI for your benefit. Whether you're
+        just starting or looking to level up, ObtAin teaches you how to maximize AI's potential and
+        make it work for you.
+      {/snippet}
+    </InfoDisplay>
+  </div>
+
+  <!-- Buttons Section -->
+  <div class="flex flex-col gap-4 w-[80%] max-w-2xl">
+    <Button variant="primary" href="/promptify">Promptify</Button>
+    <Button variant="secondary" href="/news">AI News</Button>
+    <Button variant="secondary" href="/other-button-2">Other Button 2</Button>
+  </div>
 </div>
