@@ -20,5 +20,6 @@
 	<MenuButton title="Promptify" href="/promptify" />
 	<MenuButton title="AI News" href="/news" />
 	<MenuButton title="AI Listings" href="/AIListings" />
+	<MenuButton title="Other Button 1" />
 	<MenuButton title="Other Button 2" />
 </div>
