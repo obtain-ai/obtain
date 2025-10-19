@@ -14,7 +14,7 @@
 		Why this Matters:
 	{/snippet}
 	{#snippet content()}
-		Choice Stories helps you practice real-world prompting skills through interactive, branching scenarios. Each short story puts you in a situation where you must decide what kind of prompt to give the AI and your choice changes how the story unfolds. By seeing the outcomes of different prompts side by side, you’ll learn how clarity, context, and structure affect the results. It’s an engaging way to understand what makes a prompt effective and how small wording changes can lead to completely different AI responses.
+		Promptagonist helps you practice real-world prompting skills through interactive, branching scenarios. Each short story puts you in a situation where you must decide what kind of prompt to give the AI and your choice changes how the story unfolds. By seeing the outcomes of different prompts side by side, you’ll learn how clarity, context, and structure affect the results. It’s an engaging way to understand what makes a prompt effective and how small wording changes can lead to completely different AI responses.
 	{/snippet}
 </InfoDisplay>
 
