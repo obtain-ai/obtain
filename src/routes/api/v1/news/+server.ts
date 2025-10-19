@@ -137,7 +137,10 @@ export const GET: RequestHandler = async () => {
       day: 'numeric' 
     });
     
+    console.log('📅 Week start calculated:', weekStart);
     console.log('✅ Successfully processed all articles:', processedArticles.length);
+    
+    // Return the data in the correct structure
     return json({
       articles: processedArticles,
       weekStart: weekStart
