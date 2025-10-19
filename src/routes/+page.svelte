@@ -1,4 +1,4 @@
-2<script>
+<script>
 	import MenuButton from '$lib/ui/MenuButton.svelte';
 	import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
 
