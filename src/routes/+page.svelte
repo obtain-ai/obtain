@@ -19,6 +19,6 @@
 <div class="grid grid-cols-1 justify-items-center gap-8">
 	<MenuButton title="Promptify" href="/promptify" />
 	<MenuButton title="AI News" href="/news" />
-	<MenuButton title="News2" hred="/news2" />
+	<MenuButton title="AI Listings" href="/AIListings" />
 	<MenuButton title="Other Button 2" />
 </div>
