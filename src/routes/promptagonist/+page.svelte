@@ -223,8 +223,13 @@
 
   async function processPromptWithAI(prompt: string, scenario: StoryScenario): Promise<{storyResponse: string, evaluation: PromptEvaluation}> {
     // REPLACE WITH YOUR API KEY
-    const API_KEY = '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';
+    const API_KEY = 'YOUR_API_KEY_HERE'; // Make sure this is your real key
     const API_URL = 'https://api.openai.com/v1/chat/completions';
+    
+    console.log('API Key exists:', !!API_KEY);
+    console.log('API Key length:', API_KEY?.length);
+    console.log('User prompt:', prompt);
+    console.log('Scenario:', scenario.title);
     
     const combinedPrompt = `You are a creative storyteller and prompt evaluator for a family-friendly story game.
 
@@ -278,6 +283,8 @@ Respond in this exact JSON format:
 }`;
 
     try {
+      console.log('Making API request...');
+      
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -301,7 +308,18 @@ Respond in this exact JSON format:
         })
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+      
       const data = await response.json();
+      console.log('API Response:', data);
+      
       const responseText = data.choices[0].message.content;
       
       // Parse JSON response
@@ -330,7 +348,7 @@ Respond in this exact JSON format:
       };
       
     } catch (error) {
-      console.error('Combined API error:', error);
+      console.error('Full error details:', error);
       
       return {
         storyResponse: 'Sorry, I encountered an error. Please try again.',
@@ -369,7 +387,6 @@ Respond in this exact JSON format:
   }
 
   onMount(() => {
-    generateScenario(); // Generate a scenario on mount
     focusInput();
   });
 </script>
@@ -393,7 +410,7 @@ Respond in this exact JSON format:
 	{/snippet}
 	{#snippet content()}
 		<ul class="list-disc list-inside space-y-1">
-			<li>Click Generate Scenario to start.</li>
+			<li>Choose a scenario from the options below to start.</li>
 			<li>Write your own prompt in the input box.</li>
 			<li>Compare the AI's answers. Notice how small wording changes affect results.</li>
 			<li>Read the Takeaways for quick tips (clarity, constraints, role, audience, format).</li>
@@ -406,28 +423,55 @@ Respond in this exact JSON format:
 <!-- Scenario Selection -->
 <div class="mx-auto mb-4 w-[80%] p-4 border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
   <h3 class="font-semibold text-zinc-800 mb-2">Current Scenario: {$currentScenario?.title || 'No scenario selected'}</h3>
-  <p class="text-sm text-zinc-600 mb-4">{$currentScenario?.description || 'Generate a scenario to begin.'}</p>
+  <p class="text-sm text-zinc-600 mb-4">{$currentScenario?.description || 'Choose a scenario to begin.'}</p>
   
-  <div class="flex gap-2">
-    <button 
-      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium" 
-      on:click={generateScenario}
-    >
-      Generate New Scenario
-    </button>
-    <button 
-      class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors font-medium" 
-      on:click={toggleCustomForm}
-    >
-      {showCustomForm ? 'Hide Custom Form' : 'Create Custom Scenario'}
-    </button>
-    <button 
-      class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors font-medium" 
-      on:click={resetStory}
-    >
-      Reset Story
-    </button>
-  </div>
+  {#if !$currentScenario}
+    <!-- Scenario Selection Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      {#each scenarios as scenario}
+        <button 
+          class="p-4 bg-white border border-zinc-200 rounded-lg hover:shadow-md transition-shadow text-left"
+          on:click={() => selectScenario(scenario)}
+        >
+          <h4 class="font-semibold text-zinc-800 mb-2">{scenario.title}</h4>
+          <p class="text-sm text-zinc-600 mb-2">{scenario.description}</p>
+          <span class="text-xs text-blue-600 font-medium">{scenario.genre}</span>
+        </button>
+      {/each}
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="flex gap-2">
+      <button 
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium" 
+        on:click={generateScenario}
+      >
+        Random Scenario
+      </button>
+      <button 
+        class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors font-medium" 
+        on:click={toggleCustomForm}
+      >
+        {showCustomForm ? 'Hide Custom Form' : 'Create Custom Scenario'}
+      </button>
+    </div>
+  {:else}
+    <!-- Current Scenario Display -->
+    <div class="flex gap-2">
+      <button 
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium" 
+        on:click={() => currentScenario.set(null)}
+      >
+        Choose Different Scenario
+      </button>
+      <button 
+        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors font-medium" 
+        on:click={resetStory}
+      >
+        Reset Story
+      </button>
+    </div>
+  {/if}
 
   <!-- Custom Scenario Form -->
   {#if showCustomForm}
@@ -491,37 +535,4 @@ Respond in this exact JSON format:
       {/each}
       
       <!-- Empty state -->
-      {#if $chatMessages.length === 0 && !$currentScenario}
-        <div class="flex items-center justify-center h-full text-zinc-500">
-          <div class="text-center">
-            <p class="text-lg mb-2">👋 Welcome to Promptagonist!</p>
-            <p class="text-sm">Click 'Generate New Scenario' to start practicing your prompting skills.</p>
-          </div>
-        </div>
-      {/if}
-    </div>
-
-    <!-- Input Area -->
-    <div class="p-4 border-t border-zinc-200 bg-zinc-50 rounded-b-lg">
-      <div class="flex gap-2">
-        <input
-          bind:this={inputElement}
-          class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white"
-          type="text"
-          bind:value={userInput}
-          placeholder="Write your prompt to continue the story..."
-          on:keydown={handleKeydown}
-          disabled={$isLoading || !$currentScenario}
-          on:mount={focusInput}
-        />
-        <button 
-          class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 text-white rounded-md transition-colors font-medium" 
-          on:click={sendMessage}
-          disabled={!userInput.trim() || $isLoading || !$currentScenario}
-        >
-          Send
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+      {#if $cha
