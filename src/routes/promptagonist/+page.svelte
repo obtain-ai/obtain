@@ -535,4 +535,37 @@ Respond in this exact JSON format:
       {/each}
       
       <!-- Empty state -->
-      {#if $cha
+      {#if $chatMessages.length === 0 && !$currentScenario}
+        <div class="flex items-center justify-center h-full text-zinc-500">
+          <div class="text-center">
+            <p class="text-lg mb-2">👋 Welcome to Promptagonist!</p>
+            <p class="text-sm">Choose a scenario above to start practicing your prompting skills.</p>
+          </div>
+        </div>
+      {/if}
+    </div>
+
+    <!-- Input Area -->
+    <div class="p-4 border-t border-zinc-200 bg-zinc-50 rounded-b-lg">
+      <div class="flex gap-2">
+        <input
+          bind:this={inputElement}
+          class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white"
+          type="text"
+          bind:value={userInput}
+          placeholder="Write your prompt to continue the story..."
+          on:keydown={handleKeydown}
+          disabled={$isLoading || !$currentScenario}
+          on:mount={focusInput}
+        />
+        <button 
+          class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 text-white rounded-md transition-colors font-medium" 
+          on:click={sendMessage}
+          disabled={!userInput.trim() || $isLoading || !$currentScenario}
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
