@@ -8,43 +8,6 @@
   let loading = true;
   let error = '';
 
-  // Function to get Monday of current week
-  function getMondayOfWeek(date: Date): Date {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(d.setDate(diff));
-  }
-
-  // Function to get the previous week's Monday
-  function getPreviousWeekStart(): string {
-    const now = new Date();
-    const currentWeekStart = getMondayOfWeek(now);
-    const previousWeekStart = new Date(currentWeekStart);
-    previousWeekStart.setDate(previousWeekStart.getDate() - 7);
-    
-    return previousWeekStart.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  }
-
-  // Function to check if articles are from current week
-  function areArticlesCurrentWeek(articles: NewsArticle[], weekStart: string): boolean {
-    if (!articles.length || !weekStart) return false;
-    
-    // Get current date
-    const now = new Date();
-    const currentWeekStart = getMondayOfWeek(now);
-    const currentWeekStartStr = currentWeekStart.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    
-    // Check if weekStart matches current week
-    return weekStart === currentWeekStartStr;
-  }
-
   onMount(async () => {
     try {
       const response = await fetch('/api/v1/news');
@@ -62,7 +25,7 @@
   });
 </script>
 
-<!-- InfoDisplay components -->
+<!-- InfoDisplay components (same as Promptify) -->
 <InfoDisplay>
   {#snippet title()}
     Why this Matters:
@@ -81,25 +44,16 @@
   {/snippet}
 </InfoDisplay>
 
-<!-- Week of header with more spacing -->
+<!-- Week of header - centered, white text, no box -->
 {#if weekStart && !loading && !error}
-  <div class="text-center mb-6 mt-8">
+  <div class="text-center mb-6">
     <h2 class="text-2xl font-bold text-white">
-      {#if areArticlesCurrentWeek(articles, weekStart)}
-        Week of {weekStart}
-      {:else}
-        Last Week's Articles ({getPreviousWeekStart()})
-      {/if}
+      Week of {weekStart}
     </h2>
-    {#if !areArticlesCurrentWeek(articles, weekStart)}
-      <p class="text-sm text-gray-400 mt-2">
-        New articles will be available soon!
-      </p>
-    {/if}
   </div>
 {/if}
 
-<!-- News articles section -->
+<!-- News articles section - using same wrapper pattern as Promptify -->
 <div class="mx-auto mb-4 w-[80%]">
   {#if loading}
     <div class="text-center">
@@ -117,7 +71,7 @@
   {:else}
     <div class="space-y-6">
       {#each articles as article (article.url)}
-        <!-- Individual article boxes -->
+        <!-- Individual article boxes without w-[80%] since parent has it -->
         <div class="mb-4 flex flex-col gap-2 rounded-md border border-zinc-700 bg-zinc-800 p-6 shadow-sm hover:shadow-md transition-all duration-200">
           <h2 class="flex flex-row items-center gap-2 font-bold text-lg text-white">
             <a 
