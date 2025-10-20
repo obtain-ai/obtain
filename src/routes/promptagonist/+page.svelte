@@ -223,7 +223,7 @@
 
   async function processPromptWithAI(prompt: string, scenario: StoryScenario): Promise<{storyResponse: string, evaluation: PromptEvaluation}> {
     // REPLACE WITH YOUR API KEY
-    const API_KEY = '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'; // Make sure this is your real key
+    const API_KEY = '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'; // Make sure this is your real key
     const API_URL = 'https://api.openai.com/v1/chat/completions';
     
     console.log('API Key exists:', !!API_KEY);
