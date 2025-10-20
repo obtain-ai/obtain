@@ -83,8 +83,8 @@
 
   async function generatePromptImprovement(userPrompt: string): Promise<{content: string, isAppropriate: boolean}> {
     // REPLACE WITH YOUR API KEY
-    const API_KEY = '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'; // Make sure this is your real key
-    const API_URL = 'https://api.openai.com/v1/chat/completions';
+    const API_KEY = 'sk-69fba31a788a496bba3a403551ac09aa'; // Make sure this is your real key
+    const API_URL = 'https://api.deepseek.com';
     
     console.log('API Key exists:', !!API_KEY);
     console.log('API Key length:', API_KEY?.length);
@@ -143,7 +143,7 @@ Format your response with clear headings and bullet points for easy reading.`;
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
+          model: 'deepseek-chat',
           messages: [
             {
               role: 'system',
