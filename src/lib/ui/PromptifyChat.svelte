@@ -1,3 +1,4 @@
+//before change
 <script lang="ts">
   import { writable } from 'svelte/store';
   import MessageBubble from './MessageBubble.svelte';
