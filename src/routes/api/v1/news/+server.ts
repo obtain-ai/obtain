@@ -86,12 +86,12 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   console.log('🔑 NEWS_API_KEY exists:', !!NEWS_API_KEY);
   console.log('🔑 NEWS_API_KEY length:', NEWS_API_KEY?.length || 0);
   
-  // Use multiple AI-related search terms for better results
+  // Use multiple AI-related search terms for better results (removed language=en to get global articles)
   const searchTerms = [
     'artificial intelligence AI',
     'machine learning deep learning',
     'chatgpt OpenAI',
-    'generative AI large language model',
+    'generative AI tactical language model',
     'AI automation robotics'
   ];
   
@@ -142,20 +142,20 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   return sortedArticles;
 }
 
-async function getSummaries(articles: NewsApiArticle[]): Promise<{titles: string[], summaries: string[]}> {
-  console.log('🔍 Starting single OpenAI API call for all summaries...');
+async function translateAndCreateBulletPoints(articles: NewsApiArticle[]): Promise<{titles: string[], bulletPoints: string[]}> {
+  console.log('🔍 Starting single OpenAI API call for translation and bullet points...');
   console.log('🔑 OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
   console.log('🔑 OPENAI_API_KEY length:', OPENAI_API_KEY?.length || 0);
-  console.log('📝 Number of articles to summarize:', articles.length);
+  console.log('📝 Number of articles to process:', articles.length);
   
   const openaiUrl = 'https://api.openai.com/v1/chat/completions';
   
   // Prepare the content for all articles
   const articlesContent = articles.map((article, index) => {
-    const textToSummarize = article.description || article.title;
+    const textToProcess = article.description || article.title;
     return `Article ${index + 1}:
 Title: ${article.title}
-Content: ${textToSummarize}`;
+Content: ${textToProcess}`;
   }).join('\n\n');
   
   try {
@@ -170,14 +170,14 @@ Content: ${textToSummarize}`;
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that creates original summaries and headlines for news articles. For each article provided, create: 1) A paraphrased/rewritten headline that captures the essence but uses different wording, and 2) A concise 2-3 sentence summary of the main points. Avoid reproducing exact text to prevent copyright issues. Return the results in this format for each article: "HEADLINE: [rewritten headline]" followed by "SUMMARY: [summary]" separated by "---" between each article.'
+            content: 'You are a helpful assistant that translates articles to English and creates bullet point summaries. For each article provided: 1) Translate the title to English (if not already in English), and 2) Create 3-4 concise bullet points that capture the main points of the article. If the content is in another language, translate it to English first, then create the bullet points. Avoid reproducing exact text to prevent copyright issues. Return the results in this format for each article: "TITLE: [rewritten English title]" followed by "BULLET POINTS:" and then each bullet point on a new line starting with "- ", separated by "---" between each article.'
           },
           {
             role: 'user',
-            content: `Please create rewritten headlines and summaries for these ${articles.length} AI news articles:\n\n${articlesContent}`
+            content: `Please translate and create bullet points for these ${articles.length} AI news articles:\n\n${articlesContent}`
           }
         ],
-        max_tokens: 1500, // Increased token limit for both headlines and summaries
+        max_tokens: 2000, // Increased token limit for translations and bullet points
         temperature: 0.7
       })
     });
@@ -194,49 +194,56 @@ Content: ${textToSummarize}`;
         try {
           const errorData = JSON.parse(errorText);
           if (errorData.code === 'insufficient_quota') {
-            console.log('💳 Quota exceeded - returning empty summaries');
+            console.log('💳 Quota exceeded - returning empty results');
             throw new Error('QUOTA_EXCEEDED');
           }
         } catch (parseError) {
-          console.log('⏳ General rate limit - returning empty summaries');
+          console.log('⏳ General rate limit - returning empty results');
           throw new Error('RATE_LIMITED');
         }
       }
       
-      return {titles: [], summaries: []}; // Return empty arrays if summarization fails
+      return {titles: [], bulletPoints: []}; // Return empty arrays if processing fails
     }
     
     const data: OpenAIResponse = await response.json();
     const allContent = data.choices[0]?.message?.content || '';
     console.log('✅ OpenAI API Success - Raw response length:', allContent.length);
     
-    // Parse the response to extract headlines and summaries
+    // Parse the response to extract titles and bullet points
     const articles = allContent.split('---').map(content => content.trim()).filter(content => content.length > 0);
     
     const titles: string[] = [];
-    const summaries: string[] = [];
+    const bulletPoints: string[] = [];
     
     articles.forEach(articleContent => {
-      const headlineMatch = articleContent.match(/HEADLINE:\s*(.+?)(?=\nSUMMARY:|$)/s);
-      const summaryMatch = articleContent.match(/SUMMARY:\s*(.+?)$/s);
+      const titleMatch = articleContent.match(/TITLE:\s*(.+?)(?=\nBULLET POINTS:|$)/s);
+      const bulletPointsMatch = articleContent.match(/BULLET POINTS:\s*([\s\S]+?)(?=\n---|$)/s);
       
-      if (headlineMatch) {
-        titles.push(headlineMatch[1].trim());
+      if (titleMatch) {
+        titles.push(titleMatch[1].trim());
       } else {
         titles.push(''); // Fallback to empty if parsing fails
       }
       
-      if (summaryMatch) {
-        summaries.push(summaryMatch[1].trim());
+      if (bulletPointsMatch) {
+        // Extract individual bullet points
+        const bulletText = bulletPointsMatch[1].trim();
+        const points = bulletText.split('\n')
+          .map(line => line.trim())
+          .filter(line => line.startsWith('- '))
+          .map(line => line.substring(2).trim()) // Remove the "- " prefix
+          .filter(line => line.length > 0);
+        bulletPoints.push(points.join('\n'));
       } else {
-        summaries.push(''); // Fallback to empty if parsing fails
+        bulletPoints.push(''); // Fallback to empty if parsing fails
       }
     });
     
     console.log('✅ Successfully parsed titles:', titles.length);
-    console.log('✅ Successfully parsed summaries:', summaries.length);
+    console.log('✅ Successfully parsed bullet points:', bulletPoints.length);
     
-    return {titles, summaries};
+    return {titles, bulletPoints};
     
   } catch (error) {
     console.error('❌ OpenAI API Fetch Error:', error);
@@ -256,34 +263,34 @@ export const GET: RequestHandler = async () => {
     const articles = await getNewsArticles();
     
     let titles: string[] = [];
-    let summaries: string[] = [];
+    let bulletPoints: string[] = [];
     let quotaExceeded = false;
     
-    // Get summaries and rewritten headlines for all articles in one request
-    console.log('📝 Step 2: Getting rewritten headlines and summaries for all articles...');
+    // Get translations and bullet points for all articles in one request
+    console.log('📝 Step 2: Getting translations and bullet points for all articles...');
     try {
-      const result = await getSummaries(articles);
+      const result = await translateAndCreateBulletPoints(articles);
       titles = result.titles;
-      summaries = result.summaries;
+      bulletPoints = result.bulletPoints;
     } catch (error) {
       if (error.message === 'QUOTA_EXCEEDED' || error.message === 'RATE_LIMITED') {
         console.log('💳 Quota/rate limit exceeded - using original titles and descriptions');
         quotaExceeded = true;
       } else {
-        console.error('❌ Error getting summaries:', error);
+        console.error('❌ Error getting translations and bullet points:', error);
         quotaExceeded = true;
       }
     }
     
-    // Process articles with rewritten headlines and summaries
-    console.log('📝 Step 3: Processing articles with rewritten content...');
+    // Process articles with translated titles and bullet points
+    console.log('📝 Step 3: Processing articles with translated content...');
     const processedArticles = articles.map((article, index) => {
       let title = '';
       let summary = '';
       
-      if (!quotaExceeded && titles[index] && summaries[index]) {
+      if (!quotaExceeded && titles[index] && bulletPoints[index]) {
         title = titles[index];
-        summary = summaries[index];
+        summary = bulletPoints[index];
       } else {
         // Fallback to original title and description
         title = article.title;
