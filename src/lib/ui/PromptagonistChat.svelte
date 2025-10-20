@@ -1,3 +1,4 @@
+//before change
 <!-- lib/ui/PromptagonistChatBox.svelte -->
 <script lang="ts">
   import PromptifyChat from '$lib/ui/PromptifyChat.svelte';
