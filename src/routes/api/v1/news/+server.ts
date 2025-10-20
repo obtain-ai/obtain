@@ -34,11 +34,6 @@ function getMondayOfWeek(date: Date): Date {
   return new Date(d.setDate(diff));
 }
 
-// Add delay function for rate limiting
-function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 // Function to check if article is AI-related
 function isAIRelated(article: NewsApiArticle): boolean {
   const title = article.title.toLowerCase();
@@ -123,7 +118,7 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
     }
     
     // Add delay between requests
-    await delay(1000);
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
   
   // Remove duplicates based on URL
@@ -147,13 +142,19 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   return sortedArticles;
 }
 
-async function getSummary(text: string): Promise<string> {
-  console.log('🔍 Starting OpenAI API call...');
+async function getSummaries(articles: NewsApiArticle[]): Promise<string[]> {
+  console.log('🔍 Starting single OpenAI API call for all summaries...');
   console.log('🔑 OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
   console.log('🔑 OPENAI_API_KEY length:', OPENAI_API_KEY?.length || 0);
-  console.log('📝 Text to summarize length:', text?.length || 0);
+  console.log('📝 Number of articles to summarize:', articles.length);
   
   const openaiUrl = 'https://api.openai.com/v1/chat/completions';
+  
+  // Prepare the content for all articles
+  const articlesContent = articles.map((article, index) => {
+    const textToSummarize = article.description || article.title;
+    return `Article ${index + 1}: ${textToSummarize}`;
+  }).join('\n\n');
   
   try {
     const response = await fetch(openaiUrl, {
@@ -167,14 +168,14 @@ async function getSummary(text: string): Promise<string> {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that summarizes news articles. Provide a concise 2-3 sentence summary that captures the main points.'
+            content: 'You are a helpful assistant that summarizes news articles. For each article provided, give a concise 2-3 sentence summary that captures the main points. Return the summaries in the same order as the articles, separated by "---" between each summary.'
           },
           {
             role: 'user',
-            content: `Please summarize this news article: ${text}`
+            content: `Please summarize these ${articles.length} AI news articles:\n\n${articlesContent}`
           }
         ],
-        max_tokens: 150,
+        max_tokens: 800, // Reduced token limit since we're doing one call
         temperature: 0.7
       })
     });
@@ -186,31 +187,36 @@ async function getSummary(text: string): Promise<string> {
       const errorText = await response.text();
       console.error('❌ OpenAI API Error Response:', errorText);
       
-      // Handle quota errors - don't retry these
+      // Handle quota errors
       if (response.status === 429) {
         try {
           const errorData = JSON.parse(errorText);
           if (errorData.code === 'insufficient_quota') {
-            console.log('💳 Quota exceeded - skipping summarization');
+            console.log('💳 Quota exceeded - returning empty summaries');
             throw new Error('QUOTA_EXCEEDED');
           }
         } catch (parseError) {
-          // If we can't parse the error, treat it as a general rate limit
-          console.log('⏳ General rate limit - skipping summarization');
+          console.log('⏳ General rate limit - returning empty summaries');
           throw new Error('RATE_LIMITED');
         }
       }
       
-      return ''; // Return empty string if summarization fails
+      return []; // Return empty array if summarization fails
     }
     
     const data: OpenAIResponse = await response.json();
-    const summary = data.choices[0]?.message?.content || '';
-    console.log('✅ OpenAI API Success - Summary length:', summary?.length || 0);
-    return summary;
+    const allSummaries = data.choices[0]?.message?.content || '';
+    console.log('✅ OpenAI API Success - Raw response length:', allSummaries.length);
+    
+    // Split the response into individual summaries
+    const summaries = allSummaries.split('---').map(summary => summary.trim()).filter(summary => summary.length > 0);
+    
+    console.log('✅ Successfully parsed summaries:', summaries.length);
+    return summaries;
+    
   } catch (error) {
     console.error('❌ OpenAI API Fetch Error:', error);
-    throw error; // Re-throw to be handled by caller
+    throw error;
   }
 }
 
@@ -225,59 +231,43 @@ export const GET: RequestHandler = async () => {
     console.log('📰 Step 1: Fetching news articles with AI filtering...');
     const articles = await getNewsArticles();
     
-    // Check if we should skip summarization due to quota issues
+    let summaries: string[] = [];
     let quotaExceeded = false;
     
-    // Process articles sequentially with delays to avoid rate limiting
-    console.log('📝 Step 2: Processing articles sequentially...');
-    const processedArticles = [];
+    // Get summaries for all articles in one request
+    console.log('📝 Step 2: Getting summaries for all articles...');
+    try {
+      summaries = await getSummaries(articles);
+    } catch (error) {
+      if (error.message === 'QUOTA_EXCEEDED' || error.message === 'RATE_LIMITED') {
+        console.log('💳 Quota/rate limit exceeded - using original descriptions');
+        quotaExceeded = true;
+      } else {
+        console.error('❌ Error getting summaries:', error);
+        quotaExceeded = true;
+      }
+    }
     
-    for (let i = 0; i < articles.length; i++) {
-      const article = articles[i];
-      console.log(`📄 Processing article ${i + 1}/${articles.length}: ${article.title.substring(0, 50)}...`);
-      
+    // Process articles with summaries
+    console.log('📝 Step 3: Processing articles with summaries...');
+    const processedArticles = articles.map((article, index) => {
       let summary = '';
       
-      // Use description from News API if available, otherwise use title
-      const textToSummarize = article.description || article.title;
-      
-      if (textToSummarize && !quotaExceeded) {
-        try {
-          summary = await getSummary(textToSummarize);
-        } catch (error) {
-          if (error.message === 'QUOTA_EXCEEDED') {
-            console.log('💳 Quota exceeded - using original descriptions for remaining articles');
-            quotaExceeded = true;
-            summary = article.description || '';
-          } else if (error.message === 'RATE_LIMITED') {
-            console.log('⏳ Rate limited - using original descriptions for remaining articles');
-            quotaExceeded = true;
-            summary = article.description || '';
-          } else {
-            console.error(`❌ Error getting summary for article ${i + 1}:`, error);
-            // Fallback to original description if summarization fails
-            summary = article.description || '';
-          }
-        }
-      } else if (quotaExceeded) {
-        // Use original description if quota is exceeded
+      if (!quotaExceeded && summaries[index]) {
+        summary = summaries[index];
+      } else {
+        // Fallback to original description
         summary = article.description || '';
       }
       
-      processedArticles.push({
+      return {
         title: article.title,
         url: article.url,
         source: article.source.name,
         publishedAt: article.publishedAt,
         summary: summary
-      });
-      
-      // Add delay between requests to respect rate limits (except for last article)
-      if (i < articles.length - 1 && !quotaExceeded) {
-        console.log('⏳ Waiting 2 seconds before next request...');
-        await delay(2000);
-      }
-    }
+      };
+    });
     
     // Get Monday of current week for display
     const monday = getMondayOfWeek(new Date());
