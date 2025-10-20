@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { NEWS_API_KEY, TLDR_API_KEY } from '$env/static/private';
+import { NEWS_API_KEY, OPENAI_API_KEY } from '$env/static/private';
 
 interface NewsApiArticle {
   title: string;
@@ -18,8 +18,12 @@ interface NewsApiResponse {
   articles: NewsApiArticle[];
 }
 
-interface TLDRApiResponse {
-  summary: string;
+interface OpenAIResponse {
+  choices: {
+    message: {
+      content: string;
+    };
+  }[];
 }
 
 // Function to get Monday of current week
@@ -59,41 +63,52 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
 }
 
 async function getSummary(text: string): Promise<string> {
-  console.log('🔍 Starting TLDR API call...');
-  console.log('🔑 TLDR_API_KEY exists:', !!TLDR_API_KEY);
-  console.log('🔑 TLDR_API_KEY length:', TLDR_API_KEY?.length || 0);
+  console.log('🔍 Starting OpenAI API call...');
+  console.log('🔑 OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
+  console.log('🔑 OPENAI_API_KEY length:', OPENAI_API_KEY?.length || 0);
   console.log('📝 Text to summarize length:', text?.length || 0);
   
-  const tldrUrl = 'https://tldr-this.p.rapidapi.com/summarize';
+  const openaiUrl = 'https://api.openai.com/v1/chat/completions';
   
   try {
-    const response = await fetch(tldrUrl, {
+    const response = await fetch(openaiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-RapidAPI-Key': TLDR_API_KEY,
-        'X-RapidAPI-Host': 'tldr-this.p.rapidapi.com'
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        text: text,
-        max_sentences: 3
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant that summarizes news articles. Provide a concise 2-3 sentence summary that captures the main points.'
+          },
+          {
+            role: 'user',
+            content: `Please summarize this news article: ${text}`
+          }
+        ],
+        max_tokens: 150,
+        temperature: 0.7
       })
     });
     
-    console.log('📡 TLDR API Response Status:', response.status);
-    console.log('📡 TLDR API Response OK:', response.ok);
+    console.log('📡 OpenAI API Response Status:', response.status);
+    console.log('📡 OpenAI API Response OK:', response.ok);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ TLDR API Error Response:', errorText);
+      console.error('❌ OpenAI API Error Response:', errorText);
       return ''; // Return empty string if summarization fails
     }
     
-    const data: TLDRApiResponse = await response.json();
-    console.log('✅ TLDR API Success - Summary length:', data.summary?.length || 0);
-    return data.summary;
+    const data: OpenAIResponse = await response.json();
+    const summary = data.choices[0]?.message?.content || '';
+    console.log('✅ OpenAI API Success - Summary length:', summary?.length || 0);
+    return summary;
   } catch (error) {
-    console.error('❌ TLDR API Fetch Error:', error);
+    console.error('❌ OpenAI API Fetch Error:', error);
     return ''; // Return empty string if summarization fails
   }
 }
@@ -102,7 +117,7 @@ export const GET: RequestHandler = async () => {
   console.log('🚀 API Endpoint called: /api/v1/news');
   console.log('🔑 Environment check:');
   console.log('  - NEWS_API_KEY exists:', !!NEWS_API_KEY);
-  console.log('  - TLDR_API_KEY exists:', !!TLDR_API_KEY);
+  console.log('  - OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
   
   try {
     // Get news articles from News API
