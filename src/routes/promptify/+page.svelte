@@ -200,12 +200,38 @@ Format your response with clear headings and bullet points for easy reading.`;
     }, 50);
   }
 
-  // Auto-scroll to bottom when new messages are added
-  $: if (chatMessages && chatContainer) {
-    setTimeout(() => {
+  // Smart auto-scroll - only scroll to bottom if user is already near the bottom
+let isUserScrolling = false;
+let lastScrollTop = 0;
+
+$: if ($chatMessages && chatContainer) {
+  setTimeout(() => {
+    // Only auto-scroll if user is near the bottom (within 100px)
+    const isNearBottom = chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 100;
+    
+    if (isNearBottom && !isUserScrolling) {
       chatContainer.scrollTop = chatContainer.scrollHeight;
-    }, 50);
+    }
+  }, 50);
+}
+
+// Track when user manually scrolls
+function handleScroll() {
+  const currentScrollTop = chatContainer.scrollTop;
+  const isNearBottom = currentScrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 100;
+  
+  // If user scrolls up significantly, they're reading old messages
+  if (currentScrollTop < lastScrollTop - 10) {
+    isUserScrolling = true;
   }
+  
+  // If user scrolls back near bottom, resume auto-scroll
+  if (isNearBottom) {
+    isUserScrolling = false;
+  }
+  
+  lastScrollTop = currentScrollTop;
+}
 
   // Handle Enter key
   function handleKeydown(event: KeyboardEvent) {
@@ -259,9 +285,10 @@ Format your response with clear headings and bullet points for easy reading.`;
 
     <!-- Messages Container -->
     <div 
-      bind:this={chatContainer} 
-      class="flex-1 overflow-y-auto p-4 space-y-3 bg-white"
-    >
+	  bind:this={chatContainer} 
+	  class="flex-1 overflow-y-auto p-4 space-y-3 bg-white"
+	  on:scroll={handleScroll}
+	>
       {#each $chatMessages as msg (msg.id)}
         <MessageBubble {...msg} />
       {/each}
