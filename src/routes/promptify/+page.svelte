@@ -83,7 +83,7 @@
 
   async function generatePromptImprovement(userPrompt: string): Promise<{content: string, isAppropriate: boolean}> {
     // Use environment variable for API key
-    const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+    const API_KEY = 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;
     const API_URL = 'https://api.openai.com/v1/chat/completions';
     
     const combinedPrompt = `
