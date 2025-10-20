@@ -34,6 +34,11 @@ function getMondayOfWeek(date: Date): Date {
   return new Date(d.setDate(diff));
 }
 
+// Add delay function for rate limiting
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function getNewsArticles(): Promise<NewsApiArticle[]> {
   console.log('🔍 Starting News API call...');
   console.log('🔑 NEWS_API_KEY exists:', !!NEWS_API_KEY);
@@ -62,7 +67,7 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   }
 }
 
-async function getSummary(text: string): Promise<string> {
+async function getSummary(text: string, retryCount = 0): Promise<string> {
   console.log('🔍 Starting OpenAI API call...');
   console.log('🔑 OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
   console.log('🔑 OPENAI_API_KEY length:', OPENAI_API_KEY?.length || 0);
@@ -100,6 +105,15 @@ async function getSummary(text: string): Promise<string> {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ OpenAI API Error Response:', errorText);
+      
+      // Handle rate limiting with exponential backoff
+      if (response.status === 429 && retryCount < 3) {
+        const backoffDelay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+        console.log(`⏳ Rate limited. Retrying in ${backoffDelay}ms... (attempt ${retryCount + 1}/3)`);
+        await delay(backoffDelay);
+        return getSummary(text, retryCount + 1);
+      }
+      
       return ''; // Return empty string if summarization fails
     }
     
@@ -124,36 +138,43 @@ export const GET: RequestHandler = async () => {
     console.log('📰 Step 1: Fetching news articles...');
     const articles = await getNewsArticles();
     
-    // Process articles and get summaries
-    console.log('📝 Step 2: Processing articles and getting summaries...');
-    const processedArticles = await Promise.all(
-      articles.map(async (article, index) => {
-        console.log(`📄 Processing article ${index + 1}/${articles.length}: ${article.title.substring(0, 50)}...`);
-        
-        let summary = '';
-        
-        // Use description from News API if available, otherwise use title
-        const textToSummarize = article.description || article.title;
-        
-        if (textToSummarize) {
-          try {
-            summary = await getSummary(textToSummarize);
-          } catch (error) {
-            console.error(`❌ Error getting summary for article ${index + 1}:`, error);
-            // Fallback to original description if summarization fails
-            summary = article.description || '';
-          }
+    // Process articles sequentially with delays to avoid rate limiting
+    console.log('📝 Step 2: Processing articles sequentially...');
+    const processedArticles = [];
+    
+    for (let i = 0; i < articles.length; i++) {
+      const article = articles[i];
+      console.log(`📄 Processing article ${i + 1}/${articles.length}: ${article.title.substring(0, 50)}...`);
+      
+      let summary = '';
+      
+      // Use description from News API if available, otherwise use title
+      const textToSummarize = article.description || article.title;
+      
+      if (textToSummarize) {
+        try {
+          summary = await getSummary(textToSummarize);
+        } catch (error) {
+          console.error(`❌ Error getting summary for article ${i + 1}:`, error);
+          // Fallback to original description if summarization fails
+          summary = article.description || '';
         }
-        
-        return {
-          title: article.title,
-          url: article.url,
-          source: article.source.name,
-          publishedAt: article.publishedAt,
-          summary: summary
-        };
-      })
-    );
+      }
+      
+      processedArticles.push({
+        title: article.title,
+        url: article.url,
+        source: article.source.name,
+        publishedAt: article.publishedAt,
+        summary: summary
+      });
+      
+      // Add delay between requests to respect rate limits (except for last article)
+      if (i < articles.length - 1) {
+        console.log('⏳ Waiting 2 seconds before next request...');
+        await delay(2000);
+      }
+    }
     
     // Get Monday of current week for display
     const monday = getMondayOfWeek(new Date());
