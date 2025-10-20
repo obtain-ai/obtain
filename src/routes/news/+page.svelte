@@ -8,6 +8,27 @@
   let loading = true;
   let error = '';
 
+  // Function to get Monday of current week
+  function getMondayOfWeek(date: Date): Date {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+  }
+
+  // Function to get the previous week's Monday
+  function getPreviousWeekStart(): string {
+    const now = new Date();
+    const currentWeekStart = getMondayOfWeek(now);
+    const previousWeekStart = new Date(currentWeekStart);
+    previousWeekStart.setDate(previousWeekStart.getDate() - 7);
+    
+    return previousWeekStart.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+
   // Function to check if articles are from current week
   function areArticlesCurrentWeek(articles: NewsArticle[], weekStart: string): boolean {
     if (!articles.length || !weekStart) return false;
@@ -22,14 +43,6 @@
     
     // Check if weekStart matches current week
     return weekStart === currentWeekStartStr;
-  }
-
-  // Function to get Monday of current week
-  function getMondayOfWeek(date: Date): Date {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(d.setDate(diff));
   }
 
   onMount(async () => {
@@ -68,14 +81,14 @@
   {/snippet}
 </InfoDisplay>
 
-<!-- Week of header with more spacing - moved down -->
+<!-- Week of header with more spacing -->
 {#if weekStart && !loading && !error}
   <div class="text-center mb-6 mt-8">
     <h2 class="text-2xl font-bold text-white">
       {#if areArticlesCurrentWeek(articles, weekStart)}
         Week of {weekStart}
       {:else}
-        Last Week's Articles ({weekStart})
+        Last Week's Articles ({getPreviousWeekStart()})
       {/if}
     </h2>
     {#if !areArticlesCurrentWeek(articles, weekStart)}
