@@ -1,6 +1,6 @@
 <!-- lib/ui/PromptagonistChatBox.svelte -->
 <script lang="ts">
-  import ChatBox from './ChatBox.svelte';
+  import PromptifyChat from '$lib/ui/PromptifyChat.svelte';
   import { onMount } from 'svelte';
   import { currentScenario } from '$lib/stores/promptagonistStore';
   
