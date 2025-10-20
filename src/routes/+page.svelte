@@ -32,36 +32,35 @@
 		</InfoDisplay>
 	</div>
 
-	<!-- Action buttons section -->
-	<div class="max-w-md mx-auto px-4 space-y-4">
-		<!-- Primary button with gradient -->
-		<div class="w-full">
+	<!-- Action buttons section - matching InfoDisplay width -->
+	<div class="max-w-2xl mx-auto px-4 space-y-4">
+		<!-- All buttons now have the same gradient, font size, and width as InfoDisplay -->
+		<div class="w-[80%] mx-auto">
 			<a href="/promptify" class="block w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
 				Promptify
 			</a>
 		</div>
 		
-		<!-- Secondary buttons -->
-		<div class="w-full">
-			<a href="/promptagonist" class="block w-full h-12 bg-zinc-700 text-white font-bold text-base rounded-xl flex items-center justify-center border border-zinc-600 hover:bg-zinc-600 transition-all duration-300">
+		<div class="w-[80%] mx-auto">
+			<a href="/promptagonist" class="block w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
 				Promptagonist
 			</a>
 		</div>
 		
-		<div class="w-full">
-			<a href="/news" class="block w-full h-12 bg-zinc-700 text-white font-bold text-base rounded-xl flex items-center justify-center border border-zinc-600 hover:bg-zinc-600 transition-all duration-300">
+		<div class="w-[80%] mx-auto">
+			<a href="/news" class="block w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
 				AI News
 			</a>
 		</div>
 		
-		<div class="w-full">
-			<a href="/AIListings" class="block w-full h-12 bg-zinc-700 text-white font-bold text-base rounded-xl flex items-center justify-center border border-zinc-600 hover:bg-zinc-600 transition-all duration-300">
+		<div class="w-[80%] mx-auto">
+			<a href="/AIListings" class="block w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
 				AI Listings
 			</a>
 		</div>
 		
-		<div class="w-full">
-			<a href="#" class="block w-full h-12 bg-zinc-700 text-white font-bold text-base rounded-xl flex items-center justify-center border border-zinc-600 hover:bg-zinc-600 transition-all duration-300">
+		<div class="w-[80%] mx-auto">
+			<a href="#" class="block w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
 				Other Button 2
 			</a>
 		</div>
