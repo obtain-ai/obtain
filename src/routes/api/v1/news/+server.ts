@@ -26,6 +26,12 @@ function getMondayOfWeek(date: Date): Date {
   d.setHours(0, 0, 0, 0);
   return new Date(d.setDate(diff));
 }
+function getPreviousWeek(date: Date): Date {
+  const monday = getMondayOfWeek(date);
+  const prevWeek = new Date(monday);
+  prevWeek.setDate(prevWeek.getDate() - 7);
+  return prevWeek;
+}
 function formatMonthDay(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 }
@@ -74,11 +80,11 @@ function isAIRelatedAndEnglish(article: NewsApiArticle): boolean {
 const INMEM_TTL_MS = 5 * 60 * 1000;
 let inmemWeekKey = '';
 let inmemTimestamp = 0;
-let inmemPayload: { articles: any[]; weekStart: string } | null = null;
+let inmemPayload: { articles: any[]; weekStart: string; isCurrentWeek: boolean } | null = null;
 
-// ------- single NewsAPI request -------
-async function getNewsArticles(): Promise<NewsApiArticle[]> {
-  console.log('🔍 Fetching NewsAPI (single consolidated query)…');
+// ------- NewsAPI fetch with week fallback -------
+async function getNewsArticles(targetWeek: Date): Promise<NewsApiArticle[]> {
+  console.log('🔍 Fetching NewsAPI for week:', formatMonthDay(targetWeek));
   if (!NEWS_API_KEY) return [];
 
   const q = [
@@ -91,8 +97,9 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
     'robotics'
   ].join(' OR ');
 
-  const monday = getMondayOfWeek(new Date());
+  const monday = getMondayOfWeek(targetWeek);
   const fromISO = new Date(monday).toISOString();
+  const toISO = new Date(new Date(monday).setDate(monday.getDate() + 6)).toISOString();
 
   const url = new URL('https://newsapi.org/v2/everything');
   url.searchParams.set('q', q);
@@ -100,6 +107,7 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   url.searchParams.set('language', 'en');
   url.searchParams.set('sortBy', 'publishedAt');
   url.searchParams.set('from', fromISO);
+  url.searchParams.set('to', toISO);
   url.searchParams.set('pageSize', '50');
 
   try {
@@ -108,14 +116,17 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
     if (res.status === 429 || !res.ok) return [];
 
     const data: NewsApiResponse = await res.json();
+    console.log(`📰 Raw articles from NewsAPI: ${data.articles?.length || 0}`);
+    
     const unique = (data.articles || []).filter((a, i, s) => i === s.findIndex(x => x.url === a.url));
+    console.log(`📰 After deduplication: ${unique.length}`);
 
     const filtered = unique
       .filter(isAIRelatedAndEnglish)
       .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
       .slice(0, 10);
 
-    console.log(`✅ Returning ${filtered.length} filtered articles`);
+    console.log(`✅ Returning ${filtered.length} filtered articles for week ${formatMonthDay(targetWeek)}`);
     return filtered;
   } catch (e) {
     console.error('❌ NewsAPI fetch failed:', e);
@@ -153,22 +164,39 @@ async function getSummaries(articles: NewsApiArticle[]): Promise<string[]> {
   }
 }
 
-// ------- GET handler -------
+// ------- GET handler with week fallback -------
 export const GET: RequestHandler = async ({ url }) => {
   console.log('🚀 /api/v1/news');
   console.log('  - NEWS_API_KEY exists:', !!NEWS_API_KEY);
   console.log('  - OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
 
-  const monday = getMondayOfWeek(new Date());
-  const weekStart = formatMonthDay(monday);
-  const weekKey = `${monday.getFullYear()}-${monday.getMonth() + 1}-${monday.getDate()}`;
+  const now = new Date();
+  const currentWeek = getMondayOfWeek(now);
+  const previousWeek = getPreviousWeek(now);
+  
+  const currentWeekStart = formatMonthDay(currentWeek);
+  const previousWeekStart = formatMonthDay(previousWeek);
+  
+  const currentWeekKey = `${currentWeek.getFullYear()}-${currentWeek.getMonth() + 1}-${currentWeek.getDate()}`;
   const forceRefresh = url.searchParams.get('refresh') === '1';
 
-  if (!forceRefresh && inmemPayload && inmemWeekKey === weekKey && Date.now() - inmemTimestamp < INMEM_TTL_MS) {
+  if (!forceRefresh && inmemPayload && inmemWeekKey === currentWeekKey && Date.now() - inmemTimestamp < INMEM_TTL_MS) {
     return json(inmemPayload);
   }
 
-  const articles = await getNewsArticles();
+  // Try current week first
+  console.log('📅 Trying current week:', currentWeekStart);
+  let articles = await getNewsArticles(currentWeek);
+  let weekStart = currentWeekStart;
+  let isCurrentWeek = true;
+
+  // If no articles for current week, try previous week
+  if (articles.length === 0) {
+    console.log('📅 No articles for current week, trying previous week:', previousWeekStart);
+    articles = await getNewsArticles(previousWeek);
+    weekStart = previousWeekStart;
+    isCurrentWeek = false;
+  }
 
   let summaries: string[] = [];
   if (articles.length) {
@@ -183,9 +211,14 @@ export const GET: RequestHandler = async ({ url }) => {
     summary: summaries[i] || a.description || ''
   }));
 
-  const payload = { articles: processed, weekStart };
+  const payload = { 
+    articles: processed, 
+    weekStart: weekStart,
+    isCurrentWeek: isCurrentWeek
+  };
+  
   inmemPayload = payload;
-  inmemWeekKey = weekKey;
+  inmemWeekKey = currentWeekKey;
   inmemTimestamp = Date.now();
 
   return json(payload);
