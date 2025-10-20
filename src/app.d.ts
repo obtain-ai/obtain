@@ -1,13 +1,14 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
-// for information about these interfaces
+// ... existing code ...
+
 declare global {
-	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
-	}
+  namespace App {
+    // ... existing interfaces ...
+  }
+}
+
+declare module '$env/static/private' {
+  export const NEWS_API_KEY: string;
+  export const OPENAI_API_KEY: string;
 }
 
 export {};
