@@ -34,79 +34,11 @@ function getMondayOfWeek(date: Date): Date {
   return new Date(d.setDate(diff));
 }
 
-// Function to detect if text is primarily in English
-function isEnglish(text: string): boolean {
-  // Remove extra whitespace and normalize
-  const normalizedText = text.toLowerCase().trim();
-  
-  // Common English words and patterns
-  const englishPatterns = [
-    /\b(the|and|or|but|in|on|at|to|for|of|with|by|from|up|about|into|through|during|before|after|above|below|between|among|under|over|within|without|against|toward|towards|upon|beyond|beneath|beside|besides|except|excluding|including|regarding|concerning|according|following|preceding|surrounding|including|excluding|excepting)\b/g,
-    /\b(is|are|was|were|be|been|being|have|has|had|having|do|does|did|doing|will|would|could|should|shall|may|might|must|can|cannot|can't|won't|wouldn't|couldn't|shouldn't|shan't|mayn't|mightn't|mustn't)\b/g,
-    /\b(this|that|these|those|i|you|he|she|it|we|they|me|him|her|us|them|my|your|his|her|its|our|their|mine|yours|hers|ours|theirs)\b/g,
-    /\b(a|an|some|any|all|both|each|every|either|neither|much|many|little|few|more|most|less|least|other|another|such|same|different|various|several|numerous|countless|plenty|enough|too|very|quite|rather|pretty|fairly|extremely|highly|greatly|significantly|substantially|considerably|slightly|somewhat|barely|hardly|scarcely|almost|nearly|just|only|merely|simply|purely|exactly|precisely|definitely|certainly|surely|probably|possibly|perhaps|maybe|likely|unlikely|certainly|absolutely|completely|totally|entirely|fully|partially|partly|mostly|mainly|primarily|largely|generally|usually|normally|typically|commonly|frequently|often|sometimes|occasionally|rarely|seldom|never|always|ever|already|still|yet|just|soon|recently|lately|earlier|later|before|after|during|while|when|where|why|how|what|who|which|whose|whom)\b/g
-  ];
-  
-  // Non-English character patterns
-  const nonEnglishPatterns = [
-    /[\u4e00-\u9fff]/, // Chinese characters
-    /[\u3040-\u309f]/, // Hiragana
-    /[\u30a0-\u30ff]/, // Katakana
-    /[\u4e00-\u9faf]/, // CJK Unified Ideographs
-    /[\u0400-\u04ff]/, // Cyrillic
-    /[\u0590-\u05ff]/, // Hebrew
-    /[\u0600-\u06ff]/, // Arabic
-    /[\u0900-\u097f]/, // Devanagari
-    /[\u0e00-\u0e7f]/, // Thai
-    /[\u1100-\u11ff]/, // Hangul Jamo
-    /[\uac00-\ud7af]/, // Hangul Syllables
-    /[\u3400-\u4dbf]/, // CJK Extension A
-    /[\u20000-\u2a6df]/, // CJK Extension B
-    /[\u2a700-\u2b73f]/, // CJK Extension C
-    /[\u2b740-\u2b81f]/, // CJK Extension D
-    /[\u2b820-\u2ceaf]/, // CJK Extension E
-    /[\uf900-\ufaff]/, // CJK Compatibility Ideographs
-    /[\u3300-\u33ff]/, // CJK Compatibility
-    /[\ufe30-\ufe4f]/, // CJK Compatibility Forms
-    /[\uf900-\ufaff]/, // CJK Compatibility Ideographs
-    /[\u2f800-\u2fa1f]/ // CJK Compatibility Supplement
-  ];
-  
-  // Check for non-English characters first
-  for (const pattern of nonEnglishPatterns) {
-    if (pattern.test(normalizedText)) {
-      return false;
-    }
-  }
-  
-  // Count English pattern matches
-  let englishMatchCount = 0;
-  for (const pattern of englishPatterns) {
-    const matches = normalizedText.match(pattern);
-    if (matches) {
-      englishMatchCount += matches.length;
-    }
-  }
-  
-  // If we have a reasonable number of English words, consider it English
-  // Adjust threshold based on text length
-  const wordCount = normalizedText.split(/\s+/).length;
-  const threshold = Math.max(3, Math.floor(wordCount * 0.3)); // At least 30% English words
-  
-  return englishMatchCount >= threshold;
-}
-
-// Function to check if article is AI-related and in English
-function isAIRelatedAndEnglish(article: NewsApiArticle): boolean {
+// Function to check if article is AI-related
+function isAIRelated(article: NewsApiArticle): boolean {
   const title = article.title.toLowerCase();
   const description = (article.description || '').toLowerCase();
   const source = article.source.name.toLowerCase();
-  
-  // First check if content is in English
-  if (!isEnglish(article.title) || (article.description && !isEnglish(article.description))) {
-    console.log(`🚫 Non-English article filtered out: ${article.title.substring(0, 50)}...`);
-    return false;
-  }
   
   // AI-related keywords
   const aiKeywords = [
@@ -150,7 +82,7 @@ function isAIRelatedAndEnglish(article: NewsApiArticle): boolean {
 }
 
 async function getNewsArticles(): Promise<NewsApiArticle[]> {
-  console.log('🔍 Starting News API call with improved AI filtering and English-only filter...');
+  console.log('🔍 Starting News API call with improved AI filtering...');
   console.log('🔑 NEWS_API_KEY exists:', !!NEWS_API_KEY);
   console.log('🔑 NEWS_API_KEY length:', NEWS_API_KEY?.length || 0);
   
@@ -167,7 +99,7 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   
   // Fetch articles with different search terms
   for (const term of searchTerms) {
-    const newsApiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(term)}&sortBy=publishedAt&pageSize=20&language=en&apiKey=${NEWS_API_KEY}`;
+    const newsApiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(term)}&sortBy=publishedAt&pageSize=20&apiKey=${NEWS_API_KEY}`;
     console.log(`🌐 News API URL for "${term}":`, newsApiUrl.replace(NEWS_API_KEY, 'HIDDEN_KEY'));
     
     try {
@@ -196,12 +128,12 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   
   console.log(`📰 Total unique articles found: ${uniqueArticles.length}`);
   
-  // Filter for AI-related articles that are in English
-  const aiEnglishArticles = uniqueArticles.filter(isAIRelatedAndEnglish);
-  console.log(`🤖 AI-related English articles after filtering: ${aiEnglishArticles.length}`);
+  // Filter for AI-related articles
+  const aiArticles = uniqueArticles.filter(isAIRelated);
+  console.log(`🤖 AI-related articles after filtering: ${aiArticles.length}`);
   
   // Sort by date and take the most recent 10
-  const sortedArticles = aiEnglishArticles
+  const sortedArticles = aiArticles
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
     .slice(0, 10);
   
@@ -320,7 +252,7 @@ export const GET: RequestHandler = async () => {
   
   try {
     // Get news articles from News API with improved filtering
-    console.log('📰 Step 1: Fetching news articles with AI filtering and English-only filter...');
+    console.log('📰 Step 1: Fetching news articles with AI filtering...');
     const articles = await getNewsArticles();
     
     let titles: string[] = [];
