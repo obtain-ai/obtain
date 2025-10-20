@@ -1,237 +1,63 @@
-<script lang="ts">
-  import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
-  import MessageBubble from '$lib/ui/MessageBubble.svelte';
-  import { writable } from 'svelte/store';
-  import { onMount } from 'svelte';
+<!-- In the PromptagonistChat.svelte, replace the sendMessage function with this: -->
 
-  // Interfaces
-  interface StoryScenario {
-    id: string;
-    title: string;
-    description: string;
-    initialContext: string;
-    genre: string;
-    isCustom?: boolean;
-  }
+async function sendMessage() {
+  if (!userInput.trim() || !$currentScenario) return;
   
-  interface PromptEvaluation {
-    specificity: number; // 1-10
-    overallScore: number; // Same as specificity
-    feedback: string;
-    isAppropriate: boolean;
-  }
+  isLoading.set(true);
   
-  interface ChatMessage {
-    id: string;
-    type: 'user' | 'ai' | 'system';
-    content: string;
-    evaluation?: PromptEvaluation;
-    timestamp: Date;
-    status?: 'normal' | 'loading' | 'error';
-  }
-
-  // State variables
-  let userInput = '';
-  let chatMessages = writable<ChatMessage[]>([]);
-  let chatContainer: HTMLDivElement;
-  let inputElement: HTMLInputElement;
-  let currentScenario = writable<StoryScenario | null>(null);
-  let isLoading = writable(false);
-  let customScenarioTitle = '';
-  let customScenarioDescription = '';
-  let customScenarioContext = '';
-  let showCustomForm = false;
-
-  // Scenarios
-  const scenarios: StoryScenario[] = [
-    {
-      id: '1',
-      title: 'The Campus Mystery',
-      description: 'You\'re a new student at a prestigious university, and strange things are happening in the old library. Can you uncover the secret?',
-      initialContext: 'The old university library, known for its towering shelves and dusty archives, has been the subject of hushed whispers. Students claim to hear faint music and see flickering lights after hours. You, a curious freshman, decide to investigate one night.',
-      genre: 'Mystery'
-    },
-    {
-      id: '2',
-      title: 'Startup Showdown',
-      description: 'You\'re part of a small tech startup, and your big pitch to investors is tomorrow. Your lead developer just quit! Can you save the day?',
-      initialContext: 'The air in your cramped startup office is thick with tension. The pitch deck is almost ready, but your crucial AI model needs a last-minute tweak, and the only person who knows how just walked out. Your team looks to you for a solution.',
-      genre: 'Tech Drama'
-    },
-    {
-      id: '3',
-      title: 'Festival Frenzy',
-      description: 'You\'re organizing a massive music festival, and a key headliner has cancelled last minute. Can you find a replacement and keep the crowd happy?',
-      initialContext: 'The main stage is set, thousands of tickets are sold, and the biggest act just pulled out due to a sudden illness. Panic is starting to ripple through your team. The festival is just hours away, and you need a miracle.',
-      genre: 'Event Management'
-    },
-    {
-      id: '4',
-      title: 'Galactic Delivery',
-      description: 'You\'re a space courier on a critical mission to deliver a rare artifact across the galaxy, but your ship breaks down in hostile territory.',
-      initialContext: 'Your cargo hold hums with the energy of the ancient artifact. Suddenly, alarms blare as your ship\'s engines sputter and die, leaving you adrift near an uncharted asteroid field, rumored to be home to space pirates.',
-      genre: 'Sci-Fi Adventure'
-    }
-  ];
-
-  // Functions
-  function generateId() {
-    return Math.random().toString(36).substr(2, 9);
-  }
-
-  function selectScenario(scenario: StoryScenario) {
-    currentScenario.set(scenario);
-    chatMessages.set([]);
-    userInput = '';
-    showCustomForm = false;
-    focusInput();
+  // Add user message
+  chatMessages.update(msgs => [...msgs, {
+    id: `user_${Date.now()}`,
+    type: 'user',
+    content: userInput,
+    timestamp: new Date()
+  }]);
+  
+  const input = userInput;
+  userInput = '';
+  
+  try {
+    // Single API call for content check + evaluation + story generation
+    const response = await processPromptWithAI(input, $currentScenario);
     
-    // Add initial system message
+    // Add AI response with evaluation
     chatMessages.update(msgs => [...msgs, {
-      id: generateId(),
-      type: 'system',
-      content: `**Scenario Selected:** ${scenario.title}\n\n**Context:** ${scenario.initialContext}\n\nWhat is your first prompt to the AI?`,
-      timestamp: new Date()
-    }]);
-  }
-
-  function generateScenario() {
-    const randomIndex = Math.floor(Math.random() * scenarios.length);
-    selectScenario(scenarios[randomIndex]);
-  }
-
-  function resetStory() {
-    currentScenario.set(null);
-    chatMessages.set([]);
-    userInput = '';
-    showCustomForm = false;
-    focusInput();
-  }
-
-  function toggleCustomForm() {
-    showCustomForm = !showCustomForm;
-  }
-
-  function createCustomScenario() {
-    if (customScenarioTitle.trim() && customScenarioDescription.trim() && customScenarioContext.trim()) {
-      const newScenario: StoryScenario = {
-        id: generateId(),
-        title: customScenarioTitle.trim(),
-        description: customScenarioDescription.trim(),
-        initialContext: customScenarioContext.trim(),
-        genre: 'Custom',
-        isCustom: true
-      };
-      selectScenario(newScenario);
-      customScenarioTitle = '';
-      customScenarioDescription = '';
-      customScenarioContext = '';
-    } else {
-      alert('Please fill in all fields for the custom scenario.');
-    }
-  }
-
-  async function sendMessage() {
-    const scenario = $currentScenario;
-    if (!userInput.trim() || !scenario) return;
-    
-    isLoading.set(true);
-    
-    const input = userInput.trim();
-    userInput = '';
-
-    // Add user message
-    chatMessages.update(msgs => [...msgs, {
-      id: generateId(),
-      type: 'user',
-      content: input,
-      timestamp: new Date()
-    }]);
-    
-    // Add loading message
-    const loadingId = generateId();
-    chatMessages.update(msgs => [...msgs, {
-      id: loadingId,
+      id: `ai_${Date.now()}`,
       type: 'ai',
-      content: '',
-      status: 'loading',
+      content: response.storyResponse,
+      evaluation: response.evaluation,
       timestamp: new Date()
     }]);
     
-    // Focus immediately after clearing input
+  } catch (error) {
+    console.error('Error generating response:', error);
+    
+    // Fallback response if API fails
+    chatMessages.update(msgs => [...msgs, {
+      id: `ai_${Date.now()}`,
+      type: 'ai',
+      content: 'Sorry, I encountered an error. Please try again.',
+      timestamp: new Date()
+    }]);
+  } finally {
+    isLoading.set(false);
+    
+    // Keep input focused
     setTimeout(() => {
       if (inputElement) {
         inputElement.focus();
       }
-    }, 0);
-
-    try {
-      // Single API call for content check + evaluation + story generation
-      const response = await processPromptWithAI(input, scenario);
-      
-      // Update AI response with evaluation
-      chatMessages.update(msgs =>
-        msgs.map(msg => 
-          msg.id === loadingId && msg.status === 'loading' 
-            ? { 
-                ...msg, 
-                content: response.storyResponse, 
-                evaluation: response.evaluation, 
-                status: response.evaluation.isAppropriate ? 'normal' : 'error',
-                timestamp: new Date()
-              } 
-            : msg
-        )
-      );
-      
-      // Add feedback message
-      if (response.evaluation.feedback) {
-        chatMessages.update(msgs => [...msgs, {
-          id: generateId(),
-          type: 'system',
-          content: `**Feedback:** ${response.evaluation.feedback}`,
-          timestamp: new Date()
-        }]);
-      }
-
-    } catch (error) {
-      console.error('Error generating response:', error);
-      
-      chatMessages.update(msgs =>
-        msgs.map(msg => 
-          msg.id === loadingId && msg.status === 'loading' 
-            ? { 
-                ...msg, 
-                content: 'Sorry, I encountered an error. Please try again.', 
-                status: 'error',
-                timestamp: new Date()
-              } 
-            : msg
-        )
-      );
-    } finally {
-      isLoading.set(false);
-      
-      // Focus again after loading is complete
-      setTimeout(() => {
-        if (inputElement) {
-          inputElement.focus();
-        }
-      }, 50);
-    }
+    }, 10);
   }
+}
 
-  async function processPromptWithAI(prompt: string, scenario: StoryScenario): Promise<{storyResponse: string, evaluation: PromptEvaluation}> {
-    // REPLACE WITH YOUR API KEY
-    const API_KEY = 'sk-69fba31a788a496bba3a403551ac09aa'; // Make sure this is your real key
-    const API_URL = 'https://api.deepseek.com/v1/chat/completions';
-    
-    console.log('API Key exists:', !!API_KEY);
-    console.log('API Key length:', API_KEY?.length);
-    console.log('User prompt:', prompt);
-    console.log('Scenario:', scenario.title);
-    
-    const combinedPrompt = `You are a creative storyteller and prompt evaluator for a family-friendly story game.
+async function processPromptWithAI(prompt: string, scenario: StoryScenario): Promise<{storyResponse: string, evaluation: PromptEvaluation}> {
+  // TODO: Replace with your API key
+  const API_KEY = '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';
+  const API_URL = 'https://api.openai.com/v1/chat/completions';
+  
+  const combinedPrompt = `
+You are a creative storyteller and prompt evaluator for a family-friendly story game.
 
 Scenario: ${scenario.title}
 Context: ${scenario.initialContext}
@@ -266,10 +92,14 @@ Rate specificity from 1-10:
 - 9-10: Excellent specificity with comprehensive context and clear actions
 
 STEP 3: Story Generation (only if content is appropriate)
-Continue the story based on the specificity score.
-If the specificity score is high (8-10), write an exciting, successful story continuation with positive outcomes, character success, and engaging plot developments.
-If the specificity score is medium (6-7), write a story continuation that progresses but with some challenges or minor setbacks due to unclear instructions.
-If the specificity score is low (1-5), write a story continuation with some confusion or obstacles due to the vague prompt, but keep it positive and family-friendly.
+Continue the story based on the specificity score:
+
+${evaluation.specificity >= 8 ? 
+  'HIGH SPECIFICITY: Write an exciting, successful story continuation with positive outcomes, character success, and engaging plot developments.' :
+  evaluation.specificity >= 6 ?
+  'MEDIUM SPECIFICITY: Write a story continuation that progresses but with some challenges or minor setbacks due to unclear instructions.' :
+  'LOW SPECIFICITY: Write a story continuation with some confusion or obstacles due to the vague prompt, but keep it positive and family-friendly.'
+}
 
 IMPORTANT: Keep all content appropriate for ages 13+. No violence, blood, sexual content, or dark themes.
 
@@ -282,290 +112,69 @@ Respond in this exact JSON format:
   "storyResponse": "[2-3 sentence story continuation based on specificity score]"
 }`;
 
-    try {
-      console.log('Making API request...');
-      
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a creative storyteller and prompt evaluator for a family-friendly story game. Always respond with valid JSON.'
-            },
-            {
-              role: 'user',
-              content: combinedPrompt
-            }
-          ],
-          temperature: 0.8,
-          max_tokens: 400
-        })
-      });
-      
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error(`API Error: ${response.status} - ${errorText}`);
-      }
-      
-      const data = await response.json();
-      console.log('API Response:', data);
-      
-      const responseText = data.choices[0].message.content;
-      
-      // Parse JSON response
-      const result = JSON.parse(responseText);
-      
-      if (!result.isAppropriate) {
-        return {
-          storyResponse: result.storyResponse || '⚠️ **Content Warning**: Please write a prompt that\'s appropriate for all audiences.',
-          evaluation: {
-            specificity: 0,
-            overallScore: 0,
-            feedback: result.feedback || 'Content not appropriate',
-            isAppropriate: false
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a creative storyteller and prompt evaluator for a family-friendly story game. Always respond with valid JSON.'
+          },
+          {
+            role: 'user',
+            content: combinedPrompt
           }
-        };
-      }
-      
-      return {
-        storyResponse: result.storyResponse,
-        evaluation: {
-          specificity: result.specificity,
-          overallScore: result.overallScore,
-          feedback: result.feedback,
-          isAppropriate: true
-        }
-      };
-      
-    } catch (error) {
-      console.error('Full error details:', error);
-      
-      return {
-        storyResponse: 'Sorry, I encountered an error. Please try again.',
-        evaluation: {
-          specificity: 5,
-          overallScore: 5,
-          feedback: 'Unable to process prompt. Please try again.',
-          isAppropriate: true
-        }
-      };
-    }
-  }
-
-  // Auto-scroll to bottom when new messages are added
-  $: if ($chatMessages && chatContainer) {
-    setTimeout(() => {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }, 50);
-  }
-
-  // Handle Enter key
-  function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      sendMessage();
-    }
-  }
-
-  // Focus input when component mounts
-  function focusInput() {
-    setTimeout(() => {
-      if (inputElement) {
-        inputElement.focus();
-      }
-    }, 100);
-  }
-
-  onMount(() => {
-    focusInput();
-  });
-</script>
-
-<!-- Title -->
-<div class="text-center mb-8">
-  <h1 class="text-4xl font-bold text-zinc-800">Promptagonist</h1>
-</div>
-
-<!-- Description Box -->
-<InfoDisplay>
-	{#snippet content()}
-		Promptagonist helps you practice real-world prompting through interactive scenarios that show how clarity, context, and structure affect AI's responses.
-	{/snippet}
-</InfoDisplay>
-
-<!-- How To Box -->
-<InfoDisplay>
-	{#snippet title()}
-		How to Use:
-	{/snippet}
-	{#snippet content()}
-		<ul class="list-disc list-inside space-y-1">
-			<li>Choose a scenario from the options below to start.</li>
-			<li>Write your own prompt in the input box.</li>
-			<li>Compare the AI's answers. Notice how small wording changes affect results.</li>
-			<li>Read the Takeaways for quick tips (clarity, constraints, role, audience, format).</li>
-			<li>Tell the chatbox to continue to move to the next step of the scenario.</li>
-			<li>Use ↻ Refresh anytime for a new scenario</li>
-		</ul>
-	{/snippet}
-</InfoDisplay>
-
-<!-- Scenario Selection -->
-<div class="mx-auto mb-4 w-[80%] p-4 border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
-  <h3 class="font-semibold text-zinc-800 mb-2">Current Scenario: {$currentScenario?.title || 'No scenario selected'}</h3>
-  <p class="text-sm text-zinc-600 mb-4">{$currentScenario?.description || 'Choose a scenario to begin.'}</p>
-  
-  {#if !$currentScenario}
-    <!-- Scenario Selection Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-      {#each scenarios as scenario}
-        <button 
-          class="p-4 bg-white border border-zinc-200 rounded-lg hover:shadow-md transition-shadow text-left"
-          on:click={() => selectScenario(scenario)}
-        >
-          <h4 class="font-semibold text-zinc-800 mb-2">{scenario.title}</h4>
-          <p class="text-sm text-zinc-600 mb-2">{scenario.description}</p>
-          <span class="text-xs text-blue-600 font-medium">{scenario.genre}</span>
-        </button>
-      {/each}
-    </div>
+        ],
+        temperature: 0.8,
+        max_tokens: 400
+      })
+    });
     
-    <!-- Action Buttons -->
-    <div class="flex gap-2">
-      <button 
-        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium" 
-        on:click={generateScenario}
-      >
-        Random Scenario
-      </button>
-      <button 
-        class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors font-medium" 
-        on:click={toggleCustomForm}
-      >
-        {showCustomForm ? 'Hide Custom Form' : 'Create Custom Scenario'}
-      </button>
-    </div>
-  {:else}
-    <!-- Current Scenario Display -->
-    <div class="flex gap-2">
-      <button 
-        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium" 
-        on:click={() => currentScenario.set(null)}
-      >
-        Choose Different Scenario
-      </button>
-      <button 
-        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors font-medium" 
-        on:click={resetStory}
-      >
-        Reset Story
-      </button>
-    </div>
-  {/if}
-
-  <!-- Custom Scenario Form -->
-  {#if showCustomForm}
-    <div class="mt-4 p-4 border border-zinc-300 rounded-md bg-white">
-      <h4 class="font-semibold text-zinc-800 mb-3">Create Custom Scenario</h4>
-      <div class="flex flex-col gap-3">
-        <input 
-          type="text" 
-          bind:value={customScenarioTitle} 
-          placeholder="Custom Scenario Title" 
-          class="p-2 rounded-md border border-zinc-300 bg-white text-black placeholder-zinc-600" 
-        />
-        <textarea 
-          bind:value={customScenarioDescription} 
-          placeholder="Custom Scenario Description" 
-          rows="2"
-          class="p-2 rounded-md border border-zinc-300 bg-white text-black placeholder-zinc-600"
-        ></textarea>
-        <textarea 
-          bind:value={customScenarioContext} 
-          placeholder="Initial Context" 
-          rows="3"
-          class="p-2 rounded-md border border-zinc-300 bg-white text-black placeholder-zinc-600"
-        ></textarea>
-        <button 
-          on:click={createCustomScenario}
-          class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors font-medium"
-        >
-          Create & Select Custom
-        </button>
-      </div>
-    </div>
-  {/if}
-</div>
-
-<!-- Chatbot UI -->
-<div class="mx-auto mb-4 w-[80%]">
-  <div class="flex flex-col w-full h-[600px] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
-    <!-- Header -->
-    <div class="flex justify-between items-center p-3 border-b border-zinc-200 bg-zinc-100 rounded-t-lg">
-      <h3 class="font-semibold text-zinc-800">Promptagonist Chat</h3>
-      <button 
-        class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-md transition-colors" 
-        on:click={resetStory}
-      >
-        Reset Chat
-      </button>
-    </div>
-
-    <!-- Messages Container -->
-    <div 
-      bind:this={chatContainer} 
-      class="flex-1 overflow-y-auto p-4 space-y-3 bg-white"
-    >
-      {#each $chatMessages as msg (msg.id)}
-        <MessageBubble 
-          user={msg.type === 'user' ? 'you' : 'bot'} 
-          text={msg.content} 
-          status={msg.type === 'ai' && msg.status === 'loading' ? 'loading' : (msg.type === 'ai' && msg.evaluation && !msg.evaluation.isAppropriate ? 'error' : 'normal')}
-        />
-      {/each}
-      
-      <!-- Empty state -->
-      {#if $chatMessages.length === 0 && !$currentScenario}
-        <div class="flex items-center justify-center h-full text-zinc-500">
-          <div class="text-center">
-            <p class="text-lg mb-2">👋 Welcome to Promptagonist!</p>
-            <p class="text-sm">Choose a scenario above to start practicing your prompting skills.</p>
-          </div>
-        </div>
-      {/if}
-    </div>
-
-    <!-- Input Area -->
-    <div class="p-4 border-t border-zinc-200 bg-zinc-50 rounded-b-lg">
-      <div class="flex gap-2">
-        <input
-          bind:this={inputElement}
-          class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white"
-          type="text"
-          bind:value={userInput}
-          placeholder="Write your prompt to continue the story..."
-          on:keydown={handleKeydown}
-          disabled={$isLoading || !$currentScenario}
-          on:mount={focusInput}
-        />
-        <button 
-          class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 text-white rounded-md transition-colors font-medium" 
-          on:click={sendMessage}
-          disabled={!userInput.trim() || $isLoading || !$currentScenario}
-        >
-          Send
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+    const data = await response.json();
+    const responseText = data.choices[0].message.content;
+    
+    // Parse JSON response
+    const result = JSON.parse(responseText);
+    
+    if (!result.isAppropriate) {
+      return {
+        storyResponse: result.storyResponse || '⚠️ **Content Warning**: Please write a prompt that\'s appropriate for all audiences.',
+        evaluation: {
+          specificity: 0,
+          overallScore: 0,
+          feedback: result.feedback || 'Content not appropriate',
+          isAppropriate: false
+        }
+      };
+    }
+    
+    return {
+      storyResponse: result.storyResponse,
+      evaluation: {
+        specificity: result.specificity,
+        overallScore: result.overallScore,
+        feedback: result.feedback,
+        isAppropriate: true
+      }
+    };
+    
+  } catch (error) {
+    console.error('Combined API error:', error);
+    
+    return {
+      storyResponse: 'Sorry, I encountered an error. Please try again.',
+      evaluation: {
+        specificity: 5,
+        overallScore: 5,
+        feedback: 'Unable to process prompt. Please try again.',
+        isAppropriate: true
+      }
+    };
+  }
+}
