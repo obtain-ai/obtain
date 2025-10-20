@@ -1,4 +1,3 @@
-//before change
 <script lang="ts">
   import { writable } from 'svelte/store';
   import MessageBubble from './MessageBubble.svelte';
@@ -19,26 +18,11 @@
   }
 
   async function sendMessage() {
-  function sendMessage() {
     if (!userInput.trim()) return;
     
     const input = userInput.trim();
     userInput = '';
 
-    // Check content appropriateness first
-    const contentCheck = await checkContentAppropriateness(input);
-    
-    if (!contentCheck.isAppropriate) {
-      // Add inappropriate content warning
-      chatMessages.update(msgs => [...msgs, { 
-        id: generateId(), 
-        user: 'bot', 
-        text: `⚠️ **Content Warning**: ${contentCheck.feedback}\n\nPlease write a prompt that's appropriate for all audiences. Focus on helpful, constructive prompts.`,
-        status: 'normal'
-      }]);
-      return;
-    }
-    
     const messageId = generateId();
     const userMessageId = generateId();
     
@@ -47,7 +31,6 @@
       id: userMessageId, 
       user: 'you', 
       text: input
-      text: userInput.trim() 
     }]);
     
     // Add loading bot message
@@ -57,57 +40,78 @@
       text: '', 
       status: 'loading' 
     }]);
-    
-    const input = userInput;
-    userInput = '';
 
-    // Focus immediately after clearing input (before disabled state)
+    // Focus immediately after clearing input
     setTimeout(() => {
       if (inputElement) {
         inputElement.focus();
       }
     }, 0);
 
-    // Simulate API call (replace this with actual API call later)
-    setTimeout(() => {
+    try {
+      // Generate AI response for prompt improvement
+      const aiResponse = await generatePromptImprovement(input);
+      
       chatMessages.update(msgs =>
         msgs.map(msg => 
           msg.id === messageId && msg.status === 'loading' 
-            ? { ...msg, text: `Echo: ${input}`, status: 'normal' } 
+            ? { ...msg, text: aiResponse, status: 'normal' } 
             : msg
         )
       );
       
-      // Focus again after loading is complete
-      setTimeout(() => {
-        if (inputElement) {
-          inputElement.focus();
-        }
-      }, 50);
-    }, 1000);
+    } catch (error) {
+      console.error('Error generating response:', error);
+      
+      chatMessages.update(msgs =>
+        msgs.map(msg => 
+          msg.id === messageId && msg.status === 'loading' 
+            ? { ...msg, text: 'Sorry, I encountered an error. Please try again.', status: 'error' } 
+            : msg
+        )
+      );
+    }
+    
+    // Focus again after loading is complete
+    setTimeout(() => {
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }, 50);
   }
 
-  async function checkContentAppropriateness(prompt: string): Promise<{isAppropriate: boolean, feedback: string}> {
-    // TODO: Replace with your API key
+  async function generatePromptImprovement(userPrompt: string): Promise<string> {
+    // REPLACE WITH YOUR API KEY
     const API_KEY = 'YOUR_API_KEY_HERE';
     const API_URL = 'https://api.openai.com/v1/chat/completions';
     
-    const contentCheckPrompt = `
-Check if this prompt contains inappropriate content for a family-friendly prompt improvement tool. Look for:
-- Violence, blood, gore, or graphic content
-- Sexual content or innuendo
-- Profanity or offensive language
-- Drug/alcohol references
-- Dark themes (death, suicide, etc.)
-- Any content not suitable for ages 13+
+    const improvementPrompt = `
+You are an expert AI prompt engineer helping users write better prompts. The user has submitted this prompt:
 
-User's Prompt: "${prompt}"
+"${userPrompt}"
 
-Respond in this exact JSON format:
-{
-  "isAppropriate": [true or false],
-  "feedback": "[brief explanation if inappropriate, or 'Content is appropriate' if okay]"
-}`;
+Your task is to provide educational feedback that helps them understand how to write better prompts for AI chatbots, agents, and other AI tools.
+
+Please provide:
+
+1. **Analysis**: Briefly analyze what the user's prompt is trying to achieve and identify areas for improvement.
+
+2. **3 Improved Versions**: Provide 3 different improved versions of their prompt:
+   - Version 1: More specific and detailed
+   - Version 2: Better structured with clear sections
+   - Version 3: More creative and engaging approach
+
+3. **Why These Are Better**: Explain why each improved version is better than the original, focusing on:
+   - Clarity and specificity
+   - Structure and organization
+   - Context and background information
+   - Action-oriented language
+
+4. **General Tips**: Provide 3-4 general tips for writing effective prompts that apply to this type of request.
+
+Keep your response educational, encouraging, and easy to understand for people who are new to AI. Use simple language and explain technical concepts clearly.
+
+Format your response with clear headings and bullet points for easy reading.`;
 
     try {
       const response = await fetch(API_URL, {
@@ -121,33 +125,24 @@ Respond in this exact JSON format:
           messages: [
             {
               role: 'system',
-              content: 'You are a content moderator for a family-friendly prompt improvement tool. Always respond with valid JSON.'
+              content: 'You are an expert AI prompt engineer and educator. Help users write better prompts by providing clear, educational feedback with specific examples and actionable tips.'
             },
             {
               role: 'user',
-              content: contentCheckPrompt
+              content: improvementPrompt
             }
           ],
-          temperature: 0.1,
-          max_tokens: 100
+          temperature: 0.7,
+          max_tokens: 800
         })
       });
       
       const data = await response.json();
-      const checkText = data.choices[0].message.content;
-      
-      // Parse JSON response
-      const contentCheck = JSON.parse(checkText);
-      return contentCheck;
+      return data.choices[0].message.content.trim();
       
     } catch (error) {
-      console.error('Content check API error:', error);
-      
-      // Fallback - assume appropriate if API fails
-      return {
-        isAppropriate: true,
-        feedback: 'Content check unavailable'
-      };
+      console.error('Prompt improvement API error:', error);
+      return 'Sorry, I encountered an error generating the prompt improvement. Please try again.';
     }
   }
 
