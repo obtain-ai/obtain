@@ -67,7 +67,7 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   }
 }
 
-async function getSummary(text: string, retryCount = 0): Promise<string> {
+async function getSummary(text: string): Promise<string> {
   console.log('🔍 Starting OpenAI API call...');
   console.log('🔑 OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
   console.log('🔑 OPENAI_API_KEY length:', OPENAI_API_KEY?.length || 0);
@@ -106,12 +106,19 @@ async function getSummary(text: string, retryCount = 0): Promise<string> {
       const errorText = await response.text();
       console.error('❌ OpenAI API Error Response:', errorText);
       
-      // Handle rate limiting with exponential backoff
-      if (response.status === 429 && retryCount < 3) {
-        const backoffDelay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
-        console.log(`⏳ Rate limited. Retrying in ${backoffDelay}ms... (attempt ${retryCount + 1}/3)`);
-        await delay(backoffDelay);
-        return getSummary(text, retryCount + 1);
+      // Handle quota errors - don't retry these
+      if (response.status === 429) {
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.code === 'insufficient_quota') {
+            console.log('💳 Quota exceeded - skipping summarization');
+            throw new Error('QUOTA_EXCEEDED');
+          }
+        } catch (parseError) {
+          // If we can't parse the error, treat it as a general rate limit
+          console.log('⏳ General rate limit - skipping summarization');
+          throw new Error('RATE_LIMITED');
+        }
       }
       
       return ''; // Return empty string if summarization fails
@@ -123,7 +130,7 @@ async function getSummary(text: string, retryCount = 0): Promise<string> {
     return summary;
   } catch (error) {
     console.error('❌ OpenAI API Fetch Error:', error);
-    return ''; // Return empty string if summarization fails
+    throw error; // Re-throw to be handled by caller
   }
 }
 
@@ -138,6 +145,9 @@ export const GET: RequestHandler = async () => {
     console.log('📰 Step 1: Fetching news articles...');
     const articles = await getNewsArticles();
     
+    // Check if we should skip summarization due to quota issues
+    let quotaExceeded = false;
+    
     // Process articles sequentially with delays to avoid rate limiting
     console.log('📝 Step 2: Processing articles sequentially...');
     const processedArticles = [];
@@ -151,14 +161,27 @@ export const GET: RequestHandler = async () => {
       // Use description from News API if available, otherwise use title
       const textToSummarize = article.description || article.title;
       
-      if (textToSummarize) {
+      if (textToSummarize && !quotaExceeded) {
         try {
           summary = await getSummary(textToSummarize);
         } catch (error) {
-          console.error(`❌ Error getting summary for article ${i + 1}:`, error);
-          // Fallback to original description if summarization fails
-          summary = article.description || '';
+          if (error.message === 'QUOTA_EXCEEDED') {
+            console.log('💳 Quota exceeded - using original descriptions for remaining articles');
+            quotaExceeded = true;
+            summary = article.description || '';
+          } else if (error.message === 'RATE_LIMITED') {
+            console.log('⏳ Rate limited - using original descriptions for remaining articles');
+            quotaExceeded = true;
+            summary = article.description || '';
+          } else {
+            console.error(`❌ Error getting summary for article ${i + 1}:`, error);
+            // Fallback to original description if summarization fails
+            summary = article.description || '';
+          }
         }
+      } else if (quotaExceeded) {
+        // Use original description if quota is exceeded
+        summary = article.description || '';
       }
       
       processedArticles.push({
@@ -170,7 +193,7 @@ export const GET: RequestHandler = async () => {
       });
       
       // Add delay between requests to respect rate limits (except for last article)
-      if (i < articles.length - 1) {
+      if (i < articles.length - 1 && !quotaExceeded) {
         console.log('⏳ Waiting 2 seconds before next request...');
         await delay(2000);
       }
