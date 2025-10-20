@@ -57,9 +57,39 @@ function isAIRelatedAndEnglish(article: NewsApiArticle): boolean {
   const description = (article.description || '').toLowerCase();
   const source = article.source.name.toLowerCase();
 
+  // First check if content contains obvious non-English characters
   if (isObviouslyNonEnglish(article.title) || (article.description && isObviouslyNonEnglish(article.description))) {
     return false;
   }
+
+  // Exclude non-news sources (package repositories, aggregators, etc.)
+  const excludeSources = [
+    'bleeding cool', 'onefootball', 'hoover.org', 'espn', 'tmz', 'eonline',
+    'pypi.org', 'pypi', 'github.com', 'github', 'npmjs.com', 'npm',
+    'crates.io', 'rubygems.org', 'packagist.org', 'nuget.org',
+    'biztoc.com', 'biztoc', 'reddit.com', 'reddit', 'hackernews',
+    'stackoverflow.com', 'stackoverflow', 'medium.com', 'dev.to',
+    'producthunt.com', 'producthunt', 'indiehackers.com'
+  ];
+
+  const badSrc = excludeSources.some(s => source.includes(s));
+  if (badSrc) {
+    console.log(`🚫 Excluded non-news source: ${article.source.name}`);
+    return false;
+  }
+
+  // Prefer established news sources
+  const preferredSources = [
+    'reuters', 'ap news', 'associated press', 'bbc', 'cnn', 'nbc', 'abc', 'cbs',
+    'the guardian', 'the new york times', 'washington post', 'wall street journal',
+    'techcrunch', 'wired', 'ars technica', 'the verge', 'engadget', 'mashable',
+    'forbes', 'bloomberg', 'cnbc', 'business insider', 'axios', 'politico',
+    'the atlantic', 'new yorker', 'time', 'newsweek', 'usatoday',
+    'venturebeat', 'zdnet', 'computerworld', 'infoworld', 'networkworld'
+  ];
+
+  const isPreferredSource = preferredSources.some(s => source.includes(s));
+
   const ai = [
     'artificial intelligence','ai','machine learning','ml','deep learning','neural network',
     'chatgpt','openai','claude','gemini','copilot','automation','robotics','algorithm',
@@ -67,13 +97,23 @@ function isAIRelatedAndEnglish(article: NewsApiArticle): boolean {
     'llm','large language model','transformer','gpt','anthropic','midjourney','dall-e','stable diffusion'
   ];
   const exclude = ['football','soccer','sports','comic','marvel','dc','movie','film','music','celebrity','gossip','weather','politics'];
-  const excludeSources = ['bleeding cool','onefootball','hoover.org','espn','tmz','eonline'];
 
   const hasAI = ai.some(k => title.includes(k) || description.includes(k));
   const hasEx = exclude.some(k => title.includes(k) || description.includes(k));
-  const badSrc = excludeSources.some(s => source.includes(s));
 
-  return hasAI && !hasEx && !badSrc;
+  // If it's from a preferred news source and has AI keywords, include it
+  if (isPreferredSource && hasAI && !hasEx) {
+    return true;
+  }
+
+  // For other sources, be more strict - require stronger AI relevance
+  if (!isPreferredSource) {
+    const strongAIKeywords = ['artificial intelligence', 'ai', 'chatgpt', 'openai', 'machine learning', 'generative ai'];
+    const hasStrongAI = strongAIKeywords.some(k => title.includes(k) || description.includes(k));
+    return hasStrongAI && !hasEx;
+  }
+
+  return hasAI && !hasEx;
 }
 
 // ------- in-memory cache (5 min) -------
@@ -147,7 +187,7 @@ async function getSummaries(articles: NewsApiArticle[]): Promise<string[]> {
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: 'Summarize each article in 2-3 sentences. Return items separated by --- in the same order.' },
+          { role: 'system', content: 'Summarize each article in 2-3 sentences. Return items separated by --- in the same order. Do not include numbers or bullet points in your summaries.' },
           { role: 'user', content: `Summarize these ${articles.length} AI news articles:\n\n${content}` }
         ],
         max_tokens: 800,
