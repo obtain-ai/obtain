@@ -25,24 +25,28 @@
   });
 </script>
 
-<!-- Your existing InfoDisplay components -->
-<InfoDisplay>
-  {#snippet title()}
-    Why this Matters:
-  {/snippet}
-  {#snippet content()}
-    Keeping up with AI news is important because new tools and features can make everyday tasks more efficient and help you stay ahead of technological trends.
-  {/snippet}
-</InfoDisplay>
+<!-- InfoDisplay components with consistent width -->
+<div class="mx-auto w-[80%] mb-4">
+  <InfoDisplay>
+    {#snippet title()}
+      Why this Matters:
+    {/snippet}
+    {#snippet content()}
+      Keeping up with AI news is important because new tools and features can make everyday tasks more efficient and help you stay ahead of technological trends.
+    {/snippet}
+  </InfoDisplay>
+</div>
 
-<InfoDisplay>
-  {#snippet title()}
-    Instructions:
-  {/snippet}
-  {#snippet content()}
-    Latest news on artificial intelligence will be updated weekly here!
-  {/snippet}
-</InfoDisplay>
+<div class="mx-auto w-[80%] mb-4">
+  <InfoDisplay>
+    {#snippet title()}
+      Instructions:
+    {/snippet}
+    {#snippet content()}
+      Latest news on artificial intelligence will be updated weekly here!
+    {/snippet}
+  </InfoDisplay>
+</div>
 
 <!-- Week of header - centered, white text, no box -->
 {#if weekStart && !loading && !error}
@@ -71,7 +75,7 @@
   {:else}
     <div class="space-y-6">
       {#each articles as article (article.url)}
-        <!-- EXACT same styling as InfoDisplay components -->
+        <!-- Same styling as InfoDisplay components -->
         <div class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border border-zinc-700 bg-zinc-800 p-6 shadow-sm hover:shadow-md transition-all duration-200">
           <h2 class="flex flex-row items-center gap-2 font-bold text-lg text-white">
             <a 
