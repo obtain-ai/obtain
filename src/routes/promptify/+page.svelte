@@ -1,3 +1,4 @@
+//before
 <script lang="ts">
   import { writable } from 'svelte/store';
   import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
