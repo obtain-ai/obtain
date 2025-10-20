@@ -82,7 +82,7 @@
 
   async function generatePromptImprovement(userPrompt: string): Promise<string> {
     // REPLACE WITH YOUR API KEY
-    const API_KEY = 'YOUR_API_KEY_HERE';
+    const API_KEY = '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';
     const API_URL = 'https://api.openai.com/v1/chat/completions';
     
     const improvementPrompt = `
