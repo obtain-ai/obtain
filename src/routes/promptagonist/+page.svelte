@@ -235,156 +235,76 @@
     }
   }
 
-  async function processPromptWithAI(prompt: string, scenario: StoryScenario): Promise<{storyResponse: string, evaluation: PromptEvaluation}> {
-    // REPLACE WITH YOUR API KEY
-    const API_KEY = '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'; // Make sure this is your real key
-    const API_URL = 'https://api.openai.com/v1/chat/completions';
-    
-    console.log('API Key exists:', !!API_KEY);
-    console.log('API Key length:', API_KEY?.length);
-    console.log('User prompt:', prompt);
-    console.log('Scenario:', scenario.title);
-    
-    const combinedPrompt = `You are a creative storyteller and prompt evaluator for a family-friendly story game.
-
-Scenario: ${scenario.title}
-Context: ${scenario.initialContext}
-User's Prompt: "${prompt}"
-
-STEP 1: Content Check
-Check if this prompt contains inappropriate content for ages 13+:
-- Violence, blood, gore, or graphic content
-- Sexual content or innuendo
+async function checkContentAppropriateness(prompt: string): Promise<{isAppropriate: boolean, feedback: string}> {
+  // REPLACE WITH YOUR API KEY
+  const API_KEY = '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';
+  const API_URL = 'https://api.openai.com/v1/chat/completions';
+  
+  const contentCheckPrompt = `
+Flag content in this prompt that is:
+- Explicit sexual content or graphic sexual descriptions
+- Graphic violence or gore
 - Profanity or offensive language
-- Drug/alcohol references
-- Dark themes (death, suicide, etc.)
+- Drug/alcohol use instructions or promotion
+- Suicide 
+- Hate speech or discrimination
 
-If inappropriate, respond with:
-⚠️ **Content Warning**: [brief explanation]
-Please write a prompt that's appropriate for all audiences. Focus on creative problem-solving and positive actions.
+DO NOT flag:
+- Educational topics (math, science, history, etc.)
+- General questions about life, relationships, or advice
+- Creative writing prompts
+- Technical or academic subjects
+- Mild topics that are age-appropriate
 
-If appropriate, proceed to STEP 2.
-
-STEP 2: Prompt Evaluation (only if content is appropriate)
-Evaluate the prompt based ONLY on specificity and clarity. Specificity includes:
-- How clear and detailed the prompt is
-- Whether it provides enough context
-- If it specifies what actions to take
-- If it includes relevant details
-- How well-structured the prompt is
-
-Rate specificity from 1-10:
-- 1-3: Very vague, unclear, lacks context
-- 4-6: Somewhat clear but missing important details
-- 7-8: Clear and well-structured with good context
-- 9-10: Excellent specificity with comprehensive context and clear actions
-
-STEP 3: Story Generation (only if content is appropriate)
-Continue the story based on the specificity score.
-If the specificity score is high (8-10), write an exciting, successful story continuation with positive outcomes, character success, and engaging plot developments.
-If the specificity score is medium (6-7), write a story continuation that progresses but with some challenges or minor setbacks due to unclear instructions.
-If the specificity score is low (1-5), write a story continuation with some confusion or obstacles due to the vague prompt, but keep it positive and family-friendly.
-
-IMPORTANT: Keep all content appropriate for ages 13+. No violence, blood, sexual content, or dark themes.
+User's Prompt: "${prompt}"
 
 Respond in this exact JSON format:
 {
   "isAppropriate": [true or false],
-  "specificity": [number 1-10],
-  "overallScore": [same as specificity],
-  "feedback": "[Write friendly, encouraging feedback that helps them improve. Be warm and supportive, like a helpful teacher. Give specific suggestions for improvement. Examples: 'Great start! Try adding more details about what you want to do next.' or 'Nice idea! Consider being more specific about your character's actions.' or 'Good thinking! Next time, try including more context about the situation.']",
-  "storyResponse": "[2-3 sentence story continuation based on specificity score]"
+  "feedback": "[brief explanation if inappropriate, or 'Content is appropriate' if okay]"
 }`;
 
-    try {
-      console.log('Making API request...');
-      
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a creative storyteller and prompt evaluator for a family-friendly story game. Always respond with valid JSON. Be warm, encouraging, and helpful in your feedback.'
-            },
-            {
-              role: 'user',
-              content: combinedPrompt
-            }
-          ],
-          temperature: 0.8,
-          max_tokens: 400
-        })
-      });
-      
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error(`API Error: ${response.status} - ${errorText}`);
-      }
-      
-      const data = await response.json();
-      console.log('API Response:', data);
-      
-      const responseText = data.choices[0].message.content;
-      
-      // Clean up the response text (remove markdown code blocks if present)
-      let cleanResponse = responseText.trim();
-      if (cleanResponse.startsWith('```json')) {
-        cleanResponse = cleanResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      } else if (cleanResponse.startsWith('```')) {
-        cleanResponse = cleanResponse.replace(/^```\s*/, '').replace(/\s*```$/, '');
-      }
-      
-      console.log('Cleaned response:', cleanResponse);
-      
-      // Parse JSON response
-      const result = JSON.parse(cleanResponse);
-      
-      if (!result.isAppropriate) {
-        return {
-          storyResponse: result.storyResponse || '⚠️ **Content Warning**: Please write a prompt that\'s appropriate for all audiences.',
-          evaluation: {
-            specificity: 0,
-            overallScore: 0,
-            feedback: result.feedback || 'Content not appropriate',
-            isAppropriate: false
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a content moderator for an educational prompt improvement tool. Only flag truly inappropriate content. Be very permissive with educational and general topics.'
+          },
+          {
+            role: 'user',
+            content: contentCheckPrompt
           }
-        };
-      }
-      
-      return {
-        storyResponse: result.storyResponse,
-        evaluation: {
-          specificity: result.specificity,
-          overallScore: result.overallScore,
-          feedback: result.feedback,
-          isAppropriate: true
-        }
-      };
-      
-    } catch (error) {
-      console.error('Full error details:', error);
-      
-      return {
-        storyResponse: 'Sorry, I encountered an error. Please try again.',
-        evaluation: {
-          specificity: 5,
-          overallScore: 5,
-          feedback: 'Unable to process prompt. Please try again.',
-          isAppropriate: true
-        }
-      };
-    }
+        ],
+        temperature: 0.1,
+        max_tokens: 100
+      })
+    });
+    
+    const data = await response.json();
+    const checkText = data.choices[0].message.content;
+    
+    // Parse JSON response
+    const contentCheck = JSON.parse(checkText);
+    return contentCheck;
+    
+  } catch (error) {
+    console.error('Content check API error:', error);
+    
+    // Fallback - assume appropriate if API fails
+    return {
+      isAppropriate: true,
+      feedback: 'Content check unavailable'
+    };
   }
+}
 
 // Smart auto-scroll - only scroll to bottom if user is already near the bottom
 let isUserScrolling = false;
