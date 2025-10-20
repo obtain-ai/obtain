@@ -59,10 +59,5 @@
 			</a>
 		</div>
 		
-		<div class="w-[80%] mx-auto">
-			<a href="#" class="block w-full h-14 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-				Other Button 2
-			</a>
-		</div>
 	</div>
 </div>
