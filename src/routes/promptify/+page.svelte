@@ -1,7 +1,6 @@
 <script lang="ts">
   import { writable } from 'svelte/store';
-  import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
-  import MessageBubble from '$lib/ui/MessageBubble.svelte';
+  import MessageBubble from './MessageBubble.svelte';
 
   let userInput = '';
   let chatMessages = writable<{ 
@@ -24,6 +23,20 @@
     const input = userInput.trim();
     userInput = '';
 
+    // Check content appropriateness first
+    const contentCheck = await checkContentAppropriateness(input);
+    
+    if (!contentCheck.isAppropriate) {
+      // Add inappropriate content warning
+      chatMessages.update(msgs => [...msgs, { 
+        id: generateId(), 
+        user: 'bot', 
+        text: `⚠️ **Content Warning**: ${contentCheck.feedback}\n\nPlease write a prompt that's appropriate for all audiences. Focus on helpful, constructive prompts.`,
+        status: 'normal'
+      }]);
+      return;
+    }
+    
     const messageId = generateId();
     const userMessageId = generateId();
     
@@ -50,13 +63,13 @@
     }, 0);
 
     try {
-      // Single API call for content check + improvement
-      const response = await generatePromptImprovement(input);
+      // Generate AI response for prompt improvement
+      const aiResponse = await generatePromptImprovement(input);
       
       chatMessages.update(msgs =>
         msgs.map(msg => 
           msg.id === messageId && msg.status === 'loading' 
-            ? { ...msg, text: response.content, status: response.isAppropriate ? 'normal' : 'error' } 
+            ? { ...msg, text: aiResponse, status: 'normal' } 
             : msg
         )
       );
@@ -81,21 +94,13 @@
     }, 50);
   }
 
-  async function generatePromptImprovement(userPrompt: string): Promise<{content: string, isAppropriate: boolean}> {
-    // REPLACE WITH YOUR API KEY
-    const API_KEY = 'sk-69fba31a788a496bba3a403551ac09aa'; // Make sure this is your real key
-    const API_URL = 'https://api.deepseek.com/v1/chat/completions';
+  async function checkContentAppropriateness(prompt: string): Promise<{isAppropriate: boolean, feedback: string}> {
+    // TODO: Replace with your API key
+    const API_KEY = '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';
+    const API_URL = 'https://api.openai.com/v1/chat/completions';
     
-    console.log('API Key exists:', !!API_KEY);
-    console.log('API Key length:', API_KEY?.length);
-    console.log('User prompt:', userPrompt);
-    
-    const combinedPrompt = `You are an expert AI prompt engineer helping users write better prompts. First, check if the user's prompt is appropriate for a family-friendly prompt improvement tool.
-
-User's Prompt: "${userPrompt}"
-
-STEP 1: Content Check
-Check if this prompt contains inappropriate content:
+    const contentCheckPrompt = `
+Check if this prompt contains inappropriate content for a family-friendly prompt improvement tool. Look for:
 - Violence, blood, gore, or graphic content
 - Sexual content or innuendo
 - Profanity or offensive language
@@ -103,14 +108,67 @@ Check if this prompt contains inappropriate content:
 - Dark themes (death, suicide, etc.)
 - Any content not suitable for ages 13+
 
-If inappropriate, respond with:
-⚠️ **Content Warning**: [brief explanation of why it's inappropriate]
-Please write a prompt that's appropriate for all audiences. Focus on helpful, constructive prompts.
+User's Prompt: "${prompt}"
 
-If appropriate, proceed to STEP 2.
+Respond in this exact JSON format:
+{
+  "isAppropriate": [true or false],
+  "feedback": "[brief explanation if inappropriate, or 'Content is appropriate' if okay]"
+}`;
 
-STEP 2: Prompt Improvement (only if content is appropriate)
-Provide educational feedback that helps them understand how to write better prompts for AI chatbots, agents, and other AI tools.
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a content moderator for a family-friendly prompt improvement tool. Always respond with valid JSON.'
+            },
+            {
+              role: 'user',
+              content: contentCheckPrompt
+            }
+          ],
+          temperature: 0.1,
+          max_tokens: 100
+        })
+      });
+      
+      const data = await response.json();
+      const checkText = data.choices[0].message.content;
+      
+      // Parse JSON response
+      const contentCheck = JSON.parse(checkText);
+      return contentCheck;
+      
+    } catch (error) {
+      console.error('Content check API error:', error);
+      
+      // Fallback - assume appropriate if API fails
+      return {
+        isAppropriate: true,
+        feedback: 'Content check unavailable'
+      };
+    }
+  }
+
+  async function generatePromptImprovement(userPrompt: string): Promise<string> {
+    // TODO: Replace with your API key
+    const API_KEY = 'YOUR_API_KEY_HERE';
+    const API_URL = 'https://api.openai.com/v1/chat/completions';
+    
+    const improvementPrompt = `
+You are an expert AI prompt engineer helping users write better prompts. The user has submitted this prompt:
+
+"${userPrompt}"
+
+Your task is to provide educational feedback that helps them understand how to write better prompts for AI chatbots, agents, and other AI tools.
 
 Please provide:
 
@@ -134,8 +192,6 @@ Keep your response educational, encouraging, and easy to understand for people w
 Format your response with clear headings and bullet points for easy reading.`;
 
     try {
-      console.log('Making API request...');
-      
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -143,15 +199,15 @@ Format your response with clear headings and bullet points for easy reading.`;
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
+          model: 'gpt-3.5-turbo',
           messages: [
             {
               role: 'system',
-              content: 'You are an expert AI prompt engineer and educator. First check content appropriateness, then provide educational feedback for appropriate prompts.'
+              content: 'You are an expert AI prompt engineer and educator. Help users write better prompts by providing clear, educational feedback with specific examples and actionable tips.'
             },
             {
               role: 'user',
-              content: combinedPrompt
+              content: improvementPrompt
             }
           ],
           temperature: 0.7,
@@ -159,34 +215,12 @@ Format your response with clear headings and bullet points for easy reading.`;
         })
       });
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error(`API Error: ${response.status} - ${errorText}`);
-      }
-      
       const data = await response.json();
-      console.log('API Response:', data);
-      
-      const content = data.choices[0].message.content.trim();
-      
-      // Check if response contains content warning
-      const isAppropriate = !content.includes('⚠️ **Content Warning**');
-      
-      return {
-        content: content,
-        isAppropriate: isAppropriate
-      };
+      return data.choices[0].message.content.trim();
       
     } catch (error) {
-      console.error('Full error details:', error);
-      return {
-        content: 'Sorry, I encountered an error. Please try again.',
-        isAppropriate: true
-      };
+      console.error('Prompt improvement API error:', error);
+      return 'Sorry, I encountered an error generating the prompt improvement. Please try again.';
     }
   }
 
@@ -225,79 +259,58 @@ Format your response with clear headings and bullet points for easy reading.`;
   }
 </script>
 
-<InfoDisplay>
-	{#snippet title()}
-		Why this Matters:
-	{/snippet}
-	{#snippet content()}
-		Promptify helps you unlock the full potential of AI by learning how to write clear, effective prompts. Chatbots often aren't utilized to their full potential because the prompts they receive are too vague or incomplete. By improving your prompts, you'll learn to communicate with AI more precisely and get smarter, more useful answers every time.
-	{/snippet}
-</InfoDisplay>
-
-<InfoDisplay>
-	{#snippet title()}
-		Instructions:
-	{/snippet}
-	{#snippet content()}
-		Think of something you might want help with from a chatbot, then enter your prompt below. Our chatbot will give you feedback and show you how to make your prompt more precise so you can get clearer, more effective results.
-	{/snippet}
-</InfoDisplay>
-
-<!-- Chatbot UI -->
-<div class="mx-auto mb-4 w-[80%]">
-  <div class="flex flex-col w-full h-[400px] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
-    <!-- Header -->
-    <div class="flex justify-between items-center p-3 border-b border-zinc-200 bg-zinc-100 rounded-t-lg">
-      <h3 class="font-semibold text-zinc-800">Promptify Chat</h3>
-      <button 
-        class="px-3 py-1 bg-black hover:bg-gray-800 text-white text-sm rounded-md transition-colors" 
-        on:click={resetChat}
-      >
-        Reset Chat
-      </button>
-    </div>
-
-    <!-- Messages Container -->
-    <div 
-      bind:this={chatContainer} 
-      class="flex-1 overflow-y-auto p-4 space-y-3 bg-white"
+<div class="flex flex-col w-full h-[400px] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
+  <!-- Reset Button -->
+  <div class="flex justify-between items-center p-3 border-b border-zinc-200 bg-zinc-100 rounded-t-lg">
+    <h3 class="font-semibold text-zinc-800">Promptify Chat</h3>
+    <button 
+      class="px-3 py-1 bg-black hover:bg-gray-800 text-white text-sm rounded-md transition-colors" 
+      on:click={resetChat}
     >
-      {#each $chatMessages as msg (msg.id)}
-        <MessageBubble {...msg} />
-      {/each}
-      
-      <!-- Empty state -->
-      {#if $chatMessages.length === 0}
-        <div class="flex items-center justify-center h-full text-zinc-500">
-          <div class="text-center">
-            <p class="text-lg mb-2">👋 Welcome to Promptify!</p>
-            <p class="text-sm">Start by typing a prompt below to get feedback on how to improve it.</p>
-          </div>
-        </div>
-      {/if}
-    </div>
+      Reset Chat
+    </button>
+  </div>
 
-    <!-- Input Area -->
-    <div class="p-4 border-t border-zinc-200 bg-zinc-50 rounded-b-lg">
-      <div class="flex gap-2">
-        <input
-          bind:this={inputElement}
-          class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white"
-          type="text"
-          bind:value={userInput}
-          placeholder="Type your prompt here..."
-          on:keydown={handleKeydown}
-          disabled={$chatMessages.some(msg => msg.status === 'loading')}
-          on:mount={focusInput}
-        />
-        <button 
-          class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 text-white rounded-md transition-colors font-medium" 
-          on:click={sendMessage}
-          disabled={!userInput.trim() || $chatMessages.some(msg => msg.status === 'loading')}
-        >
-          Send
-        </button>
+  <!-- Messages Container -->
+  <div 
+    bind:this={chatContainer} 
+    class="flex-1 overflow-y-auto p-4 space-y-3 bg-white"
+  >
+    {#each $chatMessages as msg (msg.id)}
+      <MessageBubble {...msg} />
+    {/each}
+    
+    <!-- Empty state -->
+    {#if $chatMessages.length === 0}
+      <div class="flex items-center justify-center h-full text-zinc-500">
+        <div class="text-center">
+          <p class="text-lg mb-2">👋 Welcome to Promptify!</p>
+          <p class="text-sm">Start by typing a prompt below to get feedback on how to improve it.</p>
+        </div>
       </div>
+    {/if}
+  </div>
+
+  <!-- Input Area -->
+  <div class="p-4 border-t border-zinc-200 bg-zinc-50 rounded-b-lg">
+    <div class="flex gap-2">
+      <input
+        bind:this={inputElement}
+        class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white"
+        type="text"
+        bind:value={userInput}
+        placeholder="Type your prompt here..."
+        on:keydown={handleKeydown}
+        disabled={$chatMessages.some(msg => msg.status === 'loading')}
+        on:mount={focusInput}
+      />
+      <button 
+        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 text-white rounded-md transition-colors font-medium" 
+        on:click={sendMessage}
+        disabled={!userInput.trim() || $chatMessages.some(msg => msg.status === 'loading')}
+      >
+        Send
+      </button>
     </div>
   </div>
 </div>
