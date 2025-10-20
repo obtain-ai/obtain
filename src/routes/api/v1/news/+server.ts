@@ -180,7 +180,7 @@ async function getSummaries(articles: NewsApiArticle[]): Promise<string[]> {
   // Prepare the content for all articles
   const articlesContent = articles.map((article, index) => {
     const textToSummarize = article.description || article.title;
-    return `Article ${index + 1}: ${textToSummarize}`;
+    return textToSummarize;
   }).join('\n\n');
   
   try {
