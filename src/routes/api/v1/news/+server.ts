@@ -34,11 +34,38 @@ function getMondayOfWeek(date: Date): Date {
   return new Date(d.setDate(diff));
 }
 
-// Function to check if article is AI-related
-function isAIRelated(article: NewsApiArticle): boolean {
+// Conservative function to detect obvious non-English content
+function isObviouslyNonEnglish(text: string): boolean {
+  // Only check for the most obvious non-English character sets
+  const obviousNonEnglishPatterns = [
+    /[\u4e00-\u9fff]/, // Chinese characters (CJK Unified Ideographs)
+    /[\u3040-\u309f]/, // Hiragana (Japanese)
+    /[\u30a0-\u30ff]/, // Katakana (Japanese)
+    /[\u0400-\u04ff]/, // Cyrillic (Russian, Bulgarian, etc.)
+    /[\u0590-\u05ff]/, // Hebrew
+    /[\u0600-\u06ff]/, // Arabic
+    /[\u0900-\u097f]/, // Devanagari (Hindi, Sanskrit)
+    /[\u0e00-\u0e7f]/, // Thai
+    /[\u1100-\u11ff]/, // Hangul Jamo (Korean)
+    /[\uac00-\ud7af]/, // Hangul Syllables (Korean)
+  ];
+  
+  // Check if any obvious non-English characters are present
+  return obviousNonEnglishPatterns.some(pattern => pattern.test(text));
+}
+
+// Function to check if article is AI-related and in English
+function isAIRelatedAndEnglish(article: NewsApiArticle): boolean {
   const title = article.title.toLowerCase();
   const description = (article.description || '').toLowerCase();
   const source = article.source.name.toLowerCase();
+  
+  // First check if content contains obvious non-English characters
+  if (isObviouslyNonEnglish(article.title) || 
+      (article.description && isObviouslyNonEnglish(article.description))) {
+    console.log(`🚫 Non-English article filtered out: ${article.title.substring(0, 50)}...`);
+    return false;
+  }
   
   // AI-related keywords
   const aiKeywords = [
@@ -82,7 +109,7 @@ function isAIRelated(article: NewsApiArticle): boolean {
 }
 
 async function getNewsArticles(): Promise<NewsApiArticle[]> {
-  console.log('🔍 Starting News API call with improved AI filtering...');
+  console.log('🔍 Starting News API call with improved AI filtering and conservative English-only filter...');
   console.log('🔑 NEWS_API_KEY exists:', !!NEWS_API_KEY);
   console.log('🔑 NEWS_API_KEY length:', NEWS_API_KEY?.length || 0);
   
@@ -99,7 +126,7 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   
   // Fetch articles with different search terms
   for (const term of searchTerms) {
-    const newsApiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(term)}&sortBy=publishedAt&pageSize=20&apiKey=${NEWS_API_KEY}`;
+    const newsApiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(term)}&sortBy=publishedAt&pageSize=20&language=en&apiKey=${NEWS_API_KEY}`;
     console.log(`🌐 News API URL for "${term}":`, newsApiUrl.replace(NEWS_API_KEY, 'HIDDEN_KEY'));
     
     try {
@@ -128,12 +155,12 @@ async function getNewsArticles(): Promise<NewsApiArticle[]> {
   
   console.log(`📰 Total unique articles found: ${uniqueArticles.length}`);
   
-  // Filter for AI-related articles
-  const aiArticles = uniqueArticles.filter(isAIRelated);
-  console.log(`🤖 AI-related articles after filtering: ${aiArticles.length}`);
+  // Filter for AI-related articles that are in English
+  const aiEnglishArticles = uniqueArticles.filter(isAIRelatedAndEnglish);
+  console.log(`🤖 AI-related English articles after filtering: ${aiEnglishArticles.length}`);
   
   // Sort by date and take the most recent 10
-  const sortedArticles = aiArticles
+  const sortedArticles = aiEnglishArticles
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
     .slice(0, 10);
   
@@ -228,7 +255,7 @@ export const GET: RequestHandler = async () => {
   
   try {
     // Get news articles from News API with improved filtering
-    console.log('📰 Step 1: Fetching news articles with AI filtering...');
+    console.log('📰 Step 1: Fetching news articles with AI filtering and conservative English-only filter...');
     const articles = await getNewsArticles();
     
     let summaries: string[] = [];
