@@ -42,7 +42,7 @@
   let customScenarioContext = '';
   let showCustomForm = false;
 
-  // Scenarios
+  // Original 6 Scenarios
   const scenarios: StoryScenario[] = [
     {
       id: '1',
@@ -71,6 +71,20 @@
       description: 'You\'re a space courier on a critical mission to deliver a rare artifact across the galaxy, but your ship breaks down in hostile territory.',
       initialContext: 'Your cargo hold hums with the energy of the ancient artifact. Suddenly, alarms blare as your ship\'s engines sputter and die, leaving you adrift near an uncharted asteroid field, rumored to be home to space pirates.',
       genre: 'Sci-Fi Adventure'
+    },
+    {
+      id: '5',
+      title: 'Noir Detective',
+      description: 'You\'re a detective in a dark, rainy city solving a complex case with mysterious clues.',
+      initialContext: 'The rain pounds against your office window as you examine the case file. A wealthy businessman has been found dead in his locked office. The only clues are a cryptic note and a broken window. You have 24 hours before the case goes cold.',
+      genre: 'Mystery Thriller'
+    },
+    {
+      id: '6',
+      title: 'Fantasy Quest',
+      description: 'You\'re a hero on a quest to save a magical kingdom from eternal winter.',
+      initialContext: 'The Crystal of Power has been stolen by the Dark Sorcerer, plunging the kingdom into eternal winter. You must journey through dangerous lands to retrieve it before the kingdom falls. The villagers look to you for hope.',
+      genre: 'Fantasy Adventure'
     }
   ];
 
@@ -278,7 +292,7 @@ Respond in this exact JSON format:
   "isAppropriate": [true or false],
   "specificity": [number 1-10],
   "overallScore": [same as specificity],
-  "feedback": "[constructive feedback on how to improve specificity and context]",
+  "feedback": "[Write friendly, encouraging feedback that helps them improve. Be warm and supportive, like a helpful teacher. Give specific suggestions for improvement. Examples: 'Great start! Try adding more details about what you want to do next.' or 'Nice idea! Consider being more specific about your character's actions.' or 'Good thinking! Next time, try including more context about the situation.']",
   "storyResponse": "[2-3 sentence story continuation based on specificity score]"
 }`;
 
@@ -296,7 +310,7 @@ Respond in this exact JSON format:
           messages: [
             {
               role: 'system',
-              content: 'You are a creative storyteller and prompt evaluator for a family-friendly story game. Always respond with valid JSON.'
+              content: 'You are a creative storyteller and prompt evaluator for a family-friendly story game. Always respond with valid JSON. Be warm, encouraging, and helpful in your feedback.'
             },
             {
               role: 'user',
