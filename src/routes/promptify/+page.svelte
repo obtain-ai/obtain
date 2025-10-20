@@ -84,7 +84,7 @@
   async function generatePromptImprovement(userPrompt: string): Promise<{content: string, isAppropriate: boolean}> {
     // REPLACE WITH YOUR API KEY
     const API_KEY = 'sk-69fba31a788a496bba3a403551ac09aa'; // Make sure this is your real key
-    const API_URL = 'https://api.deepseek.com';
+    const API_URL = 'https://api.deepseek.com/v1/chat/completions';
     
     console.log('API Key exists:', !!API_KEY);
     console.log('API Key length:', API_KEY?.length);
