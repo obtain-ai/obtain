@@ -1,3 +1,4 @@
+//dont think we need this, can delete
 // api/chat.js
 import express from 'express';
 import OpenAI from 'openai';
