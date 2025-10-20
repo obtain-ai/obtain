@@ -1,131 +1,117 @@
-//before change
-<!-- lib/ui/PromptagonistChatBox.svelte -->
 <script lang="ts">
-  import PromptifyChat from '$lib/ui/PromptifyChat.svelte';
-  import { onMount } from 'svelte';
-  import { currentScenario } from '$lib/stores/promptagonistStore';
-  
-  let chatBoxRef: ChatBox;
-  
-  onMount(() => {
-    window.addEventListener('send', handleSend);
+  import { writable } from 'svelte/store';
+  import MessageBubble from './MessageBubble.svelte';
+
+  let userInput = '';
+  let chatMessages = writable<{ 
+    id: string; 
+    user: 'you' | 'bot'; 
+    text: string; 
+    status?: 'normal' | 'loading' | 'error' 
+  }[]>([]);
+  let chatContainer: HTMLDivElement;
+  let inputElement: HTMLInputElement;
+
+  // Generate unique IDs for messages
+  function generateId() {
+    return Math.random().toString(36).substr(2, 9);
+  }
+
+  async function sendMessage() {
+    if (!userInput.trim()) return;
     
-    return () => {
-      window.removeEventListener('send', handleSend);
-    };
-  });
-  
-  async function handleSend(event: CustomEvent) {
-    const userMessage = event.detail.message;
-    if (!userMessage) return;
+    const input = userInput.trim();
+    userInput = '';
+
+    const messageId = generateId();
+    const userMessageId = generateId();
     
     // Add user message
-    chatBoxRef.addMessage({
-      id: generateId(),
-      user: 'you',
-      text: userMessage,
-      status: 'normal'
-    });
+    chatMessages.update(msgs => [...msgs, { 
+      id: userMessageId, 
+      user: 'you', 
+      text: input
+    }]);
     
-    // Add loading message
-    const loadingId = generateId();
-    chatBoxRef.addMessage({
-      id: loadingId,
-      user: 'bot',
-      text: '',
-      status: 'loading'
-    });
-    
-    // Clear input and focus
-    chatBoxRef.clearUserInput();
-    chatBoxRef.focusInput();
-    
-    try {
-      // Access the store value properly
-      const scenario = $currentScenario;
-      if (!scenario) {
-        chatBoxRef.updateMessage(loadingId, {
-          text: 'Please select a scenario first.',
-          status: 'error'
-        });
-        return;
+    // Add loading bot message
+    chatMessages.update(msgs => [...msgs, { 
+      id: messageId, 
+      user: 'bot', 
+      text: '', 
+      status: 'loading' 
+    }]);
+
+    // Focus immediately after clearing input
+    setTimeout(() => {
+      if (inputElement) {
+        inputElement.focus();
       }
+    }, 0);
+
+    try {
+      // Generate AI response for prompt improvement
+      const aiResponse = await generatePromptImprovement(input);
       
-      // Single API call for content check + evaluation + story generation
-      const response = await processPromptWithAI(userMessage, scenario);
-      
-      chatBoxRef.updateMessage(loadingId, {
-        text: response.storyResponse,
-        status: 'normal'
-      });
+      chatMessages.update(msgs =>
+        msgs.map(msg => 
+          msg.id === messageId && msg.status === 'loading' 
+            ? { ...msg, text: aiResponse, status: 'normal' } 
+            : msg
+        )
+      );
       
     } catch (error) {
       console.error('Error generating response:', error);
       
-      chatBoxRef.updateMessage(loadingId, {
-        text: 'Sorry, I encountered an error. Please try again.',
-        status: 'error'
-      });
+      chatMessages.update(msgs =>
+        msgs.map(msg => 
+          msg.id === messageId && msg.status === 'loading' 
+            ? { ...msg, text: 'Sorry, I encountered an error. Please try again.', status: 'error' } 
+            : msg
+        )
+      );
     }
+    
+    // Focus again after loading is complete
+    setTimeout(() => {
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }, 50);
   }
-  
-  function generateId() {
-    return Math.random().toString(36).substr(2, 9);
-  }
-  
-  async function processPromptWithAI(prompt: string, scenario: any): Promise<{storyResponse: string, evaluation: any}> {
-    // TODO: Replace with your API key
-    const API_KEY = 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  
+
+  async function generatePromptImprovement(userPrompt: string): Promise<string> {
+    // REPLACE WITH YOUR API KEY
+    const API_KEY = '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';
     const API_URL = 'https://api.openai.com/v1/chat/completions';
     
-    const combinedPrompt = `
-You are a creative storyteller and prompt evaluator for a family-friendly story game.
+    const improvementPrompt = `
+You are an expert AI prompt engineer helping users write better prompts. The user has submitted this prompt:
 
-Scenario: ${scenario.title}
-Context: ${scenario.initialContext}
-User's Prompt: "${prompt}"
+"${userPrompt}"
 
-STEP 1: Content Check
-Check if this prompt contains inappropriate content for ages 13+:
-- Violence, blood, gore, or graphic content
-- Sexual content or innuendo
-- Profanity or offensive language
-- Drug/alcohol references
-- Dark themes (death, suicide, etc.)
+Your task is to provide educational feedback that helps them understand how to write better prompts for AI chatbots, agents, and other AI tools.
 
-If inappropriate, respond with:
-⚠️ **Content Warning**: [brief explanation]
-Please write a prompt that's appropriate for all audiences. Focus on creative problem-solving and positive actions.
+Please provide:
 
-If appropriate, proceed to STEP 2.
+1. **Analysis**: Briefly analyze what the user's prompt is trying to achieve and identify areas for improvement.
 
-STEP 2: Prompt Evaluation (only if content is appropriate)
-Evaluate the prompt based ONLY on specificity and clarity. Specificity includes:
-- How clear and detailed the prompt is
-- Whether it provides enough context
-- If it specifies what actions to take
-- If it includes relevant details
-- How well-structured the prompt is
+2. **3 Improved Versions**: Provide 3 different improved versions of their prompt:
+   - Version 1: More specific and detailed
+   - Version 2: Better structured with clear sections
+   - Version 3: More creative and engaging approach
 
-Rate specificity from 1-10:
-- 1-3: Very vague, unclear, lacks context
-- 4-6: Somewhat clear but missing important details
-- 7-8: Clear and well-structured with good context
-- 9-10: Excellent specificity with comprehensive context and clear actions
+3. **Why These Are Better**: Explain why each improved version is better than the original, focusing on:
+   - Clarity and specificity
+   - Structure and organization
+   - Context and background information
+   - Action-oriented language
 
-STEP 3: Story Generation (only if content is appropriate)
-Continue the story based on the specificity score:
+4. **General Tips**: Provide 3-4 general tips for writing effective prompts that apply to this type of request.
 
-IMPORTANT: Keep all content appropriate for ages 13+. No violence, blood, sexual content, or dark themes.
+Keep your response educational, encouraging, and easy to understand for people who are new to AI. Use simple language and explain technical concepts clearly.
 
-Respond in this exact JSON format:
-{
-  "isAppropriate": [true or false],
-  "specificity": [number 1-10],
-  "overallScore": [same as specificity],
-  "feedback": "[constructive feedback on how to improve specificity and context]",
-  "storyResponse": "[2-3 sentence story continuation based on specificity score]"
-}`;
+Format your response with clear headings and bullet points for easy reading.`;
 
     try {
       const response = await fetch(API_URL, {
@@ -139,66 +125,114 @@ Respond in this exact JSON format:
           messages: [
             {
               role: 'system',
-              content: 'You are a creative storyteller and prompt evaluator for a family-friendly story game. Always respond with valid JSON.'
+              content: 'You are an expert AI prompt engineer and educator. Help users write better prompts by providing clear, educational feedback with specific examples and actionable tips.'
             },
             {
               role: 'user',
-              content: combinedPrompt
+              content: improvementPrompt
             }
           ],
-          temperature: 0.8,
-          max_tokens: 400
+          temperature: 0.7,
+          max_tokens: 800
         })
       });
       
       const data = await response.json();
-      const responseText = data.choices[0].message.content;
-      
-      // Parse JSON response
-      const result = JSON.parse(responseText);
-      
-      if (!result.isAppropriate) {
-        return {
-          storyResponse: result.storyResponse || '⚠️ **Content Warning**: Please write a prompt that\'s appropriate for all audiences.',
-          evaluation: {
-            specificity: 0,
-            overallScore: 0,
-            feedback: result.feedback || 'Content not appropriate',
-            isAppropriate: false
-          }
-        };
-      }
-      
-      return {
-        storyResponse: result.storyResponse,
-        evaluation: {
-          specificity: result.specificity,
-          overallScore: result.overallScore,
-          feedback: result.feedback,
-          isAppropriate: true
-        }
-      };
+      return data.choices[0].message.content.trim();
       
     } catch (error) {
-      console.error('Combined API error:', error);
-      
-      return {
-        storyResponse: 'Sorry, I encountered an error. Please try again.',
-        evaluation: {
-          specificity: 5,
-          overallScore: 5,
-          feedback: 'Unable to process prompt. Please try again.',
-          isAppropriate: true
-        }
-      };
+      console.error('Prompt improvement API error:', error);
+      return 'Sorry, I encountered an error generating the prompt improvement. Please try again.';
     }
+  }
+
+  function resetChat() {
+    chatMessages.set([]);
+    // Focus input after reset
+    setTimeout(() => {
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }, 50);
+  }
+
+  // Auto-scroll to bottom when new messages are added
+  $: if (chatMessages && chatContainer) {
+    setTimeout(() => {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 50);
+  }
+
+  // Handle Enter key
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  }
+
+  // Focus input when component mounts
+  function focusInput() {
+    setTimeout(() => {
+      if (inputElement) {
+        inputElement.focus();
+      }
+    }, 100);
   }
 </script>
 
-<ChatBox 
-  bind:this={chatBoxRef}
-  title="Promptagonist"
-  placeholder="Write your prompt to continue the story..."
-  emptyStateMessage="Click 'Generate Scenario' to start practicing your prompting skills."
-  height="h-[600px]"
-/>
+<div class="flex flex-col w-full h-[400px] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
+  <!-- Reset Button -->
+  <div class="flex justify-between items-center p-3 border-b border-zinc-200 bg-zinc-100 rounded-t-lg">
+    <h3 class="font-semibold text-zinc-800">Promptify Chat</h3>
+    <button 
+      class="px-3 py-1 bg-black hover:bg-gray-800 text-white text-sm rounded-md transition-colors" 
+      on:click={resetChat}
+    >
+      Reset Chat
+    </button>
+  </div>
+
+  <!-- Messages Container -->
+  <div 
+    bind:this={chatContainer} 
+    class="flex-1 overflow-y-auto p-4 space-y-3 bg-white"
+  >
+    {#each $chatMessages as msg (msg.id)}
+      <MessageBubble {...msg} />
+    {/each}
+
+    <!-- Empty state -->
+    {#if $chatMessages.length === 0}
+      <div class="flex items-center justify-center h-full text-zinc-500">
+        <div class="text-center">
+          <p class="text-lg mb-2">👋 Welcome to Promptify!</p>
+          <p class="text-sm">Start by typing a prompt below to get feedback on how to improve it.</p>
+        </div>
+      </div>
+    {/if}
+  </div>
+
+  <!-- Input Area -->
+  <div class="p-4 border-t border-zinc-200 bg-zinc-50 rounded-b-lg">
+    <div class="flex gap-2">
+      <input
+        bind:this={inputElement}
+        class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white"
+        type="text"
+        bind:value={userInput}
+        placeholder="Type your prompt here..."
+        on:keydown={handleKeydown}
+        disabled={$chatMessages.some(msg => msg.status === 'loading')}
+        on:mount={focusInput}
+      />
+      <button 
+        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 text-white rounded-md transition-colors font-medium" 
+        on:click={sendMessage}
+        disabled={!userInput.trim() || $chatMessages.some(msg => msg.status === 'loading')}
+      >
+        Send
+      </button>
+    </div>
+  </div>
+</div>
