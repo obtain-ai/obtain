@@ -83,7 +83,7 @@
 
   async function generatePromptImprovement(userPrompt: string): Promise<{content: string, isAppropriate: boolean}> {
     // REPLACE WITH YOUR API KEY
-    const API_KEY = 'YOUR_API_KEY_HERE';
+    const API_KEY = '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';
     const API_URL = 'https://api.openai.com/v1/chat/completions';
     
     const combinedPrompt = `You are an expert AI prompt engineer helping users write better prompts. First, check if the user's prompt is appropriate for a family-friendly prompt improvement tool.
