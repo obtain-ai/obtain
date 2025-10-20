@@ -223,7 +223,7 @@
 
   async function processPromptWithAI(prompt: string, scenario: StoryScenario): Promise<{storyResponse: string, evaluation: PromptEvaluation}> {
     // REPLACE WITH YOUR API KEY
-    const API_KEY = 'YOUR_API_KEY_HERE';
+    const API_KEY = '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';
     const API_URL = 'https://api.openai.com/v1/chat/completions';
     
     const combinedPrompt = `You are a creative storyteller and prompt evaluator for a family-friendly story game.
