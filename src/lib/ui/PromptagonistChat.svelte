@@ -196,10 +196,10 @@ Evaluate this prompt for a story scenario. Rate each aspect from 1-10 and provid
 Scenario: ${scenario.title} - ${scenario.initialContext}
 User's Prompt: "${prompt}"
 
-Rate the prompt on:
-1. Clarity (1-10): How clear and unambiguous are the instructions?
-2. Specificity (1-10): How detailed and specific is the prompt? (Does it provide enough context and direction?)
-3. AI Interpretability (1-10): How easily would an AI understand and follow these instructions?
+Rate the prompt(Be strict here to help the user improve) on:
+1. Clarity (1-10): How clear and unambiguous are the instructions? 
+2. Specificity (1-10): How detailed and specific is the prompt? (Does it provide good context and direction?)
+3. AI Interpretability (1-10): How easy is it for an AI understand and follow these instructions? 
 
 Respond in this exact JSON format:
 {
