@@ -227,7 +227,7 @@ Format your response with clear headings and bullet points for easy reading.`;
         class="flex-1 p-3 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-zinc-200 placeholder-zinc-500 bg-zinc-700"
         type="text"
         bind:value={userInput}
-        placeholder="Tip your prompt here.."
+        placeholder="Type your prompt here.."
         on:keydown={handleKeydown}
         disabled={$chatMessages.some(msg => msg.status === 'loading')}
         on:mount={focusInput}
