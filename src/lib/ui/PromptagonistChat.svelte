@@ -197,7 +197,7 @@ Evaluate this prompt for a story scenario. Rate each aspect from 1-10 and provid
 Scenario: ${scenario.title} - ${scenario.initialContext}
 User's Prompt: "${prompt}"
 
-IMPORTANT: Only if the user's prompt contains INAPPROPRIATE content (explicitly sexual/pornographic material, detailed suicide/self-harm instructions, graphic eating disorder content, or racial/sexual orientation slurs), you should:
+IMPORTANT: Only if the user's prompt contains INAPPROPRIATE content (explicitly sexual/pornographic material, detailed suicide/self-harm instructions, graphic eating disorder content, or racial/sexual orientation slurs)(if the intent is unclear, don't flag it), you should:
 1. Still provide normal feedback with analysis, improved versions, and tips
 2. Do NOT quote or build off the inappropriate parts
 3. At the end, append: "⚠️ Please avoid inappropriate content such as explicit sexual material, graphic violence, self-harm, or offensive slurs in your prompts."
