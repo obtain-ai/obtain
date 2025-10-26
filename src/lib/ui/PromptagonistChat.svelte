@@ -198,10 +198,11 @@ Scenario: ${scenario.title} - ${scenario.initialContext}
 User's Prompt: "${prompt}"
 
 IMPORTANT: Only if the user's prompt contains INAPPROPRIATE content (explicitly sexual/pornographic material, detailed suicide/self-harm instructions, graphic eating disorder content, or racial/sexual orientation slurs), you should:
-1. Do NOT repeat, quote, or build off of the inappropriate parts
-2. At the end of your response, append: "⚠️ Please avoid inappropriate content such as sexual material, harmful content, or offensive language in your prompts."
+1. Still provide normal feedback with analysis, improved versions, and tips
+2. Do NOT quote or build off the inappropriate parts
+3. At the end, append: "⚠️ Please avoid inappropriate content such as explicit sexual material, graphic violence, self-harm, or offensive slurs in your prompts."
 
-Rate the prompt(Be strict here to help the user improve) on:
+Rate the prompt(Be relatively strict here to help the user improve) on:
 1. Clarity (1-10): How clear and unambiguous are the instructions? 
 2. Specificity (1-10): How detailed and specific is the prompt? (Does it provide good context and direction?)
 3. AI Interpretability (1-10): How easy is it for an AI understand and follow these instructions? 
