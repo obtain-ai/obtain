@@ -34,8 +34,8 @@
 			</InfoDisplay>
 		</div>
 
-		<!-- Action buttons section - 64% width to match InfoDisplay -->
-		<div class="w-[80%] mx-auto space-y-6">
+		<!-- Action buttons section - full width of container -->
+		<div class="space-y-6">
 			<a href="/promptify" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				Promptify
 			</a>
