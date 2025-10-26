@@ -11,6 +11,7 @@
   }[]>([]);
   let chatContainer: HTMLDivElement;
   let inputElement: HTMLInputElement;
+  let previousMessageCount = 0;
 
   // Generate unique IDs for messages
   function generateId() {
@@ -156,11 +157,16 @@ Format your response with clear headings and bullet points for easy reading.`;
     }, 50);
   }
 
-  // Auto-scroll to bottom when new messages are added
-  $: if (chatMessages && chatContainer) {
+  // Track previous message count to detect new messages
+  previousMessageCount = 0;
+  
+  // Auto-scroll to bottom ONLY when new messages are added
+  $: if (chatContainer && $chatMessages.length > previousMessageCount) {
     setTimeout(() => {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }, 50);
+    
+    previousMessageCount = $chatMessages.length;
   }
 
   // Handle Enter key
