@@ -12,9 +12,9 @@
   }
   
   interface PromptEvaluation {
+    clarity: number; // 1-10
     specificity: number; // 1-10
-    relevance: number;   // 1-10
-    creativity: number;   // 1-10
+    aiInterpretability: number; // 1-10
     overallScore: number; // 1-10
     feedback: string;
   }
@@ -197,15 +197,15 @@ Scenario: ${scenario.title} - ${scenario.initialContext}
 User's Prompt: "${prompt}"
 
 Rate the prompt on:
-1. Specificity (1-10): How clear and detailed is the prompt?
-2. Relevance (1-10): How well does it relate to the scenario?
-3. Creativity (1-10): How original and interesting is the approach?
+1. Clarity (1-10): How clear and unambiguous are the instructions?
+2. Specificity (1-10): How detailed and specific is the prompt? (Does it provide enough context and direction?)
+3. AI Interpretability (1-10): How easily would an AI understand and follow these instructions?
 
 Respond in this exact JSON format:
 {
-  "specificity": [number],
-  "relevance": [number], 
-  "creativity": [number],
+  "clarity": [number],
+  "specificity": [number], 
+  "aiInterpretability": [number],
   "overallScore": [average of the three scores],
   "feedback": "[constructive feedback message]"
 }`;
@@ -246,9 +246,9 @@ Respond in this exact JSON format:
       
       // Fallback evaluation
       return {
+        clarity: 5,
         specificity: 5,
-        relevance: 5,
-        creativity: 5,
+        aiInterpretibility: 5,
         overallScore: 5,
         feedback: 'Unable to evaluate prompt. Please try again.'
       };
@@ -470,9 +470,9 @@ Keep the response to 2-3 sentences. Make it engaging and continue the story natu
                   </span>
                 </div>
                 <div class="text-xs text-zinc-600 mb-1">
+                  Clarity: {msg.evaluation.clarity}/10 | 
                   Specificity: {msg.evaluation.specificity}/10 | 
-                  Relevance: {msg.evaluation.relevance}/10 | 
-                  Creativity: {msg.evaluation.creativity}/10
+                  AI Interpretability: {msg.evaluation.aiInterpretability}/10
                 </div>
                 <div class="text-xs font-medium {
                   msg.evaluation.overallScore >= 8 ? 'text-green-700' :
