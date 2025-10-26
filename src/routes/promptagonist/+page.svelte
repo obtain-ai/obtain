@@ -28,7 +28,7 @@
 		For each step, you can:<br>
 			• Write your own prompt in the input box.<br>
 			• Read the Prompt score and feedback for quick tips on how to improve your prompts.<br>
-			• Use ↻ Refresh anytime for a new scenario
+			• Use ↻ Refresh anytime for a new scenario<br>
 		Have fun being the Promptagonist!
 	{/snippet}
 </InfoDisplay>
