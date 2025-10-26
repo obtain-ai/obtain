@@ -35,6 +35,7 @@
   let inputElement: HTMLInputElement;
   let showScenarioSelection = writable(true);
   let showCustomForm = writable(false);
+  let previousMessageCount = 0;
   
   // Custom scenario form
   let customTitle = '';
@@ -325,12 +326,17 @@ Keep the response to 2-3 sentences. Make it engaging and continue the story natu
     }
   }
   
-  // Auto-scroll
-  $: if (chatContainer) {
-    setTimeout(() => {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }, 50);
-  }
+  // Track previous message count to detect new messages
+let previousMessageCount = 0;
+
+// Auto-scroll to bottom ONLY when new messages are added
+$: if (chatContainer && $chatMessages.length > previousMessageCount) {
+  setTimeout(() => {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }, 50);
+  
+  previousMessageCount = $chatMessages.length;
+}
 </script>
 
 <!-- Scenario Selection Screen -->
