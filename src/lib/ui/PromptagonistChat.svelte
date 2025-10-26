@@ -327,7 +327,7 @@ Keep the response to 2-3 sentences. Make it engaging and continue the story natu
   }
   
   // Track previous message count to detect new messages
-let previousMessageCount = 0;
+previousMessageCount = 0;
 
 // Auto-scroll to bottom ONLY when new messages are added
 $: if (chatContainer && $chatMessages.length > previousMessageCount) {
