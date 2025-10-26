@@ -35,20 +35,20 @@
 		</div>
 
 		<!-- Action buttons section - 64% width to match InfoDisplay -->
-		<div class="space-y-6 flex flex-col items-center">
-			<a href="/promptify" class="block w-[64%] bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
+		<div class="w-[80%] mx-auto space-y-6">
+			<a href="/promptify" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				Promptify
 			</a>
 			
-			<a href="/promptagonist" class="block w-[64%] bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
+			<a href="/promptagonist" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				Promptagonist
 			</a>
 			
-			<a href="/news" class="block w-[64%] bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
+			<a href="/news" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				AI News
 			</a>
 			
-			<a href="/AIListings" class="block w-[64%] bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
+			<a href="/AIListings" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				AI Listings
 			</a>
 		</div>
