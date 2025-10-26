@@ -351,7 +351,7 @@ Keep the response to 2-3 sentences. Make it engaging and continue the story natu
               <input
                 type="text"
                 bind:value={customTitle}
-                class="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-zinc-600 bg-white"
                 placeholder="e.g., Zombie Apocalypse"
               />
             </div>
@@ -361,7 +361,7 @@ Keep the response to 2-3 sentences. Make it engaging and continue the story natu
               <input
                 type="text"
                 bind:value={customDescription}
-                class="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-zinc-600 bg-white"
                 placeholder="e.g., You're a survivor in a post-apocalyptic world"
               />
             </div>
@@ -370,7 +370,7 @@ Keep the response to 2-3 sentences. Make it engaging and continue the story natu
               <label class="block text-sm font-medium text-zinc-700 mb-1">Initial Context</label>
               <textarea
                 bind:value={customContext}
-                class="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-20"
+                class="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-zinc-600 bg-white"
                 placeholder="Describe the starting situation and what the user needs to do..."
               ></textarea>
             </div>
@@ -380,7 +380,7 @@ Keep the response to 2-3 sentences. Make it engaging and continue the story natu
               <input
                 type="text"
                 bind:value={customGenre}
-                class="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full p-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-zinc-600 bg-white"
                 placeholder="e.g., Horror Thriller"
               />
             </div>
