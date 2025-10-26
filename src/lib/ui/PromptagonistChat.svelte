@@ -197,7 +197,7 @@ Evaluate this prompt for a story scenario. Rate each aspect from 1-10 and provid
 Scenario: ${scenario.title} - ${scenario.initialContext}
 User's Prompt: "${prompt}"
 
-IMPORTANT: If the user's prompt contains inappropriate content (sexual material, self-harm, eating disorders, slurs, or offensive language), still provide normal feedback BUT:
+IMPORTANT: Only if the user's prompt contains INAPPROPRIATE content (explicitly sexual/pornographic material, detailed suicide/self-harm instructions, graphic eating disorder content, or racial/sexual orientation slurs), you should:
 1. Do NOT repeat, quote, or build off of the inappropriate parts
 2. At the end of your response, append: "⚠️ Please avoid inappropriate content such as sexual material, harmful content, or offensive language in your prompts."
 
