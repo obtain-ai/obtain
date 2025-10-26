@@ -8,22 +8,22 @@
 <!-- Main container with dark background -->
 <div class="min-h-screen bg-zinc-800 text-zinc-200 w-full">
 	<!-- Wrapper that maintains 80% width at all screen sizes -->
-	<div class="w-[80%] mx-auto py-[3vw]">
+	<div class="w-[80%] mx-auto py-16">
 		<!-- Header section with title and tagline -->
-		<header class="text-center mb-[3vw]">
-			<!-- Gradient title with vw-based sizing -->
-			<h1 class="text-[4vw] font-bold mb-[1vw] bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent break-words" style="min-font-size: 24px; max-font-size: 64px;">
+		<header class="text-center mb-16">
+			<!-- Gradient title with constant size -->
+			<h1 class="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
 				ObtAin
 			</h1>
 			
-			<!-- Tagline with vw-based sizing -->
-			<p class="text-[1.5vw] text-zinc-300 font-normal" style="min-font-size: 12px; max-font-size: 20px;">
+			<!-- Tagline with constant size -->
+			<p class="text-xl text-zinc-300 font-normal">
 				Your AI Learning Companion
 			</p>
 		</header>
 
 		<!-- About section card -->
-		<div class="mb-[3vw]">
+		<div class="mb-16">
 			<InfoDisplay>
 				{#snippet title()}
 					About ObtAin
@@ -34,21 +34,21 @@
 			</InfoDisplay>
 		</div>
 
-		<!-- Action buttons section -->
-		<div class="space-y-[1.5vw]">
-			<a href="/promptify" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-[1.5vw] py-[1.5vw]" style="min-font-size: 12px; max-font-size: 18px; min-height: 40px; max-height: 56px;">
+		<!-- Action buttons section - full width of container -->
+		<div class="space-y-6">
+			<a href="/promptify" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				Promptify
 			</a>
 			
-			<a href="/promptagonist" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-[1.5vw] py-[1.5vw]" style="min-font-size: 12px; max-font-size: 18px; min-height: 40px; max-height: 56px;">
+			<a href="/promptagonist" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				Promptagonist
 			</a>
 			
-			<a href="/news" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-[1.5vw] py-[1.5vw]" style="min-font-size: 12px; max-font-size: 18px; min-height: 40px; max-height: 56px;">
+			<a href="/news" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				AI News
 			</a>
 			
-			<a href="/AIListings" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-[1.5vw] py-[1.5vw]" style="min-font-size: 12px; max-font-size: 18px; min-height: 40px; max-height: 56px;">
+			<a href="/AIListings" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				AI Listings
 			</a>
 		</div>
