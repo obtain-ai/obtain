@@ -11,7 +11,6 @@
   }[]>([]);
   let chatContainer: HTMLDivElement;
   let inputElement: HTMLTextAreaElement;
-  let previousMessageCount = 0;
 
   // Generate unique IDs for messages
   function generateId() {
@@ -67,10 +66,17 @@
       chatMessages.update(msgs =>
         msgs.map(msg => 
           msg.id === messageId && msg.status === 'loading' 
-            ? { ...msg, text: 'Sorry, I encountered an error. Please try again.', status: 'error' } 
+            ? { ...msg, text: aiResponse, status: 'normal' } 
             : msg
         )
       );
+      
+      // Scroll to bottom when bot response finishes
+      setTimeout(() => {
+        if (chatContainer) {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+      }, 100);
     }
     
     // Focus again after loading is complete
@@ -175,7 +181,10 @@ Format your response with clear headings and bullet points for easy reading.`;
     setTimeout(() => adjustTextareaHeight(), 0);
   }
 
-  // Auto-scroll to bottom for all message changes
+ /// Track previous message count to detect new messages
+  previousMessageCount = 0;
+  
+  // Auto-scroll to bottom ONLY when new messages are added
   $: if (chatContainer && $chatMessages.length > previousMessageCount) {
     setTimeout(() => {
       chatContainer.scrollTop = chatContainer.scrollHeight;
