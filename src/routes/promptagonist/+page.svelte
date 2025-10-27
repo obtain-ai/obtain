@@ -15,7 +15,7 @@
 		</div>
 
 		<!-- Description Box -->
-		<div class="mb-8">
+		<div class="mt-4 mb-8">
 			<InfoDisplay>
 				{#snippet title()}
 					About:
