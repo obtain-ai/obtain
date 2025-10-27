@@ -98,7 +98,7 @@ IMPORTANT: Only if the user's prompt contains INAPPROPRIATE content (explicitly 
 3. At the end, append: "⚠️ Please avoid inappropriate content such as explicit sexual material, graphic violence, self-harm, or offensive slurs in your prompts."
 
 
-Please provide:
+Please provide (without asterisks):
 
 1. Analysis: Briefly analyze what the user's prompt is trying to achieve and identify areas for improvement.
 
