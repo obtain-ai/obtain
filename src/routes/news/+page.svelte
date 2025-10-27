@@ -83,7 +83,7 @@
 <!-- Main container with dark background -->
 <div class="min-h-screen bg-zinc-800 text-zinc-200 w-full">
 	<!-- Wrapper that maintains 80% width at all screen sizes -->
-	<div class="w-[80%] mx-auto py-16">
+	<div class="w-[64%] mx-auto py-16">
 		<!-- Title with gradient -->
 		<div class="text-center mb-8">
 			<h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
@@ -207,4 +207,5 @@
 		</div>
 	</div>
 </div>
+
 
