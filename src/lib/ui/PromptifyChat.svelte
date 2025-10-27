@@ -11,6 +11,7 @@
   }[]>([]);
   let chatContainer: HTMLDivElement;
   let inputElement: HTMLTextAreaElement;
+  let previousMessageCount = 0;
 
   // Generate unique IDs for messages
   function generateId() {
