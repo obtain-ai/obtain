@@ -3,7 +3,7 @@
 </script>
 
 <div
-	class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border-1 border-zinc-200 bg-zinc-750 p-4"
+	class="mx-auto mb-4 flex w-[80%] flex-col gap-2 rounded-md border-1 border-zinc-200 bg-zinc-700 p-4"
 >
 	{#if title}
 		<span class="flex flex-row items-center gap-2 font-bold text-lg">
