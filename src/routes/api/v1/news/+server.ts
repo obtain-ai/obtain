@@ -37,164 +37,53 @@ function formatMonthDay(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 }
 
-// ------- ONLY WHITELISTED NEWS SOURCES -------
-const whitelistedNewsSources = {
-  // T1: Top wire/major business/official
-  'reuters.com': 2.0,
-  'ap.org': 2.0,
-  'bloomberg.com': 2.0,
-  'wsj.com': 2.0,
-  'ft.com': 2.0,
-  'bbc.com': 2.0,
-  'cnn.com': 2.0,
-  'nytimes.com': 2.0,
-  'washingtonpost.com': 2.0,
-  'theguardian.com': 2.0,
-  'usatoday.com': 2.0,
-  'latimes.com': 2.0,
-  'chicagotribune.com': 2.0,
-  'bostonglobe.com': 2.0,
-  'miamiherald.com': 2.0,
-  'dallasnews.com': 2.0,
-  'seattletimes.com': 2.0,
-  'denverpost.com': 2.0,
-  'azcentral.com': 2.0,
-  'oregonlive.com': 2.0,
-  
-  // T2: Reputable tech press/industry news
-  'techcrunch.com': 1.2,
-  'wired.com': 1.2,
-  'arstechnica.com': 1.2,
-  'theverge.com': 1.2,
-  'engadget.com': 1.2,
-  'venturebeat.com': 1.2,
-  'zdnet.com': 1.2,
-  'computerworld.com': 1.2,
-  'infoworld.com': 1.2,
-  'networkworld.com': 1.2,
-  'forbes.com': 1.2,
-  'cnbc.com': 1.2,
-  'businessinsider.com': 1.2,
-  'axios.com': 1.2,
-  'politico.com': 1.2,
-  'thehill.com': 1.2,
-  'rollcall.com': 1.2,
-  'nationalreview.com': 1.2,
-  'newyorker.com': 1.2,
-  'atlantic.com': 1.2,
-  'time.com': 1.2,
-  'newsweek.com': 1.2,
-  'usnews.com': 1.2,
-  'cbsnews.com': 1.2,
-  'nbcnews.com': 1.2,
-  'abcnews.go.com': 1.2,
-  'foxnews.com': 1.2,
-  'npr.org': 1.2,
-  'pbs.org': 1.2,
-  'propublica.org': 1.2,
-  'recode.net': 1.2,
-  'techmeme.com': 1.2
-};
+// ------- Extract original URL from Google News redirect -------
+async function extractOriginalURL(googleNewsUrl: string): Promise<string> {
+  try {
+    // Google News URLs look like: https://news.google.com/articles/CBMi...
+    // We need to follow the redirect to get the real URL
+    
+    const response = await fetch(googleNewsUrl, { 
+      method: 'HEAD', // Only get headers, not full content
+      redirect: 'follow' // Follow redirects
+    });
+    
+    // The final URL after redirects is the real news source
+    return response.url;
+  } catch (error) {
+    console.error('Error extracting original URL:', error);
+    return googleNewsUrl; // Fallback to original URL
+  }
+}
 
-// ------- STRICT BLACKLIST -------
-const blacklistedDomains = [
-  // Meme/entertainment sites
-  'cheezburger.com',
-  'cheezburger',
-  'memebase.com',
-  '9gag.com',
-  'imgur.com',
-  'reddit.com',
-  'reddit',
+// ------- Extract domain from URL -------
+function extractDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace('www.', '').toLowerCase();
+  } catch {
+    return 'unknown';
+  }
+}
+
+// ------- Check if source is legitimate news -------
+function isLegitimateNewsSource(url: string): boolean {
+  const domain = extractDomain(url);
   
-  // Tech forums/aggregators
-  'slashdot.org',
-  'slashdot',
-  'hackernews.com',
-  'ycombinator.com',
-  'stackoverflow.com',
-  'stackoverflow',
-  'github.com',
-  'github',
+  // Whitelisted news sources
+  const legitimateSources = [
+    'reuters.com', 'ap.org', 'bloomberg.com', 'wsj.com', 'ft.com', 'bbc.com',
+    'cnn.com', 'nytimes.com', 'washingtonpost.com', 'theguardian.com',
+    'techcrunch.com', 'wired.com', 'arstechnica.com', 'theverge.com',
+    'engadget.com', 'venturebeat.com', 'zdnet.com', 'forbes.com',
+    'cnbc.com', 'businessinsider.com', 'axios.com', 'politico.com',
+    'thehill.com', 'rollcall.com', 'nationalreview.com', 'newyorker.com',
+    'atlantic.com', 'time.com', 'newsweek.com', 'usatoday.com',
+    'cbsnews.com', 'nbcnews.com', 'abcnews.go.com', 'foxnews.com',
+    'npr.org', 'pbs.org', 'propublica.org', 'recode.net', 'techmeme.com'
+  ];
   
-  // Random/low-quality sites
-  'rlsbb.to',
-  'rlsbb',
-  'thepiratebay.org',
-  'kickass.to',
-  'torrentz.eu',
-  '1337x.to',
-  'limetorrents.info',
-  'torlock.com',
-  'yourbittorrent.com',
-  'torrentfunk.com',
-  'torrentdownloads.me',
-  'torrentz2.eu',
-  'torrentgalaxy.to',
-  'nyaa.si',
-  'rutracker.org',
-  'thepiratebay',
-  'piratebay',
-  'kat',
-  'kickass',
-  'torrent',
-  'bt',
-  'magnet',
-  
-  // Blogs/social media
-  'medium.com',
-  'dev.to',
-  'substack.com',
-  'wordpress.com',
-  'blogspot.com',
-  'tumblr.com',
-  'linkedin.com',
-  'twitter.com',
-  'facebook.com',
-  'instagram.com',
-  'youtube.com',
-  'tiktok.com',
-  'snapchat.com',
-  'pinterest.com',
-  'quora.com',
-  'answers.com',
-  
-  // Search engines/portals
-  'yahoo.com',
-  'aol.com',
-  'msn.com',
-  'bing.com',
-  'google.com',
-  'wikipedia.org',
-  'wikimedia.org',
-  
-  // Archive/cache sites
-  'archive.org',
-  'waybackmachine.org',
-  'cached.com',
-  'archive.today',
-  'web.archive.org',
-  
-  // Other low-quality domains
-  'universe-today.com',
-  'universetoday.com',
-  'thedailyguardian.com',
-  'dailyguardian.com',
-  'guardian.com',
-  'guardian',
-  'express.com',
-  'express',
-  'daily.com',
-  'daily',
-  'today.com',
-  'today',
-  'now.com',
-  'now',
-  'wire.com',
-  'wire',
-  'service.com',
-  'service'
-];
+  return legitimateSources.some(source => domain.includes(source));
+}
 
 // ------- Event Type Weights -------
 const eventTypeWeights = {
@@ -221,7 +110,7 @@ const aiNewsFeeds = [
   'https://news.google.com/rss/search?q=ai+safety&hl=en-US&gl=US&ceid=US:en'
 ];
 
-// ------- Parse Google News RSS -------
+// ------- Parse Google News RSS with original URL extraction -------
 async function parseGoogleNewsRSS(url: string): Promise<any[]> {
   try {
     const response = await fetch(url);
@@ -229,92 +118,69 @@ async function parseGoogleNewsRSS(url: string): Promise<any[]> {
     
     const items = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
     
-    return items.map(item => {
+    const articles = [];
+    
+    for (const item of items) {
       const titleMatch = item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || item.match(/<title>(.*?)<\/title>/);
       const linkMatch = item.match(/<link><!\[CDATA\[(.*?)\]\]><\/link>/) || item.match(/<link>(.*?)<\/link>/);
       const pubDateMatch = item.match(/<pubDate>(.*?)<\/pubDate>/);
       const descriptionMatch = item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || item.match(/<description>(.*?)<\/description>/);
       
-      const sourceMatch = descriptionMatch ? descriptionMatch[1].match(/<font[^>]*>([^<]+)<\/font>/) : null;
-      
-      return {
-        title: titleMatch ? titleMatch[1] : 'No title',
-        url: linkMatch ? linkMatch[1] : '#',
-        publishedAt: pubDateMatch ? pubDateMatch[1] : new Date().toISOString(),
-        description: descriptionMatch ? descriptionMatch[1] : 'No description',
-        source: sourceMatch ? sourceMatch[1] : 'Google News'
-      };
-    });
+      if (linkMatch) {
+        // Extract the real URL from Google News redirect
+        const originalUrl = await extractOriginalURL(linkMatch[1]);
+        
+        // Only include if it's from a legitimate news source
+        if (isLegitimateNewsSource(originalUrl)) {
+          articles.push({
+            title: titleMatch ? titleMatch[1] : 'No title',
+            url: originalUrl, // Use the real URL
+            publishedAt: pubDateMatch ? pubDateMatch[1] : new Date().toISOString(),
+            description: descriptionMatch ? descriptionMatch[1] : 'No description',
+            source: extractDomain(originalUrl) // Extract source from real URL
+          });
+        }
+      }
+    }
+    
+    return articles;
   } catch (error) {
     console.error('Error parsing Google News RSS:', error);
     return [];
   }
 }
 
-// ------- Extract Domain from URL -------
-function extractDomain(url: string): string {
-  try {
-    return new URL(url).hostname.replace('www.', '').toLowerCase();
-  } catch {
-    return 'unknown';
-  }
-}
-
-// ------- STRICT SOURCE FILTERING -------
-function isWhitelistedNewsSource(url: string): boolean {
-  const domain = extractDomain(url);
-  
-  // Check if it's in our whitelist
-  if (whitelistedNewsSources[domain]) {
-    return true;
-  }
-  
-  // Check if it's in our blacklist
-  if (blacklistedDomains.some(blacklisted => domain.includes(blacklisted))) {
-    console.log(`🚫 BLACKLISTED: ${domain}`);
-    return false;
-  }
-  
-  // Additional strict checks
-  const suspiciousPatterns = [
-    /\.(to|tk|ml|ga|cf)$/, // Suspicious TLDs
-    /^(rls|torrent|pirate|kickass|1337)/, // Torrent/pirate sites
-    /(cheez|meme|funny|joke|lol)/, // Meme sites
-    /(forum|board|community|chat)/, // Forums
-    /(blog|personal|diary)/, // Personal blogs
-    /(aggregator|feed|rss)/, // Aggregators
-    /(download|free|crack|keygen)/, // Download sites
-  ];
-  
-  if (suspiciousPatterns.some(pattern => pattern.test(domain))) {
-    console.log(`🚫 SUSPICIOUS PATTERN: ${domain}`);
-    return false;
-  }
-  
-  // Only allow if it looks like a legitimate news domain
-  const newsIndicators = [
-    'news', 'times', 'post', 'journal', 'tribune', 'herald', 'gazette',
-    'chronicle', 'observer', 'review', 'press', 'daily', 'weekly',
-    'reporter', 'dispatch', 'bulletin', 'register', 'record', 'sun',
-    'star', 'globe', 'world', 'today', 'now', 'wire', 'service'
-  ];
-  
-  const hasNewsIndicator = newsIndicators.some(indicator => 
-    domain.includes(indicator)
-  );
-  
-  if (!hasNewsIndicator) {
-    console.log(`🚫 NO NEWS INDICATOR: ${domain}`);
-    return false;
-  }
-  
-  return true;
-}
-
 // ------- Calculate Authority Score -------
 function calculateAuthority(url: string, source: string): number {
   const domain = extractDomain(url);
-  return whitelistedNewsSources[domain] || 0.0;
+  
+  // Authority scores based on source
+  const authorityScores = {
+    'reuters.com': 2.0,
+    'ap.org': 2.0,
+    'bloomberg.com': 2.0,
+    'wsj.com': 2.0,
+    'ft.com': 2.0,
+    'bbc.com': 2.0,
+    'cnn.com': 2.0,
+    'nytimes.com': 2.0,
+    'washingtonpost.com': 2.0,
+    'theguardian.com': 2.0,
+    'techcrunch.com': 1.2,
+    'wired.com': 1.2,
+    'arstechnica.com': 1.2,
+    'theverge.com': 1.2,
+    'engadget.com': 1.2,
+    'venturebeat.com': 1.2,
+    'zdnet.com': 1.2,
+    'forbes.com': 1.2,
+    'cnbc.com': 1.2,
+    'businessinsider.com': 1.2,
+    'axios.com': 1.2,
+    'politico.com': 1.2
+  };
+  
+  return authorityScores[domain] || 1.0;
 }
 
 // ------- Detect Event Type -------
@@ -426,36 +292,10 @@ function calculateRelevanceScore(item: NewsItem): number {
   );
 }
 
-// ------- ULTRA STRICT QUALITY FILTERS -------
-function passesQualityFilters(item: any): boolean {
-  const title = item.title.toLowerCase();
-  const description = item.description.toLowerCase();
-  const text = title + ' ' + description;
+// ------- AI Content Filter -------
+function isAIRelated(title: string, description: string): boolean {
+  const text = (title + ' ' + description).toLowerCase();
   
-  // MUST be from whitelisted news source
-  if (!isWhitelistedNewsSource(item.url)) {
-    console.log(`🚫 REJECTED: ${item.title} from ${extractDomain(item.url)}`);
-    return false;
-  }
-  
-  // Language filter (English only)
-  if (!/^[a-zA-Z0-9\s\-.,!?;:'"()]+$/.test(item.title)) {
-    return false;
-  }
-  
-  // Clickbait detection
-  const clickbaitPatterns = [
-    /\b(you won't believe|shocking|amazing|incredible|mind-blowing|game-changing)\b/,
-    /[!]{2,}/, // Multiple exclamation marks
-    /\?{2,}/, // Multiple question marks
-    /[A-Z]{5,}/ // Excessive caps
-  ];
-  
-  if (clickbaitPatterns.some(pattern => pattern.test(title))) {
-    return false;
-  }
-  
-  // Require at least one AI entity
   const aiKeywords = [
     'artificial intelligence', 'ai', 'machine learning', 'ml', 'deep learning',
     'chatgpt', 'openai', 'claude', 'gemini', 'automation', 'robotics',
@@ -464,79 +304,7 @@ function passesQualityFilters(item: any): boolean {
     'large language model', 'transformer', 'gpt', 'anthropic'
   ];
   
-  const hasAIKeyword = aiKeywords.some(keyword => text.includes(keyword));
-  if (!hasAIKeyword) {
-    return false;
-  }
-  
-  // Require some substance (not just opinion)
-  if (item.eventType === 'opinion' && item.authority < 1.0) {
-    return false;
-  }
-  
-  console.log(`✅ ACCEPTED: ${item.title} from ${extractDomain(item.url)}`);
-  return true;
-}
-
-// ------- LLM Re-ranker -------
-async function llmRerank(articles: NewsItem[]): Promise<NewsItem[]> {
-  if (!OPENAI_API_KEY || articles.length === 0) return articles;
-  
-  const openaiUrl = 'https://api.openai.com/v1/chat/completions';
-  
-  const content = articles.map((a, i) => 
-    `${i + 1}. Title: ${a.title}\n   Source: ${a.source}\n   Event Type: ${a.eventType}\n   Authority: ${a.authority}\n   Entities: ${a.entities.join(', ')}`
-  ).join('\n\n');
-
-  try {
-    const res = await fetch(openaiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({
-        model: 'gpt-4',
-        messages: [
-          { 
-            role: 'system', 
-            content: `You are a news curator for AI news. Select the 10 most important and relevant AI news articles.
-
-CRITERIA (in order of importance):
-1. Verifiable events (dated actions: launches, filings, laws, CVEs, funding)
-2. Primary or top-tier secondary sources (authority > 1.0)
-3. Concrete events over opinion pieces
-4. Actually about AI (models, chips, policy, enterprise deployments)
-5. Recent and significant developments
-
-Return JSON array: [{"id": 1, "keep": true, "reason": "Major product launch from OpenAI", "adjustment": 0.2}]` 
-          },
-          { role: 'user', content: `Select the 10 most important AI news articles:\n\n${content}` }
-        ],
-        max_tokens: 1000,
-        temperature: 0.3
-      })
-    });
-    
-    if (!res.ok) return articles;
-    
-    const data: OpenAIResponse = await res.json();
-    const raw = data.choices?.[0]?.message?.content || '';
-    
-    try {
-      const decisions = JSON.parse(raw);
-      const keptArticles = articles.filter((article, index) => {
-        const decision = decisions.find(d => d.id === index + 1);
-        return decision && decision.keep;
-      });
-      
-      console.log(`✅ LLM selected ${keptArticles.length} articles from ${articles.length}`);
-      return keptArticles;
-    } catch (parseError) {
-      console.error('Failed to parse LLM decisions:', parseError);
-      return articles.slice(0, 10); // Fallback to top 10
-    }
-  } catch (e) {
-    console.error('❌ LLM reranking failed:', e);
-    return articles.slice(0, 10); // Fallback to top 10
-  }
+  return aiKeywords.some(keyword => text.includes(keyword));
 }
 
 // ------- Summarize Articles -------
@@ -592,8 +360,8 @@ IMPORTANT RULES:
 }
 
 // ------- Main News Fetching Function -------
-async function fetchCuratedAINews(): Promise<NewsItem[]> {
-  console.log('🔍 Fetching and curating AI news (ULTRA STRICT FILTERING)');
+async function fetchAINews(): Promise<NewsItem[]> {
+  console.log('🔍 Fetching AI news from Google News with redirect extraction');
   
   const allArticles: any[] = [];
   
@@ -612,10 +380,17 @@ async function fetchCuratedAINews(): Promise<NewsItem[]> {
     index === self.findIndex(a => a.title === article.title)
   );
   
-  console.log(`📰 Found ${uniqueArticles.length} unique articles`);
+  console.log(`Found ${uniqueArticles.length} unique articles from legitimate sources`);
+  
+  // Filter for AI-related content
+  const aiArticles = uniqueArticles.filter(article => 
+    isAIRelated(article.title, article.description)
+  );
+  
+  console.log(`Found ${aiArticles.length} AI-related articles`);
   
   // Process each article
-  const processedArticles: NewsItem[] = uniqueArticles.map(article => {
+  const processedArticles: NewsItem[] = aiArticles.map(article => {
     const authority = calculateAuthority(article.url, article.source);
     const eventType = detectEventType(article.title, article.description);
     const entities = extractAIEntities(article.title, article.description);
@@ -629,27 +404,19 @@ async function fetchCuratedAINews(): Promise<NewsItem[]> {
     };
   });
   
-  // Apply ULTRA STRICT quality filters
-  const filteredArticles = processedArticles.filter(passesQualityFilters);
-  console.log(`✅ ${filteredArticles.length} articles passed ULTRA STRICT quality filters`);
-  
   // Calculate relevance scores
-  const scoredArticles = filteredArticles.map(article => ({
+  const scoredArticles = processedArticles.map(article => ({
     ...article,
     relevanceScore: calculateRelevanceScore(article)
   }));
   
-  // Sort by relevance score
+  // Sort by relevance score and take top 10
   const sortedArticles = scoredArticles
     .sort((a, b) => b.relevanceScore - a.relevanceScore)
-    .slice(0, 30); // Top 30 for LLM reranking
+    .slice(0, 10);
   
-  console.log(`🎯 Top ${sortedArticles.length} articles by relevance score`);
-  
-  // LLM reranking
-  const finalArticles = await llmRerank(sortedArticles);
-  
-  return finalArticles.slice(0, 10); // Final top 10
+  console.log(`Returning ${sortedArticles.length} top AI articles`);
+  return sortedArticles;
 }
 
 // ------- in-memory cache (5 min) -------
@@ -660,7 +427,7 @@ let inmemPayload: { articles: any[]; weekStart: string; isCurrentWeek: boolean }
 
 // ------- GET handler -------
 export const GET: RequestHandler = async ({ url }) => {
-  console.log('🚀 /api/v1/news (ULTRA STRICT FILTERING)');
+  console.log('/api/v1/news (Google News with Redirect Extraction)');
   console.log('  - OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
 
   const now = new Date();
@@ -673,13 +440,13 @@ export const GET: RequestHandler = async ({ url }) => {
 
   // Check cache only if NOT forcing refresh
   if (!forceRefresh && inmemPayload && inmemWeekKey === currentWeekKey && Date.now() - inmemTimestamp < INMEM_TTL_MS) {
-    console.log('📦 Returning cached data');
+    console.log('Returning cached data');
     return json(inmemPayload);
   }
 
-  // Fetch curated AI news
-  console.log('📅 Fetching curated AI news (ULTRA STRICT)');
-  let articles = await fetchCuratedAINews();
+  // Fetch AI news
+  console.log('Fetching AI news with redirect extraction');
+  let articles = await fetchAINews();
   let weekStart = currentWeekStart;
   let isCurrentWeek = true;
 
