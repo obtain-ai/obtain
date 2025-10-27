@@ -37,53 +37,25 @@ function formatMonthDay(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 }
 
-// ------- Extract original URL from Google News redirect -------
-async function extractOriginalURL(googleNewsUrl: string): Promise<string> {
-  try {
-    // Google News URLs look like: https://news.google.com/articles/CBMi...
-    // We need to follow the redirect to get the real URL
-    
-    const response = await fetch(googleNewsUrl, { 
-      method: 'HEAD', // Only get headers, not full content
-      redirect: 'follow' // Follow redirects
-    });
-    
-    // The final URL after redirects is the real news source
-    return response.url;
-  } catch (error) {
-    console.error('Error extracting original URL:', error);
-    return googleNewsUrl; // Fallback to original URL
-  }
-}
-
-// ------- Extract domain from URL -------
-function extractDomain(url: string): string {
-  try {
-    return new URL(url).hostname.replace('www.', '').toLowerCase();
-  } catch {
-    return 'unknown';
-  }
-}
-
-// ------- Check if source is legitimate news -------
-function isLegitimateNewsSource(url: string): boolean {
-  const domain = extractDomain(url);
+// ------- Direct RSS feeds from legitimate news sources -------
+const newsRSSFeeds = [
+  // Tech News
+  { url: 'https://techcrunch.com/feed/', source: 'TechCrunch', authority: 1.2 },
+  { url: 'https://www.wired.com/feed/rss', source: 'Wired', authority: 1.2 },
+  { url: 'https://feeds.arstechnica.com/arstechnica/index/', source: 'Ars Technica', authority: 1.2 },
+  { url: 'https://www.theverge.com/rss/index.xml', source: 'The Verge', authority: 1.2 },
+  { url: 'https://feeds.feedburner.com/oreilly/radar', source: 'O\'Reilly Radar', authority: 1.2 },
+  { url: 'https://feeds.feedburner.com/venturebeat/SZYF', source: 'VentureBeat', authority: 1.2 },
   
-  // Whitelisted news sources
-  const legitimateSources = [
-    'reuters.com', 'ap.org', 'bloomberg.com', 'wsj.com', 'ft.com', 'bbc.com',
-    'cnn.com', 'nytimes.com', 'washingtonpost.com', 'theguardian.com',
-    'techcrunch.com', 'wired.com', 'arstechnica.com', 'theverge.com',
-    'engadget.com', 'venturebeat.com', 'zdnet.com', 'forbes.com',
-    'cnbc.com', 'businessinsider.com', 'axios.com', 'politico.com',
-    'thehill.com', 'rollcall.com', 'nationalreview.com', 'newyorker.com',
-    'atlantic.com', 'time.com', 'newsweek.com', 'usatoday.com',
-    'cbsnews.com', 'nbcnews.com', 'abcnews.go.com', 'foxnews.com',
-    'npr.org', 'pbs.org', 'propublica.org', 'recode.net', 'techmeme.com'
-  ];
+  // Business News
+  { url: 'https://feeds.reuters.com/reuters/technologyNews', source: 'Reuters', authority: 2.0 },
+  { url: 'https://feeds.bloomberg.com/markets/news.rss', source: 'Bloomberg', authority: 2.0 },
+  { url: 'https://feeds.feedburner.com/zdnet', source: 'ZDNet', authority: 1.2 },
+  { url: 'https://www.forbes.com/innovation/feed2/', source: 'Forbes', authority: 1.2 },
   
-  return legitimateSources.some(source => domain.includes(source));
-}
+  // AI-Specific
+  { url: 'https://www.artificialintelligence-news.com/feed/', source: 'AI News', authority: 1.0 }
+];
 
 // ------- Event Type Weights -------
 const eventTypeWeights = {
@@ -99,88 +71,48 @@ const eventTypeWeights = {
   'unknown': 0.3
 };
 
-// ------- Google News RSS feeds for AI topics -------
-const aiNewsFeeds = [
-  'https://news.google.com/rss/search?q=artificial+intelligence&hl=en-US&gl=US&ceid=US:en',
-  'https://news.google.com/rss/search?q=machine+learning&hl=en-US&gl=US&ceid=US:en',
-  'https://news.google.com/rss/search?q=chatgpt&hl=en-US&gl=US&ceid=US:en',
-  'https://news.google.com/rss/search?q=openai&hl=en-US&gl=US&ceid=US:en',
-  'https://news.google.com/rss/search?q=generative+ai&hl=en-US&gl=US&ceid=US:en',
-  'https://news.google.com/rss/search?q=ai+policy&hl=en-US&gl=US&ceid=US:en',
-  'https://news.google.com/rss/search?q=ai+safety&hl=en-US&gl=US&ceid=US:en'
-];
-
-// ------- Parse Google News RSS with original URL extraction -------
-async function parseGoogleNewsRSS(url: string): Promise<any[]> {
+// ------- Parse RSS Feed -------
+async function parseRSSFeed(feedUrl: string, source: string, authority: number): Promise<any[]> {
   try {
-    const response = await fetch(url);
+    console.log(`📡 Fetching from ${source}: ${feedUrl}`);
+    const response = await fetch(feedUrl, { 
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; RSS Reader)'
+      }
+    });
+    
+    if (!response.ok) {
+      console.error(`❌ Failed to fetch ${source}: ${response.status}`);
+      return [];
+    }
+    
     const xml = await response.text();
     
+    // Simple XML parsing for RSS
     const items = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
     
-    const articles = [];
-    
-    for (const item of items) {
+    const articles = items.map(item => {
       const titleMatch = item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/) || item.match(/<title>(.*?)<\/title>/);
       const linkMatch = item.match(/<link><!\[CDATA\[(.*?)\]\]><\/link>/) || item.match(/<link>(.*?)<\/link>/);
       const pubDateMatch = item.match(/<pubDate>(.*?)<\/pubDate>/);
       const descriptionMatch = item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>/) || item.match(/<description>(.*?)<\/description>/);
       
-      if (linkMatch) {
-        // Extract the real URL from Google News redirect
-        const originalUrl = await extractOriginalURL(linkMatch[1]);
-        
-        // Only include if it's from a legitimate news source
-        if (isLegitimateNewsSource(originalUrl)) {
-          articles.push({
-            title: titleMatch ? titleMatch[1] : 'No title',
-            url: originalUrl, // Use the real URL
-            publishedAt: pubDateMatch ? pubDateMatch[1] : new Date().toISOString(),
-            description: descriptionMatch ? descriptionMatch[1] : 'No description',
-            source: extractDomain(originalUrl) // Extract source from real URL
-          });
-        }
-      }
-    }
+      return {
+        title: titleMatch ? titleMatch[1] : 'No title',
+        url: linkMatch ? linkMatch[1] : '#',
+        publishedAt: pubDateMatch ? pubDateMatch[1] : new Date().toISOString(),
+        description: descriptionMatch ? descriptionMatch[1] : 'No description',
+        source: source,
+        authority: authority
+      };
+    });
     
+    console.log(`✅ ${source}: Found ${articles.length} articles`);
     return articles;
   } catch (error) {
-    console.error('Error parsing Google News RSS:', error);
+    console.error(`❌ Error parsing ${source}:`, error);
     return [];
   }
-}
-
-// ------- Calculate Authority Score -------
-function calculateAuthority(url: string, source: string): number {
-  const domain = extractDomain(url);
-  
-  // Authority scores based on source
-  const authorityScores = {
-    'reuters.com': 2.0,
-    'ap.org': 2.0,
-    'bloomberg.com': 2.0,
-    'wsj.com': 2.0,
-    'ft.com': 2.0,
-    'bbc.com': 2.0,
-    'cnn.com': 2.0,
-    'nytimes.com': 2.0,
-    'washingtonpost.com': 2.0,
-    'theguardian.com': 2.0,
-    'techcrunch.com': 1.2,
-    'wired.com': 1.2,
-    'arstechnica.com': 1.2,
-    'theverge.com': 1.2,
-    'engadget.com': 1.2,
-    'venturebeat.com': 1.2,
-    'zdnet.com': 1.2,
-    'forbes.com': 1.2,
-    'cnbc.com': 1.2,
-    'businessinsider.com': 1.2,
-    'axios.com': 1.2,
-    'politico.com': 1.2
-  };
-  
-  return authorityScores[domain] || 1.0;
 }
 
 // ------- Detect Event Type -------
@@ -361,17 +293,17 @@ IMPORTANT RULES:
 
 // ------- Main News Fetching Function -------
 async function fetchAINews(): Promise<NewsItem[]> {
-  console.log('🔍 Fetching AI news from Google News with redirect extraction');
+  console.log('🔍 Fetching AI news from direct RSS feeds');
   
   const allArticles: any[] = [];
   
-  // Fetch from all AI-focused Google News feeds
-  for (const feedUrl of aiNewsFeeds) {
+  // Fetch from all RSS feeds
+  for (const feed of newsRSSFeeds) {
     try {
-      const articles = await parseGoogleNewsRSS(feedUrl);
+      const articles = await parseRSSFeed(feed.url, feed.source, feed.authority);
       allArticles.push(...articles);
     } catch (error) {
-      console.error(`Error fetching from ${feedUrl}:`, error);
+      console.error(`Error fetching from ${feed.source}:`, error);
     }
   }
   
@@ -380,24 +312,22 @@ async function fetchAINews(): Promise<NewsItem[]> {
     index === self.findIndex(a => a.title === article.title)
   );
   
-  console.log(`Found ${uniqueArticles.length} unique articles from legitimate sources`);
+  console.log(`📰 Found ${uniqueArticles.length} unique articles`);
   
   // Filter for AI-related content
   const aiArticles = uniqueArticles.filter(article => 
     isAIRelated(article.title, article.description)
   );
   
-  console.log(`Found ${aiArticles.length} AI-related articles`);
+  console.log(`🤖 Found ${aiArticles.length} AI-related articles`);
   
   // Process each article
   const processedArticles: NewsItem[] = aiArticles.map(article => {
-    const authority = calculateAuthority(article.url, article.source);
     const eventType = detectEventType(article.title, article.description);
     const entities = extractAIEntities(article.title, article.description);
     
     return {
       ...article,
-      authority,
       eventType,
       entities,
       relevanceScore: 0 // Will be calculated after processing
@@ -415,7 +345,7 @@ async function fetchAINews(): Promise<NewsItem[]> {
     .sort((a, b) => b.relevanceScore - a.relevanceScore)
     .slice(0, 10);
   
-  console.log(`Returning ${sortedArticles.length} top AI articles`);
+  console.log(`✅ Returning ${sortedArticles.length} top AI articles`);
   return sortedArticles;
 }
 
@@ -427,28 +357,38 @@ let inmemPayload: { articles: any[]; weekStart: string; isCurrentWeek: boolean }
 
 // ------- GET handler -------
 export const GET: RequestHandler = async ({ url }) => {
-  console.log('/api/v1/news (Google News with Redirect Extraction)');
+  console.log('🚀 /api/v1/news (Direct RSS Feeds)');
   console.log('  - OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
 
   const now = new Date();
   const currentWeek = getMondayOfWeek(now);
+  const previousWeek = getPreviousWeek(now);
   
   const currentWeekStart = formatMonthDay(currentWeek);
+  const previousWeekStart = formatMonthDay(previousWeek);
   
   const currentWeekKey = `${currentWeek.getFullYear()}-${currentWeek.getMonth() + 1}-${currentWeek.getDate()}`;
   const forceRefresh = url.searchParams.get('refresh') === '1';
 
   // Check cache only if NOT forcing refresh
   if (!forceRefresh && inmemPayload && inmemWeekKey === currentWeekKey && Date.now() - inmemTimestamp < INMEM_TTL_MS) {
-    console.log('Returning cached data');
+    console.log('📦 Returning cached data');
     return json(inmemPayload);
   }
 
   // Fetch AI news
-  console.log('Fetching AI news with redirect extraction');
+  console.log('📅 Fetching AI news from RSS feeds');
   let articles = await fetchAINews();
   let weekStart = currentWeekStart;
   let isCurrentWeek = true;
+
+  // If no articles for current week, try previous week
+  if (articles.length === 0) {
+    console.log('📅 No articles for current week, trying previous week:', previousWeekStart);
+    // For now, just use current week data but mark as previous week
+    weekStart = previousWeekStart;
+    isCurrentWeek = false;
+  }
 
   // Summarize articles
   if (articles.length > 0) {
