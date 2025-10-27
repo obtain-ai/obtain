@@ -240,13 +240,15 @@ Format your response with clear headings and bullet points for easy reading.`;
     <div class="flex gap-2">
       <textarea
         bind:this={inputElement}
-        class="flex-1 p-3 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-zinc-200 placeholder-zinc-500 bg-zinc-700"
-        type="text"
+        class="flex-1 p-3 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-zinc-200 placeholder-zinc-500 bg-zinc-700 resize-none"
         bind:value={userInput}
         placeholder="Type your prompt here.."
         on:keydown={handleKeydown}
+        on:input={adjustTextareaHeight}
         disabled={$chatMessages.some(msg => msg.status === 'loading')}
         on:mount={focusInput}
+        rows="1"
+        style="max-height: 150px;"
       />
       <button 
         class="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
