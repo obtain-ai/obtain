@@ -10,7 +10,8 @@
     status?: 'normal' | 'loading' | 'error' 
   }[]>([]);
   let chatContainer: HTMLDivElement;
-  let inputElement: HTMLInputElement;
+  let inputElement: HTMLTextAreaElement;
+  let previousMessageCount = 0;
 
   // Generate unique IDs for messages
   function generateId() {
@@ -162,6 +163,18 @@ Format your response with clear headings and bullet points for easy reading.`;
     }, 50);
   }
 
+  function adjustTextareaHeight() {
+    if (inputElement) {
+      inputElement.style.height = 'auto';
+      inputElement.style.height = `${Math.min(inputElement.scrollHeight, 150)}px`;
+    }
+  }
+  
+  // Watch userInput for changes and adjust height
+  $: if (userInput !== undefined) {
+    setTimeout(() => adjustTextareaHeight(), 0);
+  }
+
   // Auto-scroll to bottom ONLY when new messages are added
   $: if (chatContainer && $chatMessages.length > previousMessageCount) {
     setTimeout(() => {
@@ -177,9 +190,10 @@ Format your response with clear headings and bullet points for easy reading.`;
       event.preventDefault();
       sendMessage();
     }
+    setTimeout(() => adjustTextareaHeight(), 0);
   }
 
-  // Focus input when component mounts
+  // Focus input when component mounts //IS THIS AN ISSUEEEEEEEEEEEEEEEEEEEEEEEEE
   function focusInput() {
     setTimeout(() => {
       if (inputElement) {
@@ -224,7 +238,7 @@ Format your response with clear headings and bullet points for easy reading.`;
   <!-- Input Area -->
   <div class="p-4 border-t border-zinc-600 bg-zinc-800">
     <div class="flex gap-2">
-      <input
+      <textarea
         bind:this={inputElement}
         class="flex-1 p-3 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-zinc-200 placeholder-zinc-500 bg-zinc-700"
         type="text"
