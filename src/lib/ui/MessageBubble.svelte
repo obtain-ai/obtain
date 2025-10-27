@@ -2,28 +2,8 @@
   export let text: string;
   export let user: 'you' | 'bot';
   export let status: 'loading' | 'error' | 'normal' = 'normal';
-
-  // Function to convert markdown to HTML
-  function formatMarkdown(text: string): string {
-    // Convert bold **text** to <strong>text</strong>
-    let html = text.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>');
-    
-    // Convert italic *text* to <em>text</em>
-    html = html.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em class="italic">$1</em>');
-    
-    // Convert headings (# Heading) to bold headings with spacing
-    html = html.replace(/^### (.+)$/gm, '<h3 class="font-bold text-lg mt-4 mb-2">$1</h3>');
-    html = html.replace(/^## (.+)$/gm, '<h2 class="font-bold text-xl mt-5 mb-3">$1</h2>');
-    html = html.replace(/^# (.+)$/gm, '<h1 class="font-bold text-2xl mt-6 mb-4">$1</h1>');
-    
-    // Convert line breaks
-    html = html.replace(/\n/g, '<br />');
-    
-    // Clean up excessive spacing
-    html = html.replace(/(<br \/>){2,}/g, '<br />');
-    
-    return html;
-  }
+  import { marked } from 'marked';
+  export let message;
 </script>
 
 <div class="flex {user === 'you' ? 'justify-end' : 'justify-start'}" data-message>
@@ -47,8 +27,51 @@
       </div>
     {:else}
       <div class="whitespace-pre-wrap text-sm leading-relaxed break-words prose prose-sm max-w-none">
-        {@html formatMarkdown(text)}
+        {@html marked.parse(text)}
       </div>
     {/if}
   </div>
 </div>
+
+<style>
+  :global(.prose h1) {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  :global(.prose h2) {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  :global(.prose h3) {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  :global(.prose strong) {
+    font-weight: bold;
+  }
+  
+  :global(.prose ul) {
+    list-style-type: disc;
+    margin-left: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  :global(.prose ol) {
+    list-style-type: decimal;
+    margin-left: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  :global(.prose li) {
+    margin-bottom: 0.25rem;
+  }
+</style>
