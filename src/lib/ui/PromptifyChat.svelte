@@ -1,3 +1,4 @@
+//added manual scroll to bottom for chatbot messages
 <script lang="ts">
   import { writable } from 'svelte/store';
   import MessageBubble from './MessageBubble.svelte';
