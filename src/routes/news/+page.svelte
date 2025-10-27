@@ -55,7 +55,12 @@
     error = '';
     
     try {
-      const url = forceRefresh ? '/api/v1/news?refresh=1' : '/api/v1/news';
+      // Add timestamp to prevent browser caching
+      const timestamp = new Date().getTime();
+      const url = forceRefresh 
+        ? `/api/v1/news?refresh=1&t=${timestamp}` 
+        : `/api/v1/news?t=${timestamp}`;
+      
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch news');
