@@ -6,7 +6,7 @@
 
 <div class="flex {user === 'you' ? 'justify-end' : 'justify-start'}">
   <div
-    class="max-w-[75%] p-3 rounded-lg shadow-sm
+  class="max-w-[75%] p-3 rounded-lg shadow-sm
          {user === 'you' 
            ? 'bg-blue-600 text-white rounded-br-sm' 
            : 'bg-zinc-100 text-black rounded-bl-sm border border-zinc-200'}
@@ -24,7 +24,7 @@
         <span class="text-sm">Error: {text}</span>
       </div>
     {:else}
-      <div class="whitespace-pre-wrap text-sm leading-relaxed break-words break-all overflow-wrap-anywhere">
+      <div class="whitespace-pre-wrap text-sm leading-relaxed">
         {text}
       </div>
     {/if}
