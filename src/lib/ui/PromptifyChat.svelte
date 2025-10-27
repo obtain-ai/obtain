@@ -212,11 +212,17 @@ Format your response with clear headings and bullet points for easy reading.`;
     setTimeout(() => adjustTextareaHeight(), 0);
   }
 
-  // Auto-scroll to bottom ONLY when new messages are added
+  // Auto-scroll to bottom when user adds a message
   $: if (chatContainer && $chatMessages.length > previousMessageCount) {
-    setTimeout(() => {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }, 50);
+    const lastMessage = $chatMessages[$chatMessages.length - 1];
+    
+    // Only auto-scroll to bottom if it's a user message or loading bot message
+    // Bot responses with 'normal' status get smart scrolling instead
+    if (lastMessage && lastMessage.user === 'you' || lastMessage.status === 'loading') {
+      setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 50);
+    }
     
     previousMessageCount = $chatMessages.length;
   }
