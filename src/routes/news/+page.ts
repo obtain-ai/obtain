@@ -2,7 +2,7 @@ import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ fetch }) => {
   // Your existing title
-  const title = 'AI News';
+  const title = ' ';
   
   try {
     // Fetch news articles
