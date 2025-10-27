@@ -26,7 +26,7 @@
         <span class="text-sm">Error: {text}</span>
       </div>
     {:else}
-      <div class="whitespace-pre-wrap text-sm leading-relaxed break-words prose prose-sm max-w-none">
+      <div class="whitespace-pre-wrap text-sm leading-snug break-words markdown-body">
         {@html marked.parse(text)}
       </div>
     {/if}
