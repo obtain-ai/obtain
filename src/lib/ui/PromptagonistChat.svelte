@@ -32,7 +32,7 @@
   let userInput = '';
   let isLoading = writable(false);
   let chatContainer: HTMLDivElement;
-  let inputElement: HTMLInputElement;
+  let inputElement: HTMLTextAreaElement;
   let showScenarioSelection = writable(true);
   let showCustomForm = writable(false);
   let previousMessageCount = 0;
@@ -323,12 +323,25 @@ Keep the response to 2-3 sentences. Make it engaging and continue the story natu
     chatMessages.set([]);
     userInput = '';
   }
+
+  function adjustTextareaHeight() {
+    if (inputElement) {
+      inputElement.style.height = 'auto';
+      inputElement.style.height = `${Math.min(inputElement.scrollHeight, 150)}px`;
+    }
+  }
   
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       sendMessage();
     }
+    setTimeout(() => adjustTextareaHeight(), 0);
+  }
+  
+  // Watch userInput for changes and adjust height
+  $: if (userInput !== undefined) {
+    setTimeout(() => adjustTextareaHeight(), 0);
   }
   
   // Track previous message count to detect new messages
@@ -514,14 +527,16 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
     <!-- Input Area -->
     <div class="p-4 border-t border-zinc-200 bg-zinc-50 rounded-b-lg">
       <div class="flex gap-2">
-        <input
+        <textarea
           bind:this={inputElement}
-          class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white"
-          type="text"
+          class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white resize-none overflow-y-auto"
           bind:value={userInput}
           placeholder="Write your prompt to continue the story..."
           on:keydown={handleKeydown}
+          on:input={adjustTextareaHeight}
           disabled={$isLoading}
+          rows="1"
+          style="max-height: 150px;"
         />
         <button 
           class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 text-white rounded-md transition-colors font-medium" 
