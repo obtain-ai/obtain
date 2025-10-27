@@ -168,10 +168,6 @@ Format your response with clear headings and bullet points for easy reading.`;
     }
   }
 
-  // Watch userInput for changes and adjust height
-  $: if (userInput !== undefined) {
-    setTimeout(() => adjustTextareaHeight(), 0);
-  }
 
   // Auto-scroll to bottom when new messages are added
   $: if (chatMessages && chatContainer) {
