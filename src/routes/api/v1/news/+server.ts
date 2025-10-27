@@ -245,9 +245,14 @@ async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
   
   const openaiUrl = 'https://api.openai.com/v1/chat/completions';
   
-  const content = articles.map((a, i) => 
-    `${i + 1}. Title: ${a.title}\n   Description: ${a.description}\n   Source: ${a.source}\n   Event Type: ${a.eventType}`
-  ).join('\n\n');
+  // Truncate descriptions to prevent token overflow and improve summarization
+  const content = articles.map((a, i) => {
+    const truncatedDesc = a.description.length > 500 
+      ? a.description.substring(0, 500) + '...' 
+      : a.description;
+    
+    return `${i + 1}. Title: ${a.title}\n   Description: ${truncatedDesc}\n   Source: ${a.source}`;
+  }).join('\n\n');
 
   try {
     const res = await fetch(openaiUrl, {
@@ -258,36 +263,55 @@ async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
         messages: [
           { 
             role: 'system', 
-            content: `You are a news summarizer. For each article, write a concise 2-3 sentence summary that captures the key points and significance. 
-            
-IMPORTANT RULES:
-- Do NOT copy-paste or closely paraphrase the original description
-- Focus on the main story, key developments, and why it matters
-- Write in your own words
-- Keep summaries informative but concise
-- Return each summary separated by "---" in the same order as the articles
-- Do not include numbers, bullet points, or article titles in summaries` 
+            content: `You are a news summarizer. For each article, write a SHORT, CONCISE summary in 2-3 sentences maximum. 
+
+CRITICAL RULES:
+- Write ONLY 2-3 sentences per article
+- Do NOT copy-paste or paraphrase the original description
+- Focus on the main story and why it matters
+- Use bullet points or simple sentences
+- Return each summary separated by "---" in the same order
+- Keep each summary under 100 words
+- Do NOT include HTML tags, links, or formatting
+
+Example format:
+Google launched a new AI coding tool that lets anyone build apps in minutes. The tool uses natural language prompts to generate working applications without coding knowledge. It's free to start but requires paid plans for advanced features.
+
+---` 
           },
           { role: 'user', content: `Summarize these ${articles.length} AI news articles:\n\n${content}` }
         ],
-        max_tokens: 1000,
-        temperature: 0.8
+        max_tokens: 800,
+        temperature: 0.3
       })
     });
     
-    if (!res.ok) return articles;
+    if (!res.ok) {
+      console.error('OpenAI API error:', res.status, res.statusText);
+      return articles; // Return original articles if API fails
+    }
     
     const data: OpenAIResponse = await res.json();
     const raw = data.choices?.[0]?.message?.content || '';
-    const summaries = raw.split('---').map(s => s.trim()).filter(Boolean);
+    
+    // Clean up the response
+    const summaries = raw
+      .split('---')
+      .map(s => s.trim())
+      .filter(Boolean)
+      .map(s => s.replace(/^\d+\.\s*/, '')) // Remove numbering
+      .map(s => s.replace(/<[^>]*>/g, '')) // Remove HTML tags
+      .map(s => s.trim());
+    
+    console.log(`✅ Generated ${summaries.length} summaries from ${articles.length} articles`);
     
     return articles.map((article, index) => ({
       ...article,
-      summary: summaries[index] || article.description
+      summary: summaries[index] || article.title // Fallback to title if no summary
     }));
   } catch (e) {
     console.error('❌ OpenAI summarization failed:', e);
-    return articles;
+    return articles; // Return original articles if summarization fails
   }
 }
 
