@@ -37,8 +37,8 @@ function formatMonthDay(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 }
 
-// ------- ONLY Legitimate News Sources (NO BLOGS) -------
-const legitimateNewsSources = {
+// ------- ONLY WHITELISTED NEWS SOURCES -------
+const whitelistedNewsSources = {
   // T1: Top wire/major business/official
   'reuters.com': 2.0,
   'ap.org': 2.0,
@@ -55,6 +55,11 @@ const legitimateNewsSources = {
   'chicagotribune.com': 2.0,
   'bostonglobe.com': 2.0,
   'miamiherald.com': 2.0,
+  'dallasnews.com': 2.0,
+  'seattletimes.com': 2.0,
+  'denverpost.com': 2.0,
+  'azcentral.com': 2.0,
+  'oregonlive.com': 2.0,
   
   // T2: Reputable tech press/industry news
   'techcrunch.com': 1.2,
@@ -88,21 +93,57 @@ const legitimateNewsSources = {
   'pbs.org': 1.2,
   'propublica.org': 1.2,
   'recode.net': 1.2,
-  'techmeme.com': 1.2,
-  'slashdot.org': 1.2,
-  'hackernews.com': 1.2
+  'techmeme.com': 1.2
 };
 
-// ------- Blog/Non-News Exclusions -------
-const excludedDomains = [
+// ------- STRICT BLACKLIST -------
+const blacklistedDomains = [
+  // Meme/entertainment sites
+  'cheezburger.com',
+  'cheezburger',
+  'memebase.com',
+  '9gag.com',
+  'imgur.com',
+  'reddit.com',
+  'reddit',
+  
+  // Tech forums/aggregators
+  'slashdot.org',
+  'slashdot',
+  'hackernews.com',
+  'ycombinator.com',
+  'stackoverflow.com',
+  'stackoverflow',
+  'github.com',
+  'github',
+  
+  // Random/low-quality sites
+  'rlsbb.to',
+  'rlsbb',
+  'thepiratebay.org',
+  'kickass.to',
+  'torrentz.eu',
+  '1337x.to',
+  'limetorrents.info',
+  'torlock.com',
+  'yourbittorrent.com',
+  'torrentfunk.com',
+  'torrentdownloads.me',
+  'torrentz2.eu',
+  'torrentgalaxy.to',
+  'nyaa.si',
+  'rutracker.org',
+  'thepiratebay',
+  'piratebay',
+  'kat',
+  'kickass',
+  'torrent',
+  'bt',
+  'magnet',
+  
+  // Blogs/social media
   'medium.com',
   'dev.to',
-  'reddit.com',
-  'ycombinator.com',
-  'github.com',
-  'stackoverflow.com',
-  'producthunt.com',
-  'indiehackers.com',
   'substack.com',
   'wordpress.com',
   'blogspot.com',
@@ -117,6 +158,8 @@ const excludedDomains = [
   'pinterest.com',
   'quora.com',
   'answers.com',
+  
+  // Search engines/portals
   'yahoo.com',
   'aol.com',
   'msn.com',
@@ -124,11 +167,33 @@ const excludedDomains = [
   'google.com',
   'wikipedia.org',
   'wikimedia.org',
+  
+  // Archive/cache sites
   'archive.org',
   'waybackmachine.org',
   'cached.com',
   'archive.today',
-  'web.archive.org'
+  'web.archive.org',
+  
+  // Other low-quality domains
+  'universe-today.com',
+  'universetoday.com',
+  'thedailyguardian.com',
+  'dailyguardian.com',
+  'guardian.com',
+  'guardian',
+  'express.com',
+  'express',
+  'daily.com',
+  'daily',
+  'today.com',
+  'today',
+  'now.com',
+  'now',
+  'wire.com',
+  'wire',
+  'service.com',
+  'service'
 ];
 
 // ------- Event Type Weights -------
@@ -189,27 +254,44 @@ async function parseGoogleNewsRSS(url: string): Promise<any[]> {
 // ------- Extract Domain from URL -------
 function extractDomain(url: string): string {
   try {
-    return new URL(url).hostname.replace('www.', '');
+    return new URL(url).hostname.replace('www.', '').toLowerCase();
   } catch {
     return 'unknown';
   }
 }
 
-// ------- Check if source is legitimate news -------
-function isLegitimateNewsSource(url: string): boolean {
+// ------- STRICT SOURCE FILTERING -------
+function isWhitelistedNewsSource(url: string): boolean {
   const domain = extractDomain(url);
   
-  // Check if it's in our legitimate news sources
-  if (legitimateNewsSources[domain]) {
+  // Check if it's in our whitelist
+  if (whitelistedNewsSources[domain]) {
     return true;
   }
   
-  // Check if it's in our exclusion list
-  if (excludedDomains.some(excluded => domain.includes(excluded))) {
+  // Check if it's in our blacklist
+  if (blacklistedDomains.some(blacklisted => domain.includes(blacklisted))) {
+    console.log(`🚫 BLACKLISTED: ${domain}`);
     return false;
   }
   
-  // Additional checks for news-like domains
+  // Additional strict checks
+  const suspiciousPatterns = [
+    /\.(to|tk|ml|ga|cf)$/, // Suspicious TLDs
+    /^(rls|torrent|pirate|kickass|1337)/, // Torrent/pirate sites
+    /(cheez|meme|funny|joke|lol)/, // Meme sites
+    /(forum|board|community|chat)/, // Forums
+    /(blog|personal|diary)/, // Personal blogs
+    /(aggregator|feed|rss)/, // Aggregators
+    /(download|free|crack|keygen)/, // Download sites
+  ];
+  
+  if (suspiciousPatterns.some(pattern => pattern.test(domain))) {
+    console.log(`🚫 SUSPICIOUS PATTERN: ${domain}`);
+    return false;
+  }
+  
+  // Only allow if it looks like a legitimate news domain
   const newsIndicators = [
     'news', 'times', 'post', 'journal', 'tribune', 'herald', 'gazette',
     'chronicle', 'observer', 'review', 'press', 'daily', 'weekly',
@@ -221,13 +303,18 @@ function isLegitimateNewsSource(url: string): boolean {
     domain.includes(indicator)
   );
   
-  return hasNewsIndicator;
+  if (!hasNewsIndicator) {
+    console.log(`🚫 NO NEWS INDICATOR: ${domain}`);
+    return false;
+  }
+  
+  return true;
 }
 
 // ------- Calculate Authority Score -------
 function calculateAuthority(url: string, source: string): number {
   const domain = extractDomain(url);
-  return legitimateNewsSources[domain] || 0.0;
+  return whitelistedNewsSources[domain] || 0.0;
 }
 
 // ------- Detect Event Type -------
@@ -339,14 +426,15 @@ function calculateRelevanceScore(item: NewsItem): number {
   );
 }
 
-// ------- Hard Quality Filters (NO BLOGS) -------
+// ------- ULTRA STRICT QUALITY FILTERS -------
 function passesQualityFilters(item: any): boolean {
   const title = item.title.toLowerCase();
   const description = item.description.toLowerCase();
   const text = title + ' ' + description;
   
-  // MUST be from legitimate news source
-  if (!isLegitimateNewsSource(item.url)) {
+  // MUST be from whitelisted news source
+  if (!isWhitelistedNewsSource(item.url)) {
+    console.log(`🚫 REJECTED: ${item.title} from ${extractDomain(item.url)}`);
     return false;
   }
   
@@ -386,6 +474,7 @@ function passesQualityFilters(item: any): boolean {
     return false;
   }
   
+  console.log(`✅ ACCEPTED: ${item.title} from ${extractDomain(item.url)}`);
   return true;
 }
 
@@ -504,7 +593,7 @@ IMPORTANT RULES:
 
 // ------- Main News Fetching Function -------
 async function fetchCuratedAINews(): Promise<NewsItem[]> {
-  console.log('🔍 Fetching and curating AI news (NO BLOGS)');
+  console.log('🔍 Fetching and curating AI news (ULTRA STRICT FILTERING)');
   
   const allArticles: any[] = [];
   
@@ -540,9 +629,9 @@ async function fetchCuratedAINews(): Promise<NewsItem[]> {
     };
   });
   
-  // Apply quality filters (NO BLOGS)
+  // Apply ULTRA STRICT quality filters
   const filteredArticles = processedArticles.filter(passesQualityFilters);
-  console.log(`✅ ${filteredArticles.length} articles passed quality filters (NO BLOGS)`);
+  console.log(`✅ ${filteredArticles.length} articles passed ULTRA STRICT quality filters`);
   
   // Calculate relevance scores
   const scoredArticles = filteredArticles.map(article => ({
@@ -571,7 +660,7 @@ let inmemPayload: { articles: any[]; weekStart: string; isCurrentWeek: boolean }
 
 // ------- GET handler -------
 export const GET: RequestHandler = async ({ url }) => {
-  console.log('🚀 /api/v1/news (Curated AI News - NO BLOGS)');
+  console.log('🚀 /api/v1/news (ULTRA STRICT FILTERING)');
   console.log('  - OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
 
   const now = new Date();
@@ -582,12 +671,14 @@ export const GET: RequestHandler = async ({ url }) => {
   const currentWeekKey = `${currentWeek.getFullYear()}-${currentWeek.getMonth() + 1}-${currentWeek.getDate()}`;
   const forceRefresh = url.searchParams.get('refresh') === '1';
 
+  // Check cache only if NOT forcing refresh
   if (!forceRefresh && inmemPayload && inmemWeekKey === currentWeekKey && Date.now() - inmemTimestamp < INMEM_TTL_MS) {
+    console.log('📦 Returning cached data');
     return json(inmemPayload);
   }
 
   // Fetch curated AI news
-  console.log('📅 Fetching curated AI news (NO BLOGS)');
+  console.log('📅 Fetching curated AI news (ULTRA STRICT)');
   let articles = await fetchCuratedAINews();
   let weekStart = currentWeekStart;
   let isCurrentWeek = true;
@@ -611,6 +702,7 @@ export const GET: RequestHandler = async ({ url }) => {
     isCurrentWeek: isCurrentWeek
   };
   
+  // Update cache
   inmemPayload = payload;
   inmemWeekKey = currentWeekKey;
   inmemTimestamp = Date.now();
