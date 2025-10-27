@@ -192,7 +192,7 @@ Format your response with clear headings and bullet points for easy reading.`;
   <div class="flex justify-between items-center p-3 border-b border-zinc-600 bg-zinc-800">
     <h3 class="font-semibold text-zinc-200">Promptify Chat</h3>
     <button 
-      class="px-3 py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm rounded-md transition-colors" 
+      class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md transition-colors" 
       on:click={resetChat}
     >
       Reset Chat
