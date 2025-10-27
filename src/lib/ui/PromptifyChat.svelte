@@ -93,9 +93,10 @@ You are an expert AI prompt engineer helping users write better prompts. The use
 Your task is to provide educational feedback that helps them understand how to write better prompts for AI chatbots, agents, and other AI tools.
 
 IMPORTANT: Only if the user's prompt contains INAPPROPRIATE content (explicitly sexual/pornographic material, detailed suicide/self-harm instructions, graphic eating disorder content, or racial/sexual orientation slurs), you should:
-  1. Still provide normal feedback with analysis, improved versions, and tips
-  2. Do NOT quote or build off the inappropriate parts
-  3. At the end, append: "⚠️ Please avoid inappropriate content such as explicit sexual material, graphic violence, self-harm, or offensive slurs in your prompts." DO NOT APPEND PHRASE if intent of input is unclear or not EXPLICITLY (explicitly sexual/pornographic material, detailed suicide/self-harm instructions, graphic eating disorder content, or racial/sexual orientation slurs) 
+1. Still provide normal feedback with analysis, improved versions, and tips
+2. Do NOT quote or build off the inappropriate parts
+3. At the end, append: "⚠️ Please avoid inappropriate content such as explicit sexual material, graphic violence, self-harm, or offensive slurs in your prompts."
+
 
 Please provide (without asterisks):
 
@@ -161,14 +162,6 @@ Format your response with clear headings and bullet points for easy reading.`;
     }, 50);
   }
 
-  function adjustTextareaHeight() {
-    if (inputElement) {
-      inputElement.style.height = 'auto';
-      inputElement.style.height = `${Math.min(inputElement.scrollHeight, 150)}px`;
-    }
-  }
-
-
   // Auto-scroll to bottom when new messages are added
   $: if (chatMessages && chatContainer) {
     setTimeout(() => {
@@ -182,7 +175,6 @@ Format your response with clear headings and bullet points for easy reading.`;
       event.preventDefault();
       sendMessage();
     }
-    setTimeout(() => adjustTextareaHeight(), 0);
   }
 
   // Focus input when component mounts
@@ -230,17 +222,15 @@ Format your response with clear headings and bullet points for easy reading.`;
   <!-- Input Area -->
   <div class="p-4 border-t border-zinc-600 bg-zinc-800">
     <div class="flex gap-2">
-      <textarea
+      <input
         bind:this={inputElement}
-        class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white resize-none"
+        class="flex-1 p-3 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-zinc-200 placeholder-zinc-500 bg-zinc-700"
+        type="text"
         bind:value={userInput}
-        placeholder="Type your prompt here..."
+        placeholder="Type your prompt here.."
         on:keydown={handleKeydown}
-        on:input={adjustTextareaHeight}
         disabled={$chatMessages.some(msg => msg.status === 'loading')}
         on:mount={focusInput}
-        rows="1"
-        style="max-height: 150px; overflow-y: auto;"
       />
       <button 
         class="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
