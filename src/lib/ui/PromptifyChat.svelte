@@ -54,42 +54,12 @@
       const aiResponse = await generatePromptImprovement(input);
       
       chatMessages.update(msgs =>
-        msgs.map(msg => 
-          msg.id === messageId && msg.status === 'loading' 
-            ? { ...msg, text: aiResponse, status: 'normal' } 
-            : msg
-        )
-      );
-      
-      // Smart scroll: If bot response is too long, scroll so user input is at top
-      setTimeout(() => {
-        if (chatContainer) {
-          // Find all message bubbles
-          const messages = chatContainer.querySelectorAll('[data-message]');
-          
-          if (messages.length >= 2) {
-            // Get the last two messages (user input + bot response)
-            const userMessage = messages[messages.length - 2];
-            const botMessage = messages[messages.length - 1];
-            
-            // Check if bot message is taller than viewport
-            const containerHeight = chatContainer.clientHeight;
-            const botMessageHeight = botMessage.clientHeight;
-            
-            if (botMessageHeight > containerHeight) {
-              // Bot message is too long, scroll so user message is at top
-              const userMessageTop = userMessage.offsetTop;
-              chatContainer.scrollTop = userMessageTop - 8; // 8px padding
-            } else {
-              // Bot message fits, scroll to bottom to show everything
-              chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-          } else {
-            // Fallback: scroll to bottom
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-          }
-        }
-      }, 200);
+      msgs.map(msg => 
+        msg.id === messageId && msg.status === 'loading' 
+          ? { ...msg, text: aiResponse, status: 'normal' } 
+          : msg
+      )
+    );
       
     } catch (error) {
       console.error('Error generating response:', error);
@@ -101,13 +71,6 @@
             : msg
         )
       );
-      
-      // Scroll to bottom for error message
-      setTimeout(() => {
-        if (chatContainer) {
-          chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-      }, 150);
     }
     
     // Focus again after loading is complete
@@ -212,18 +175,11 @@ Format your response with clear headings and bullet points for easy reading.`;
     setTimeout(() => adjustTextareaHeight(), 0);
   }
 
-  // Auto-scroll to bottom when user sends a message
+  // Auto-scroll to bottom for all message changes
   $: if (chatContainer && $chatMessages.length > previousMessageCount) {
-    const newMessage = $chatMessages[$chatMessages.length - 1];
-    
-    // Only auto-scroll for newly added messages (not status changes)
-    // User messages and loading bot messages get auto-scroll
-    // Normal bot messages skip auto-scroll (handled by smart scroll below)
-    if (newMessage && (newMessage.user === 'you' || newMessage.status === 'loading')) {
-      setTimeout(() => {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }, 50);
-    }
+    setTimeout(() => {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 50);
     
     previousMessageCount = $chatMessages.length;
   }
