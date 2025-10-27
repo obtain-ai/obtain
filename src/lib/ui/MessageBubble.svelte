@@ -2,6 +2,34 @@
   export let text: string;
   export let user: 'you' | 'bot';
   export let status: 'loading' | 'error' | 'normal' = 'normal';
+
+  // Function to convert markdown to HTML
+  function formatMarkdown(text: string): string {
+    // Convert bold **text** to <strong>text</strong>
+    let html = text.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>');
+    
+    // Convert italic *text* to <em>text</em>
+    html = html.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em class="italic">$1</em>');
+    
+    // Convert headings (# Heading) to styled headings with better spacing
+    html = html.replace(/^### (.+)$/gm, '<h3 class="font-bold text-lg mt-4 mb-2">$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2 class="font-bold text-xl mt-5 mb-3">$2</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1 class="font-bold text-2xl mt-6 mb-4">$1</h1>');
+    
+    // Convert numbered lists with better indentation
+    html = html.replace(/^\d+\. (.+)$/gm, '<div class="ml-4 my-1">$1</div>');
+    
+    // Convert bullet points (- or •) with indentation
+    html = html.replace(/^[-•]\s(.+)$/gm, '<div class="ml-6 my-1">• $1</div>');
+    
+    // Add spacing between sections
+    html = html.replace(/\n\n/g, '<div class="mb-4"></div>');
+    
+    // Convert line breaks
+    html = html.replace(/\n/g, '<br />');
+    
+    return html;
+  }
 </script>
 
 <div class="flex {user === 'you' ? 'justify-end' : 'justify-start'}" data-message>
@@ -24,8 +52,8 @@
         <span class="text-sm">Error: {text}</span>
       </div>
     {:else}
-      <div class="whitespace-pre-wrap text-sm leading-relaxed break-words">
-        {text}
+      <div class="whitespace-pre-wrap text-sm leading-relaxed break-words prose prose-sm max-w-none">
+        {@html formatMarkdown(text)}
       </div>
     {/if}
   </div>
