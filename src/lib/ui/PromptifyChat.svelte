@@ -187,8 +187,7 @@ Format your response with clear headings and bullet points for easy reading.`;
   }
 </script>
 
-<div class="flex flex-col w-full border border-zinc-200 rounded-lg bg-zinc-700 shadow-lg overflow-hidden">
-  <!-- Reset Button -->
+<div class="flex flex-col w-full h-[400px] border border-zinc-200 rounded-lg bg-zinc-700 shadow-lg overflow-hidden">  <!-- Reset Button -->
   <div class="flex justify-between items-center p-3 border-b border-zinc-600 bg-zinc-800">
     <h3 class="font-semibold text-zinc-200">Promptify Chat</h3>
     <button 
