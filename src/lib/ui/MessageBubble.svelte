@@ -37,22 +37,22 @@
   :global(.prose h1) {
     font-size: 1.5rem;
     font-weight: bold;
-    margin-top: 0.75rem;
-    margin-bottom: 0.25rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.1rem;
   }
   
   :global(.prose h2) {
     font-size: 1.25rem;
     font-weight: bold;
-    margin-top: 0.75rem;
-    margin-bottom: 0.25rem;
+    margin-top: 0.4rem;
+    margin-bottom: 0.08rem;
   }
   
   :global(.prose h3) {
     font-size: 1.1rem;
     font-weight: bold;
-    margin-top: 0.5rem;
-    margin-bottom: 0.25rem;
+    margin-top: 0.2rem;
+    margin-bottom: 0.04rem;
   }
   
   :global(.prose strong) {
@@ -60,28 +60,28 @@
   }
   
   :global(.prose p) {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.1rem;
   }
   
   :global(.prose ul) {
     list-style-type: disc;
     margin-left: 1.5rem;
-    margin-top: 0.25rem;
-    margin-bottom: 0.5rem;
+    margin-top: 0.08rem;
+    margin-bottom: 0.04rem;
   }
   
   :global(.prose ol) {
     list-style-type: decimal;
     margin-left: 1.5rem;
-    margin-top: 0.25rem;
-    margin-bottom: 0.5rem;
+    margin-top: 0.08rem;
+    margin-bottom: 0.04rem;
   }
   
   :global(.prose li) {
-    margin-bottom: 0.1rem;
+    margin-bottom: 0.02rem;
   }
   
   :global(.prose hr) {
-    margin: 0.5rem 0;
+    margin: 0.08rem 0;
   }
 </style>
