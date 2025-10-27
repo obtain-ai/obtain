@@ -4,7 +4,7 @@
   export let status: 'loading' | 'error' | 'normal' = 'normal';
 </script>
 
-<div class="flex {user === 'you' ? 'justify-end' : 'justify-start'}">
+<div class="flex {user === 'you' ? 'justify-end' : 'justify-start'}" data-message>
   <div
   class="max-w-[75%] p-3 rounded-lg shadow-sm
          {user === 'you' 
