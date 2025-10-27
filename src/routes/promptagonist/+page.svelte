@@ -12,6 +12,10 @@
 			<h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
 				Promptagonist
 			</h1>
+			<!-- Tagline -->
+			<p class="text-xl text-zinc-300 font-normal">
+				Prompt. Play. Learn.
+			</p>
 		</div>
 
 		<!-- Description Box -->
