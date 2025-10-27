@@ -61,6 +61,13 @@
         )
       );
       
+      // Scroll to bottom after content is updated
+      setTimeout(() => {
+        if (chatContainer) {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+      }, 50);
+      
     } catch (error) {
       console.error('Error generating response:', error);
       
@@ -71,6 +78,13 @@
             : msg
         )
       );
+      
+      // Scroll to bottom after error content is updated
+      setTimeout(() => {
+        if (chatContainer) {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+      }, 50);
     }
     
     // Focus again after loading is complete
