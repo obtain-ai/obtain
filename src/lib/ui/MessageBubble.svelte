@@ -86,13 +86,6 @@
     font-weight: 600;
   }
 
-  /* Fix Version X spacing - make them tighter */
-  :global(.markdown-body p:has-text("Version")) {
-    margin-top: 0.1rem;
-    margin-bottom: 0.02rem;
-    font-weight: 500;
-  }
-
   /* Reduce extra spacing around code blocks */
   :global(.markdown-body pre) {
     margin: 0.2rem 0;
