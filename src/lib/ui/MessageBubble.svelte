@@ -34,76 +34,50 @@
 </div>
 
 <style>
-  /* Override Tailwind prose spacing - make everything very compact */
-  :global(.prose *) {
-    margin-top: 0;
-    margin-bottom: 0;
+  /* Compact markdown layout */
+  :global(.markdown-body) {
+    line-height: 1.35;
   }
-  
-  :global(.prose h1) {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin-top: 0.5rem !important;
-    margin-bottom: 0.25rem !important;
+
+  /* Remove almost all heading gaps */
+  :global(.markdown-body h1),
+  :global(.markdown-body h2),
+  :global(.markdown-body h3) {
+    font-weight: 600;
+    margin-top: 0.15rem;
+    margin-bottom: 0.05rem;
   }
-  
-  :global(.prose h2) {
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-top: 0.5rem !important;
-    margin-bottom: 0.25rem !important;
+
+  /* Ultra-tight paragraph and list spacing */
+  :global(.markdown-body p),
+  :global(.markdown-body ul),
+  :global(.markdown-body ol),
+  :global(.markdown-body li) {
+    margin: 0.05rem 0;
   }
-  
-  :global(.prose h3) {
-    font-size: 1rem;
-    font-weight: bold;
-    margin-top: 0.4rem !important;
-    margin-bottom: 0.2rem !important;
+
+  :global(.markdown-body ul),
+  :global(.markdown-body ol) {
+    padding-left: 1.1rem;
   }
-  
-  :global(.prose strong) {
-    font-weight: bold;
+
+  :global(.markdown-body li) {
+    margin-bottom: 0.03rem;
   }
-  
-  :global(.prose p) {
-    margin-top: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
+
+  :global(.markdown-body strong) {
+    font-weight: 600;
   }
-  
-  :global(.prose ul),
-  :global(.prose ol) {
-    list-style-type: disc;
-    margin-left: 1.5rem !important;
-    margin-top: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
-    padding-left: 0.5rem;
+
+  /* No extra spacing between message bubbles */
+  [data-message] {
+    margin-bottom: 0.1rem !important;
   }
-  
-  :global(.prose li) {
-    margin-top: 0.15rem !important;
-    margin-bottom: 0.15rem !important;
-    line-height: 1.5;
-  }
-  
-  :global(.prose pre) {
-    margin-top: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-  
-  :global(.prose code) {
-    margin: 0;
-  }
-  
-  :global(.prose hr) {
-    margin: 0.5rem 0 !important;
-  }
-  
-  /* Override any other prose spacing */
-  :global(.prose > *:first-child) {
-    margin-top: 0 !important;
-  }
-  
-  :global(.prose > *:last-child) {
-    margin-bottom: 0 !important;
+
+  /* If your chat container uses flex or grid, eliminate gap */
+  :global(.chat-container),
+  :global(.flex[data-message]) {
+    gap: 0 !important;
   }
 </style>
+
