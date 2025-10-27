@@ -89,7 +89,7 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
           }
         }
-      }, 150);
+      }, 200);
       
     } catch (error) {
       console.error('Error generating response:', error);
@@ -212,13 +212,14 @@ Format your response with clear headings and bullet points for easy reading.`;
     setTimeout(() => adjustTextareaHeight(), 0);
   }
 
-  // Auto-scroll to bottom when user adds a message
+  // Auto-scroll to bottom when user sends a message
   $: if (chatContainer && $chatMessages.length > previousMessageCount) {
-    const lastMessage = $chatMessages[$chatMessages.length - 1];
+    const newMessage = $chatMessages[$chatMessages.length - 1];
     
-    // Only auto-scroll to bottom if it's a user message or loading bot message
-    // Bot responses with 'normal' status get smart scrolling instead
-    if (lastMessage && lastMessage.user === 'you' || lastMessage.status === 'loading') {
+    // Only auto-scroll for newly added messages (not status changes)
+    // User messages and loading bot messages get auto-scroll
+    // Normal bot messages skip auto-scroll (handled by smart scroll below)
+    if (newMessage && (newMessage.user === 'you' || newMessage.status === 'loading')) {
       setTimeout(() => {
         chatContainer.scrollTop = chatContainer.scrollHeight;
       }, 50);
