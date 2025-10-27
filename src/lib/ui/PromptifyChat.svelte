@@ -162,6 +162,18 @@ Format your response with clear headings and bullet points for easy reading.`;
     }, 50);
   }
 
+  function adjustTextareaHeight() {
+    if (inputElement) {
+      inputElement.style.height = 'auto';
+      inputElement.style.height = `${Math.min(inputElement.scrollHeight, 150)}px`;
+    }
+  }
+
+  // Watch userInput for changes and adjust height
+  $: if (userInput !== undefined) {
+    setTimeout(() => adjustTextareaHeight(), 0);
+  }
+
   // Auto-scroll to bottom when new messages are added
   $: if (chatMessages && chatContainer) {
     setTimeout(() => {
@@ -175,6 +187,7 @@ Format your response with clear headings and bullet points for easy reading.`;
       event.preventDefault();
       sendMessage();
     }
+    setTimeout(() => adjustTextareaHeight(), 0);
   }
 
   // Focus input when component mounts
@@ -222,15 +235,17 @@ Format your response with clear headings and bullet points for easy reading.`;
   <!-- Input Area -->
   <div class="p-4 border-t border-zinc-600 bg-zinc-800">
     <div class="flex gap-2">
-      <input
+      <textarea
         bind:this={inputElement}
-        class="flex-1 p-3 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-zinc-200 placeholder-zinc-500 bg-zinc-700"
-        type="text"
+        class="flex-1 p-3 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-zinc-600 bg-white resize-none"
         bind:value={userInput}
-        placeholder="Type your prompt here.."
+        placeholder="Type your prompt here..."
         on:keydown={handleKeydown}
+        on:input={adjustTextareaHeight}
         disabled={$chatMessages.some(msg => msg.status === 'loading')}
         on:mount={focusInput}
+        rows="1"
+        style="max-height: 150px; overflow-y: auto;"
       />
       <button 
         class="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
