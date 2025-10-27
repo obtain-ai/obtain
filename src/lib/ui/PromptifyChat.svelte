@@ -54,17 +54,6 @@
       const aiResponse = await generatePromptImprovement(input);
       
       chatMessages.update(msgs =>
-      msgs.map(msg => 
-        msg.id === messageId && msg.status === 'loading' 
-          ? { ...msg, text: aiResponse, status: 'normal' } 
-          : msg
-      )
-    );
-      
-    } catch (error) {
-      console.error('Error generating response:', error);
-      
-      chatMessages.update(msgs =>
         msgs.map(msg => 
           msg.id === messageId && msg.status === 'loading' 
             ? { ...msg, text: aiResponse, status: 'normal' } 
@@ -72,12 +61,16 @@
         )
       );
       
-      // Scroll to bottom when bot response finishes
-      setTimeout(() => {
-        if (chatContainer) {
-          chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-      }, 100);
+    } catch (error) {
+      console.error('Error generating response:', error);
+      
+      chatMessages.update(msgs =>
+        msgs.map(msg => 
+          msg.id === messageId && msg.status === 'loading' 
+            ? { ...msg, text: 'Sorry, I encountered an error. Please try again.', status: 'error' } 
+            : msg
+        )
+      );
     }
     
     // Focus again after loading is complete
@@ -182,9 +175,6 @@ Format your response with clear headings and bullet points for easy reading.`;
     setTimeout(() => adjustTextareaHeight(), 0);
   }
 
- /// Track previous message count to detect new messages
-  previousMessageCount = 0;
-  
   // Auto-scroll to bottom ONLY when new messages are added
   $: if (chatContainer && $chatMessages.length > previousMessageCount) {
     setTimeout(() => {
