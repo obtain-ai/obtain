@@ -61,6 +61,36 @@
         )
       );
       
+      // Smart scroll: If bot response is too long, scroll so user input is at top
+      setTimeout(() => {
+        if (chatContainer) {
+          // Find all message bubbles
+          const messages = chatContainer.querySelectorAll('[data-message]');
+          
+          if (messages.length >= 2) {
+            // Get the last two messages (user input + bot response)
+            const userMessage = messages[messages.length - 2];
+            const botMessage = messages[messages.length - 1];
+            
+            // Check if bot message is taller than viewport
+            const containerHeight = chatContainer.clientHeight;
+            const botMessageHeight = botMessage.clientHeight;
+            
+            if (botMessageHeight > containerHeight) {
+              // Bot message is too long, scroll so user message is at top
+              const userMessageTop = userMessage.offsetTop;
+              chatContainer.scrollTop = userMessageTop - 8; // 8px padding
+            } else {
+              // Bot message fits, scroll to bottom to show everything
+              chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+          } else {
+            // Fallback: scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }
+        }
+      }, 150);
+      
     } catch (error) {
       console.error('Error generating response:', error);
       
@@ -71,6 +101,13 @@
             : msg
         )
       );
+      
+      // Scroll to bottom for error message
+      setTimeout(() => {
+        if (chatContainer) {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+      }, 150);
     }
     
     // Focus again after loading is complete
