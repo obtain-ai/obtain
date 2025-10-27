@@ -100,20 +100,20 @@ IMPORTANT: Only if the user's prompt contains INAPPROPRIATE content (explicitly 
 
 Please provide:
 
-1. **Analysis**: Briefly analyze what the user's prompt is trying to achieve and identify areas for improvement.
+1. Analysis: Briefly analyze what the user's prompt is trying to achieve and identify areas for improvement.
 
-2. **3 Improved Versions**: Provide 3 different improved versions of their prompt:
+2. 3 Improved Versions: Provide 3 different improved versions of their prompt:
    - Version 1: More specific and detailed
    - Version 2: Better structured with clear sections
    - Version 3: More creative and engaging approach
 
-3. **Why These Are Better**: Explain why each improved version is better than the original, focusing on:
+3. Why These Are Better: Explain why each improved version is better than the original, focusing on:
    - Clarity and specificity
    - Structure and organization
    - Context and background information
    - Action-oriented language
 
-4. **General Tips**: Provide 3-4 general tips for writing effective prompts that apply to this type of request.
+4. General Tips: Provide 3-4 general tips for writing effective prompts that apply to this type of request.
 
 Keep your response educational, encouraging, and easy to understand for people who are new to AI. Use simple language and explain technical concepts clearly.
 
