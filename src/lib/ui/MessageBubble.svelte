@@ -11,34 +11,15 @@
     // Convert italic *text* to <em>text</em>
     html = html.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em class="italic">$1</em>');
     
-    // Convert headings
+    // Convert headings (# Heading) to bold headings with spacing
     html = html.replace(/^### (.+)$/gm, '<h3 class="font-bold text-lg mt-4 mb-2">$1</h3>');
     html = html.replace(/^## (.+)$/gm, '<h2 class="font-bold text-xl mt-5 mb-3">$1</h2>');
     html = html.replace(/^# (.+)$/gm, '<h1 class="font-bold text-2xl mt-6 mb-4">$1</h1>');
     
-    // Handle "Version 1:", "Version 2:", "Version 3:" - make them look like subheadings, indented moderately
-    html = html.replace(/^Version (\d+):\s*(.+)?$/gm, '<div class="ml-6 my-2 font-semibold text-base">Version $1:</div>$2 ? `<div class="ml-10 my-1">$2</div>` : \'\'');
-    
-    // Handle lines that are indented (content under versions) - indent them MORE than the version header
-    // This catches lines that start with 4+ spaces
-    html = html.replace(/^(\s{4,})(.+)$/gm, (match, spaces, content) => {
-      const indentLevel = Math.floor(spaces.length / 4);
-      return `<div class="ml-${6 + indentLevel * 4} my-1">${content}</div>`;
-    });
-    
-    // Convert numbered lists (1. 2. 3.) - these should be at the main level
-    html = html.replace(/^(\d+)\. (.+)$/gm, '<div class="my-2 font-medium">$1. $2</div>');
-    
-    // Convert bullet points (- or •) with TIGHT spacing and indentation
-    html = html.replace(/^[-•]\s(.+)$/gm, '<div class="ml-6 my-0.5">• $1</div>');
-    
-    // Add spacing between major numbered sections
-    html = html.replace(/\n(\d+\.\s+)/g, '<div class="mb-4"></div>$1');
-    
     // Convert line breaks
     html = html.replace(/\n/g, '<br />');
     
-    // Clean up excessive br tags
+    // Clean up excessive spacing
     html = html.replace(/(<br \/>){2,}/g, '<br />');
     
     return html;
