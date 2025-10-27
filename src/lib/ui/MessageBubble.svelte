@@ -34,25 +34,31 @@
 </div>
 
 <style>
+  /* Override Tailwind prose spacing - make everything very compact */
+  :global(.prose *) {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  
   :global(.prose h1) {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: bold;
-    margin-top: 0.5rem;
-    margin-bottom: 0.1rem;
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.25rem !important;
   }
   
   :global(.prose h2) {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: bold;
-    margin-top: 0.4rem;
-    margin-bottom: 0.08rem;
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.25rem !important;
   }
   
   :global(.prose h3) {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: bold;
-    margin-top: 0.2rem;
-    margin-bottom: 0.04rem;
+    margin-top: 0.4rem !important;
+    margin-bottom: 0.2rem !important;
   }
   
   :global(.prose strong) {
@@ -60,28 +66,44 @@
   }
   
   :global(.prose p) {
-    margin-bottom: 0.1rem;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
   }
   
-  :global(.prose ul) {
-    list-style-type: disc;
-    margin-left: 1.5rem;
-    margin-top: 0.08rem;
-    margin-bottom: 0.04rem;
-  }
-  
+  :global(.prose ul),
   :global(.prose ol) {
-    list-style-type: decimal;
-    margin-left: 1.5rem;
-    margin-top: 0.08rem;
-    margin-bottom: 0.04rem;
+    list-style-type: disc;
+    margin-left: 1.5rem !important;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
+    padding-left: 0.5rem;
   }
   
   :global(.prose li) {
-    margin-bottom: 0.02rem;
+    margin-top: 0.15rem !important;
+    margin-bottom: 0.15rem !important;
+    line-height: 1.5;
+  }
+  
+  :global(.prose pre) {
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  :global(.prose code) {
+    margin: 0;
   }
   
   :global(.prose hr) {
-    margin: 0.08rem 0;
+    margin: 0.5rem 0 !important;
+  }
+  
+  /* Override any other prose spacing */
+  :global(.prose > *:first-child) {
+    margin-top: 0 !important;
+  }
+  
+  :global(.prose > *:last-child) {
+    margin-bottom: 0 !important;
   }
 </style>
