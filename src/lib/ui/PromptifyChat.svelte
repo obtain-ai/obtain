@@ -162,11 +162,13 @@ Format your response with clear headings and bullet points for easy reading.`;
     }, 50);
   }
 
-  // Auto-scroll to bottom when new messages are added
-  $: if (chatMessages && chatContainer) {
+  // Auto-scroll to bottom ONLY when new messages are added
+  $: if (chatContainer && $chatMessages.length > previousMessageCount) {
     setTimeout(() => {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }, 50);
+    
+    previousMessageCount = $chatMessages.length;
   }
 
   // Handle Enter key
