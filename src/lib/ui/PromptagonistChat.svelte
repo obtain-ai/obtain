@@ -466,7 +466,7 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
             msg.type === 'system' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
             'bg-zinc-100 text-zinc-800 border border-zinc-200'
           }">
-            <div class="whitespace-pre-wrap text-sm break-words break-all overflow-wrap-anywhere">{msg.content}</div>
+            <div class="whitespace-pre-wrap text-sm">{msg.content}</div>
             
             {#if msg.evaluation}
               <div class="mt-2 pt-2 border-t border-zinc-300">
