@@ -187,7 +187,7 @@ Format your response with clear headings and bullet points for easy reading.`;
   }
 </script>
 
-<div class="flex flex-col w-full border border-zinc-200 rounded-lg bg-zinc-700 shadow-lg overflow-hidden">
+<div class="flex flex-col w-full h-[400px] border border-zinc-200 rounded-lg bg-zinc-700 shadow-lg overflow-hidden">
   <!-- Reset Button -->
   <div class="flex justify-between items-center p-3 border-b border-zinc-600 bg-zinc-800">
     <h3 class="font-semibold text-zinc-200">Promptify Chat</h3>
@@ -202,7 +202,7 @@ Format your response with clear headings and bullet points for easy reading.`;
   <!-- Messages Container -->
   <div 
     bind:this={chatContainer} 
-    class="flex-1 overflow-y-auto p-4 space-y-3 bg-zinc-800 min-h-[300px]"
+    class="flex-1 overflow-y-auto p-4 space-y-3 bg-zinc-800"
   >
     {#each $chatMessages as msg (msg.id)}
       <MessageBubble {...msg} />
