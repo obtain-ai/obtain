@@ -24,7 +24,7 @@
         <span class="text-sm">Error: {text}</span>
       </div>
     {:else}
-      <div class="whitespace-pre-wrap text-sm leading-relaxed">
+      <div class="whitespace-pre-wrap text-sm leading-relaxed break-words break-all overflow-wrap-anywhere">
         {text}
       </div>
     {/if}
