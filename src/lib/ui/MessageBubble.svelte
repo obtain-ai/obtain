@@ -13,20 +13,29 @@
     
     // Convert headings (# Heading) to styled headings with better spacing
     html = html.replace(/^### (.+)$/gm, '<h3 class="font-bold text-lg mt-4 mb-2">$1</h3>');
-    html = html.replace(/^## (.+)$/gm, '<h2 class="font-bold text-xl mt-5 mb-3">$2</h2>');
+    html = html.replace(/^## (.+)$/gm, '<h2 class="font-bold text-xl mt-5 mb-3">$1</h2>');
     html = html.replace(/^# (.+)$/gm, '<h1 class="font-bold text-2xl mt-6 mb-4">$1</h1>');
     
-    // Convert numbered lists with better indentation
-    html = html.replace(/^\d+\. (.+)$/gm, '<div class="ml-4 my-1">$1</div>');
+    // Convert "Version 1:", "Version 2:", "Version 3:" with proper indentation
+    html = html.replace(/^Version (\d+):?$/gm, '<div class="ml-6 my-2 font-semibold">Version $1:</div>');
     
-    // Convert bullet points (- or •) with indentation
-    html = html.replace(/^[-•]\s(.+)$/gm, '<div class="ml-6 my-1">• $1</div>');
+    // Convert content under Version headings with MORE indentation (8 spaces, or ml-8)
+    html = html.replace(/^(\s{4,})(.+)$/gm, '<div class="ml-12 my-1">$2</div>');
     
-    // Add spacing between sections
-    html = html.replace(/\n\n/g, '<div class="mb-4"></div>');
+    // Convert numbered lists with minimal indentation
+    html = html.replace(/^\d+\. (.+)$/gm, '<div class="my-1">$1</div>');
+    
+    // Convert bullet points (- or •) with LESS spacing between items
+    html = html.replace(/^[-•]\s(.+)$/gm, '<div class="ml-6 my-0.5">• $1</div>');
+    
+    // Only add spacing between major sections (lines that are mostly empty or are numbered sections)
+    html = html.replace(/\n(\d+\.\s+)/g, '<div class="mb-3"></div>$1');
     
     // Convert line breaks
     html = html.replace(/\n/g, '<br />');
+    
+    // Clean up multiple consecutive br tags
+    html = html.replace(/<br \/>(<br \/>)+/g, '<div class="mb-2"></div>');
     
     return html;
   }
