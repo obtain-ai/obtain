@@ -118,8 +118,8 @@
 			</InfoDisplay>
 		</div>
 
-		<!-- 64% wrapper for week header + refresh + articles -->
-		<div class="w-[64%] mx-auto">
+		<!-- 80% wrapper for week header + refresh + articles -->
+		<div class="w-[80%] mx-auto">
 			<!-- Refresh Button and Week Header -->
 			<div class="flex items-center justify-between mb-8 mt-8">
 				{#if weekStart && !loading && !error}
@@ -217,3 +217,4 @@
 		</div>
 	</div>
 </div>
+
