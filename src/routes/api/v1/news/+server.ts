@@ -51,10 +51,9 @@ const newsRSSFeeds = [
   { url: 'https://feeds.reuters.com/reuters/technologyNews', source: 'Reuters', authority: 2.0 },
   { url: 'https://feeds.bloomberg.com/markets/news.rss', source: 'Bloomberg', authority: 2.0 },
   { url: 'https://feeds.feedburner.com/zdnet', source: 'ZDNet', authority: 1.2 },
-  { url: 'https://www.forbes.com/innovation/feed2/', source: 'Forbes', authority: 1.2 },
+  { url: 'https://www.forbes.com/innovation/feed2/', source: 'Forbes', authority: 1.2 }
   
-  // AI-Specific
-  { url: 'https://www.artificialintelligence-news.com/feed/', source: 'AI News', authority: 1.0 }
+  // REMOVED: { url: 'https://www.artificialintelligence-news.com/feed/', source: 'AI News', authority: 1.0 }
 ];
 
 // ------- Event Type Weights -------
@@ -74,15 +73,23 @@ const eventTypeWeights = {
 // ------- Parse RSS Feed -------
 async function parseRSSFeed(feedUrl: string, source: string, authority: number): Promise<any[]> {
   try {
-    console.log(`📡 Fetching from ${source}: ${feedUrl}`);
+    console.log(`Fetching from ${source}: ${feedUrl}`);
+    
+    // Add timeout and abort controller
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
     const response = await fetch(feedUrl, { 
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; RSS Reader)'
-      }
+      },
+      signal: controller.signal
     });
     
+    clearTimeout(timeoutId);
+    
     if (!response.ok) {
-      console.error(`❌ Failed to fetch ${source}: ${response.status}`);
+      console.error(`Failed to fetch ${source}: ${response.status}`);
       return [];
     }
     
@@ -107,10 +114,14 @@ async function parseRSSFeed(feedUrl: string, source: string, authority: number):
       };
     });
     
-    console.log(`✅ ${source}: Found ${articles.length} articles`);
+    console.log(`${source}: Found ${articles.length} articles`);
     return articles;
   } catch (error) {
-    console.error(`❌ Error parsing ${source}:`, error);
+    if (error.name === 'AbortError') {
+      console.error(`Timeout fetching ${source}`);
+    } else {
+      console.error(`Error parsing ${source}:`, error);
+    }
     return [];
   }
 }
@@ -256,7 +267,7 @@ function applySourceDiversity(articles: NewsItem[], maxPerSource: number = 2): N
     if (diversified.length >= 10) break;
   }
   
-  console.log('📊 Source diversity applied:', sourceCount);
+  console.log('Source diversity applied:', sourceCount);
   return diversified;
 }
 
@@ -324,21 +335,21 @@ Google launched a new AI coding tool that lets anyone build apps in minutes. The
       .map(s => s.replace(/<[^>]*>/g, '')) // Remove HTML tags
       .map(s => s.trim());
     
-    console.log(`✅ Generated ${summaries.length} summaries from ${articles.length} articles`);
+    console.log(`Generated ${summaries.length} summaries from ${articles.length} articles`);
     
     return articles.map((article, index) => ({
       ...article,
       summary: summaries[index] || article.title // Fallback to title if no summary
     }));
   } catch (e) {
-    console.error('❌ OpenAI summarization failed:', e);
+    console.error('OpenAI summarization failed:', e);
     return articles; // Return original articles if summarization fails
   }
 }
 
 // ------- Main News Fetching Function with Week Filtering -------
 async function fetchAINewsForWindow(weekStartDate: Date, weekEndDate: Date): Promise<NewsItem[]> {
-  console.log('🔍 Fetching AI news from direct RSS feeds (windowed)');
+  console.log('Fetching AI news from direct RSS feeds (windowed)');
   
   const allArticles: any[] = [];
   
@@ -357,7 +368,7 @@ async function fetchAINewsForWindow(weekStartDate: Date, weekEndDate: Date): Pro
     index === self.findIndex(a => a.title === article.title)
   );
   
-  console.log(`📰 Found ${uniqueArticles.length} unique articles`);
+  console.log(`Found ${uniqueArticles.length} unique articles`);
   
   // Filter for articles within the week window
   const start = new Date(weekStartDate).getTime();
@@ -367,14 +378,14 @@ async function fetchAINewsForWindow(weekStartDate: Date, weekEndDate: Date): Pro
     return !Number.isNaN(t) && t >= start && t < end;
   });
   
-  console.log(`🗓️ In-week items: ${inWindow.length}`);
+  console.log(`In-week items: ${inWindow.length}`);
   
   // Filter for AI-related content
   const aiArticles = inWindow.filter(article => 
     isAIRelated(article.title, article.description)
   );
   
-  console.log(`🤖 Found ${aiArticles.length} AI-related articles`);
+  console.log(`Found ${aiArticles.length} AI-related articles`);
   
   // Process each article
   const processedArticles: NewsItem[] = aiArticles.map(article => {
@@ -402,7 +413,7 @@ async function fetchAINewsForWindow(weekStartDate: Date, weekEndDate: Date): Pro
   // Apply source diversity
   const diversified = applySourceDiversity(sortedArticles, 2);
   
-  console.log(`✅ Returning ${Math.min(diversified.length, 10)} top AI articles`);
+  console.log(`Returning ${Math.min(diversified.length, 10)} top AI articles`);
   return diversified.slice(0, 10);
 }
 
@@ -414,7 +425,7 @@ let inmemPayload: { articles: any[]; weekStart: string; isCurrentWeek: boolean }
 
 // ------- GET handler -------
 export const GET: RequestHandler = async ({ url }) => {
-  console.log('🚀 /api/v1/news (Direct RSS Feeds)');
+  console.log('/api/v1/news (Direct RSS Feeds)');
   console.log('  - OPENAI_API_KEY exists:', !!OPENAI_API_KEY);
 
   const now = new Date();
@@ -429,7 +440,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
   // Check cache only if NOT forcing refresh
   if (!forceRefresh && inmemPayload && inmemWeekKey === currentWeekKey && Date.now() - inmemTimestamp < INMEM_TTL_MS) {
-    console.log('📦 Returning cached data');
+    console.log('Returning cached data');
     return json(inmemPayload);
   }
 
@@ -440,13 +451,13 @@ export const GET: RequestHandler = async ({ url }) => {
   prevNextMonday.setDate(prevNextMonday.getDate() + 7);
 
   // Fetch AI news for current week; if empty, fetch previous week
-  console.log('📅 Fetching AI news for current week window');
+  console.log('Fetching AI news for current week window');
   let articles = await fetchAINewsForWindow(currentWeek, nextMonday);
   let weekStart = currentWeekStart;
   let isCurrentWeek = true;
 
   if (articles.length === 0) {
-    console.log('📅 No current-week items, trying previous week window');
+    console.log('No current-week items, trying previous week window');
     articles = await fetchAINewsForWindow(previousWeek, prevNextMonday);
     weekStart = previousWeekStart;
     isCurrentWeek = false;
