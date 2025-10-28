@@ -2,8 +2,41 @@
   export let text: string;
   export let user: 'you' | 'bot';
   export let status: 'loading' | 'error' | 'normal' = 'normal';
-  import { marked } from 'marked';
-  export let message;
+
+  // Simple markdown to HTML parser (no external library)
+  function parseMarkdown(md: string): string {
+    let html = md;
+    
+    // Convert bold **text** to <strong>text</strong>
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert headings
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    
+    // Convert unordered lists (- or •)
+    html = html.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+    
+    // Convert ordered lists (1. item)
+    html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+    
+    // Wrap consecutive <li> tags in <ul>
+    html = html.replace(/(<li>.*<\/li>\n?)+/gm, (match) => {
+      return '<ul>' + match + '</ul>';
+    });
+    
+    // Convert line breaks
+    html = html.replace(/\n/g, '<br />');
+    
+    // Convert paragraphs (text between br tags)
+    html = html.replace(/([^<>]+)(<br \/>)/g, '<p>$1</p>$2');
+    
+    // Clean up empty paragraphs
+    html = html.replace(/<p>\s*<\/p>/g, '');
+    
+    return html;
+  }
 </script>
 
 <div class="flex {user === 'you' ? 'justify-end' : 'justify-start'}" data-message>
@@ -34,7 +67,7 @@
       {:else}
         <!-- Bot messages: parse markdown but keep compact -->
         <div class="whitespace-pre-wrap text-sm leading-snug break-words markdown-body">
-          {@html marked.parse(text)}
+          {@html parseMarkdown(text)}
         </div>
       {/if}
     {/if}
