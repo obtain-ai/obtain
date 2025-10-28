@@ -5,7 +5,7 @@
 <!-- Main container with dark background -->
 <div class="min-h-screen bg-zinc-800 text-zinc-200 w-full">
 	<!-- Wrapper that maintains 80% width at all screen sizes -->
-	<div class="w-[80%] mx-auto py-16">
+	<div class="w-[64%] mx-auto py-16">
 		<!-- Header section with title and tagline -->
 		<header class="text-center mb-12">
 			<!-- Gradient title -->
