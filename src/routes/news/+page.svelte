@@ -1,13 +1,17 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
   import type { NewsArticle } from './types';
+  import { RefreshPolicy } from '$lib/utils/refreshPolicy';
 
   let articles: NewsArticle[] = [];
   let weekStart: string = '';
   let loading = true;
   let error = '';
   let refreshing = false;
+  let refreshPolicy = new RefreshPolicy();
+  let statusMessage = '';
+  let checkInterval: NodeJS.Timeout | null = null;
 
   // Function to get Monday of current week
   function getMondayOfWeek(date: Date): Date {
@@ -47,6 +51,10 @@
   }
 
   async function fetchNews(forceRefresh = false) {
+    if (!refreshPolicy.shouldFetch(forceRefresh) && !forceRefresh) {
+      return;
+    }
+
     if (forceRefresh) {
       refreshing = true;
     } else {
@@ -63,6 +71,10 @@
       const data = await response.json();
       articles = data.articles || [];
       weekStart = data.weekStart || '';
+      
+      // Update refresh policy after successful fetch
+      refreshPolicy.updateAfterFetch();
+      
     } catch (err) {
       error = err instanceof Error ? err.message : 'An error occurred';
     } finally {
@@ -75,8 +87,29 @@
     fetchNews(true);
   }
 
+  function updateStatusMessage() {
+    statusMessage = refreshPolicy.getStatusMessage(articles.length, loading, error);
+  }
+
   onMount(() => {
     fetchNews();
+    
+    // Update status message
+    updateStatusMessage();
+    
+    // Check every minute for auto-refresh
+    checkInterval = setInterval(() => {
+      if (refreshPolicy.shouldFetch()) {
+        fetchNews();
+      }
+      updateStatusMessage();
+    }, 60000);
+  });
+
+  onDestroy(() => {
+    if (checkInterval) {
+      clearInterval(checkInterval);
+    }
   });
 </script>
 
@@ -151,6 +184,11 @@
 				</button>
 			</div>
 
+			<!-- Status Message -->
+			<div class="text-center mb-6">
+				<p class="text-sm text-zinc-400">{statusMessage}</p>
+			</div>
+
 			<!-- Week Message -->
 			{#if weekStart && !loading && !error}
 				{#if !areArticlesCurrentWeek(articles, weekStart)}
@@ -217,4 +255,3 @@
 		</div>
 	</div>
 </div>
-
