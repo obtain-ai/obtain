@@ -4,14 +4,23 @@
   import type { NewsArticle } from './types';
   import { RefreshPolicy } from '$lib/utils/refreshPolicy';
 
-  let articles: NewsArticle[] = [];
-  let weekStart: string = '';
-  let loading = true;
+  // Use preloaded data from +page.ts
+  export let data: {
+    title: string;
+    articles: NewsArticle[];
+    weekStart: string;
+    isCurrentWeek: boolean;
+  };
+
+  let articles: NewsArticle[] = data.articles || [];
+  let weekStart: string = data.weekStart || '';
+  let loading = articles.length === 0; // Only loading if no preloaded data
   let error = '';
   let refreshing = false;
   let refreshPolicy = new RefreshPolicy();
   let statusMessage = '';
   let checkInterval: NodeJS.Timeout | null = null;
+  let isCurrentWeek = data.isCurrentWeek ?? true;
 
   // Function to get Monday of current week
   function getMondayOfWeek(date: Date): Date {
@@ -71,6 +80,7 @@
       const data = await response.json();
       articles = data.articles || [];
       weekStart = data.weekStart || '';
+      isCurrentWeek = data.isCurrentWeek ?? true;
       
       // Update refresh policy after successful fetch
       refreshPolicy.updateAfterFetch();
@@ -88,11 +98,19 @@
   }
 
   function updateStatusMessage() {
-    statusMessage = refreshPolicy.getStatusMessage(articles.length, loading, error);
+    // Only show status message when NOT loading/refreshing
+    if (loading || refreshing) {
+      statusMessage = '';
+    } else {
+      statusMessage = refreshPolicy.getStatusMessage(articles.length, loading, error);
+    }
   }
 
   onMount(() => {
-    fetchNews();
+    // Only fetch if we don't have preloaded data
+    if (articles.length === 0) {
+      fetchNews();
+    }
     
     // Update status message
     updateStatusMessage();
@@ -184,10 +202,12 @@
 				</button>
 			</div>
 
-			<!-- Status Message -->
-			<div class="text-center mb-6">
-				<p class="text-sm text-zinc-400">{statusMessage}</p>
-			</div>
+			<!-- Status Message - only show when not loading/refreshing -->
+			{#if statusMessage && !loading && !refreshing}
+				<div class="text-center mb-6">
+					<p class="text-sm text-zinc-400">{statusMessage}</p>
+				</div>
+			{/if}
 
 			<!-- Week Message -->
 			{#if weekStart && !loading && !error}
@@ -198,12 +218,6 @@
 						</p>
 					</div>
 				{/if}
-			{/if}
-
-			{#if refreshing}
-				<div class="text-center mb-6">
-					<p class="text-sm text-zinc-400">Fetching latest AI news...</p>
-				</div>
 			{/if}
 
 			<!-- News articles section -->
