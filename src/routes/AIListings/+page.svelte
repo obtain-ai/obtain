@@ -48,7 +48,7 @@
 
 			<!-- CHATBOT -->
 			<details class="border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">💬 Chatbots</summary>
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors"> Chatbots</summary>
 				<p class="mt-4 text-zinc-300 leading-relaxed">
 					Chatbots simulate conversation with humans and are best for interactive problem-solving or information retrieval.
 					They can answer questions, guide research, or support learning.
@@ -76,7 +76,7 @@
 
 			<!-- GENERATIVE AI -->
 			<details class="border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">🎨 Generative AI</summary>
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors"> Generative AI</summary>
 				<p class="mt-4 text-zinc-300 leading-relaxed">
 					Generative AI creates new content — text, images, music, or video — from your prompts.
 					It's ideal for creative projects, idea generation, writing, and design.
@@ -100,7 +100,7 @@
 
 			<!-- AGENT -->
 			<details class="border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">🤖 AI Agents</summary>
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors"> AI Agents</summary>
 				<p class="mt-4 text-zinc-300 leading-relaxed">
 					AI agents are autonomous systems that combine tools to perform multi-step tasks automatically.
 					They're useful for managing workflows, generating reports, or automating creative and technical work.
