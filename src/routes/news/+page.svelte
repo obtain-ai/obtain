@@ -83,9 +83,9 @@
 <!-- Main container with dark background -->
 <div class="min-h-screen bg-zinc-800 text-zinc-200 w-full">
 	<!-- Wrapper that maintains 80% width at all screen sizes -->
-	<div class="w-[64%] mx-auto py-16">
+	<div class="w-[80%] mx-auto py-16">
 		<!-- Title with gradient -->
-		<div class="text-center mb-8">
+		<div class="text-center mb-24">
 			<h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
 				PromptPress
 			</h1>
@@ -118,12 +118,24 @@
 			</InfoDisplay>
 		</div>
 
-		<!-- Refresh Button -->
-		<div class="mb-8 mt-8 text-center">
+		<!-- Refresh Button and Week Header -->
+		<div class="flex items-center justify-between mb-8 mt-8">
+			{#if weekStart && !loading && !error}
+				<h2 class="text-2xl font-bold text-zinc-200">
+					{#if areArticlesCurrentWeek(articles, weekStart)}
+						Week of {weekStart}
+					{:else}
+						Last Week's Articles ({getPreviousWeekStart()})
+					{/if}
+				</h2>
+			{:else}
+				<div class="text-2xl font-bold text-zinc-200">Loading...</div>
+			{/if}
+			
 			<button 
 				on:click={handleRefresh}
 				disabled={refreshing || loading}
-				class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 mx-auto"
+				class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
 			>
 				{#if refreshing}
 					<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -135,27 +147,22 @@
 					Refresh News
 				{/if}
 			</button>
-			
-			{#if refreshing}
-				<p class="text-sm text-zinc-400 mt-2">Fetching latest AI news...</p>
-			{/if}
 		</div>
 
-		<!-- Week of header with more spacing -->
+		<!-- Week Message -->
 		{#if weekStart && !loading && !error}
-			<div class="text-center mb-6 mt-8">
-				<h2 class="text-2xl font-bold text-zinc-200">
-					{#if areArticlesCurrentWeek(articles, weekStart)}
-						Week of {weekStart}
-					{:else}
-						Last Week's Articles ({getPreviousWeekStart()})
-					{/if}
-				</h2>
-				{#if !areArticlesCurrentWeek(articles, weekStart)}
-					<p class="text-sm text-zinc-400 mt-2">
+			{#if !areArticlesCurrentWeek(articles, weekStart)}
+				<div class="text-center mb-6">
+					<p class="text-sm text-zinc-400">
 						New articles will be available soon!
 					</p>
-				{/if}
+				</div>
+			{/if}
+		{/if}
+
+		{#if refreshing}
+			<div class="text-center mb-6">
+				<p class="text-sm text-zinc-400">Fetching latest AI news...</p>
 			</div>
 		{/if}
 
@@ -207,5 +214,3 @@
 		</div>
 	</div>
 </div>
-
-
