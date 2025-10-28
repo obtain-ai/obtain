@@ -1,7 +1,6 @@
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ fetch }) => {
-  // Your existing title
   const title = ' ';
   
   try {
@@ -10,16 +9,21 @@ export const load: PageLoad = async ({ fetch }) => {
     if (!response.ok) {
       throw new Error('Failed to fetch news');
     }
-    const articles = await response.json();
+    const data = await response.json();
+    
     return { 
       title,
-      articles 
+      articles: data.articles || [],
+      weekStart: data.weekStart || '',
+      isCurrentWeek: data.isCurrentWeek ?? true
     };
   } catch (error) {
     console.error('Error loading news:', error);
     return { 
       title,
-      articles: [] 
+      articles: [],
+      weekStart: '',
+      isCurrentWeek: true
     };
   }
 };
