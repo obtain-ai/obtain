@@ -239,6 +239,27 @@ function isAIRelated(title: string, description: string): boolean {
   return aiKeywords.some(keyword => text.includes(keyword));
 }
 
+// ------- Source Diversity Filter -------
+function applySourceDiversity(articles: NewsItem[], maxPerSource: number = 2): NewsItem[] {
+  const sourceCount: { [key: string]: number } = {};
+  const diversified: NewsItem[] = [];
+  
+  for (const article of articles) {
+    const source = article.source;
+    const count = sourceCount[source] || 0;
+    
+    if (count < maxPerSource) {
+      diversified.push(article);
+      sourceCount[source] = count + 1;
+    }
+    
+    if (diversified.length >= 10) break;
+  }
+  
+  console.log('📊 Source diversity applied:', sourceCount);
+  return diversified;
+}
+
 // ------- Summarize Articles -------
 async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
   if (!articles.length || !OPENAI_API_KEY) return articles;
@@ -315,9 +336,9 @@ Google launched a new AI coding tool that lets anyone build apps in minutes. The
   }
 }
 
-// ------- Main News Fetching Function -------
-async function fetchAINews(): Promise<NewsItem[]> {
-  console.log('🔍 Fetching AI news from direct RSS feeds');
+// ------- Main News Fetching Function with Week Filtering -------
+async function fetchAINewsForWindow(weekStartDate: Date, weekEndDate: Date): Promise<NewsItem[]> {
+  console.log('🔍 Fetching AI news from direct RSS feeds (windowed)');
   
   const allArticles: any[] = [];
   
@@ -338,8 +359,18 @@ async function fetchAINews(): Promise<NewsItem[]> {
   
   console.log(`📰 Found ${uniqueArticles.length} unique articles`);
   
+  // Filter for articles within the week window
+  const start = new Date(weekStartDate).getTime();
+  const end = new Date(weekEndDate).getTime();
+  const inWindow = uniqueArticles.filter(a => {
+    const t = new Date(a.publishedAt).getTime();
+    return !Number.isNaN(t) && t >= start && t < end;
+  });
+  
+  console.log(`🗓️ In-week items: ${inWindow.length}`);
+  
   // Filter for AI-related content
-  const aiArticles = uniqueArticles.filter(article => 
+  const aiArticles = inWindow.filter(article => 
     isAIRelated(article.title, article.description)
   );
   
@@ -364,13 +395,15 @@ async function fetchAINews(): Promise<NewsItem[]> {
     relevanceScore: calculateRelevanceScore(article)
   }));
   
-  // Sort by relevance score and take top 10
+  // Sort by relevance score
   const sortedArticles = scoredArticles
-    .sort((a, b) => b.relevanceScore - a.relevanceScore)
-    .slice(0, 10);
+    .sort((a, b) => b.relevanceScore - a.relevanceScore);
   
-  console.log(`✅ Returning ${sortedArticles.length} top AI articles`);
-  return sortedArticles;
+  // Apply source diversity
+  const diversified = applySourceDiversity(sortedArticles, 2);
+  
+  console.log(`✅ Returning ${Math.min(diversified.length, 10)} top AI articles`);
+  return diversified.slice(0, 10);
 }
 
 // ------- in-memory cache (5 min) -------
@@ -400,16 +433,21 @@ export const GET: RequestHandler = async ({ url }) => {
     return json(inmemPayload);
   }
 
-  // Fetch AI news
-  console.log('📅 Fetching AI news from RSS feeds');
-  let articles = await fetchAINews();
+  // Build week windows: [monday, next monday)
+  const nextMonday = new Date(currentWeek);
+  nextMonday.setDate(nextMonday.getDate() + 7);
+  const prevNextMonday = new Date(previousWeek);
+  prevNextMonday.setDate(prevNextMonday.getDate() + 7);
+
+  // Fetch AI news for current week; if empty, fetch previous week
+  console.log('📅 Fetching AI news for current week window');
+  let articles = await fetchAINewsForWindow(currentWeek, nextMonday);
   let weekStart = currentWeekStart;
   let isCurrentWeek = true;
 
-  // If no articles for current week, try previous week
   if (articles.length === 0) {
-    console.log('📅 No articles for current week, trying previous week:', previousWeekStart);
-    // For now, just use current week data but mark as previous week
+    console.log('📅 No current-week items, trying previous week window');
+    articles = await fetchAINewsForWindow(previousWeek, prevNextMonday);
     weekStart = previousWeekStart;
     isCurrentWeek = false;
   }
