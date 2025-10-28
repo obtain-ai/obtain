@@ -118,99 +118,102 @@
 			</InfoDisplay>
 		</div>
 
-		<!-- Refresh Button and Week Header -->
-		<div class="flex items-center justify-between mb-8 mt-8">
-			{#if weekStart && !loading && !error}
-				<h2 class="text-2xl font-bold text-zinc-200">
-					{#if areArticlesCurrentWeek(articles, weekStart)}
-						Week of {weekStart}
-					{:else}
-						Last Week's Articles ({getPreviousWeekStart()})
-					{/if}
-				</h2>
-			{:else}
-				<div class="text-2xl font-bold text-zinc-200">Loading...</div>
-			{/if}
-			
-			<button 
-				on:click={handleRefresh}
-				disabled={refreshing || loading}
-				class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
-			>
-				{#if refreshing}
-					<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-					Refreshing...
+		<!-- 64% wrapper for week header + refresh + articles -->
+		<div class="w-[64%] mx-auto">
+			<!-- Refresh Button and Week Header -->
+			<div class="flex items-center justify-between mb-8 mt-8">
+				{#if weekStart && !loading && !error}
+					<h2 class="text-2xl font-bold text-zinc-200">
+						{#if areArticlesCurrentWeek(articles, weekStart)}
+							Week of {weekStart}
+						{:else}
+							Last Week's Articles ({getPreviousWeekStart()})
+						{/if}
+					</h2>
 				{:else}
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-					</svg>
-					Refresh News
+					<div class="text-2xl font-bold text-zinc-200">Loading...</div>
 				{/if}
-			</button>
-		</div>
-
-		<!-- Week Message -->
-		{#if weekStart && !loading && !error}
-			{#if !areArticlesCurrentWeek(articles, weekStart)}
-				<div class="text-center mb-6">
-					<p class="text-sm text-zinc-400">
-						New articles will be available soon!
-					</p>
-				</div>
-			{/if}
-		{/if}
-
-		{#if refreshing}
-			<div class="text-center mb-6">
-				<p class="text-sm text-zinc-400">Fetching latest AI news...</p>
+				
+				<button 
+					on:click={handleRefresh}
+					disabled={refreshing || loading}
+					class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
+				>
+					{#if refreshing}
+						<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+						Refreshing...
+					{:else}
+						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+						</svg>
+						Refresh News
+					{/if}
+				</button>
 			</div>
-		{/if}
 
-		<!-- News articles section -->
-		<div class="mb-4">
-			{#if loading}
-				<div class="text-center">
-					<div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-					<p class="mt-2 text-zinc-400">Loading latest AI news...</p>
-				</div>
-			{:else if error}
-				<div class="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded mb-4">
-					<p>Error: {error}</p>
-				</div>
-			{:else if articles.length === 0}
-				<div class="text-center text-zinc-400">
-					<p>No news articles available at the moment.</p>
-				</div>
-			{:else}
-				<div class="space-y-6">
-					{#each articles as article (article.url)}
-						<!-- Individual article boxes -->
-						<div class="mb-4 flex flex-col gap-2 rounded-md border border-zinc-600 bg-zinc-700 p-6 shadow-sm hover:shadow-md transition-all duration-200">
-							<h2 class="flex flex-row items-center gap-2 font-bold text-lg text-zinc-200">
-								<a 
-									href={article.url} 
-									target="_blank" 
-									rel="noopener noreferrer"
-									class="text-purple-400 hover:text-purple-300 hover:underline transition-colors duration-200"
-								>
-									{article.title}
-								</a>
-							</h2>
-							
-							{#if article.summary && article.summary !== 'No description available.'}
-								<p class="text-zinc-300 leading-relaxed">
-									{article.summary}
-								</p>
-							{/if}
-							
-							<div class="flex items-center justify-between text-sm text-zinc-400">
-								<span class="font-medium">{article.source}</span>
-								<span>{new Date(article.publishedAt).toLocaleDateString()}</span>
-							</div>
-						</div>
-					{/each}
+			<!-- Week Message -->
+			{#if weekStart && !loading && !error}
+				{#if !areArticlesCurrentWeek(articles, weekStart)}
+					<div class="text-center mb-6">
+						<p class="text-sm text-zinc-400">
+							New articles will be available soon!
+						</p>
+					</div>
+				{/if}
+			{/if}
+
+			{#if refreshing}
+				<div class="text-center mb-6">
+					<p class="text-sm text-zinc-400">Fetching latest AI news...</p>
 				</div>
 			{/if}
+
+			<!-- News articles section -->
+			<div class="mb-4">
+				{#if loading}
+					<div class="text-center">
+						<div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+						<p class="mt-2 text-zinc-400">Loading latest AI news...</p>
+					</div>
+				{:else if error}
+					<div class="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded mb-4">
+						<p>Error: {error}</p>
+					</div>
+				{:else if articles.length === 0}
+					<div class="text-center text-zinc-400">
+						<p>No news articles available at the moment.</p>
+					</div>
+				{:else}
+					<div class="space-y-6">
+						{#each articles as article (article.url)}
+							<!-- Individual article boxes -->
+							<div class="mb-4 flex flex-col gap-2 rounded-md border border-zinc-600 bg-zinc-700 p-6 shadow-sm hover:shadow-md transition-all duration-200">
+								<h2 class="flex flex-row items-center gap-2 font-bold text-lg text-zinc-200">
+									<a 
+										href={article.url} 
+										target="_blank" 
+										rel="noopener noreferrer"
+										class="text-purple-400 hover:text-purple-300 hover:underline transition-colors duration-200"
+									>
+										{article.title}
+									</a>
+								</h2>
+								
+								{#if article.summary && article.summary !== 'No description available.'}
+									<p class="text-zinc-300 leading-relaxed">
+										{article.summary}
+									</p>
+								{/if}
+								
+								<div class="flex items-center justify-between text-sm text-zinc-400">
+									<span class="font-medium">{article.source}</span>
+									<span>{new Date(article.publishedAt).toLocaleDateString()}</span>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
 		</div>
 	</div>
 </div>
