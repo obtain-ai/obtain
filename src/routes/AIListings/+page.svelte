@@ -37,7 +37,7 @@
 		<div class="w-[80%] mx-auto">
 			<!-- CHATBOTS -->
 			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">💬 Chatbots</summary>
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">Chatbots</summary>
 				<p class="mt-4 text-zinc-300 leading-relaxed">
 					Chatbots simulate conversation and are best for interactive problem‑solving or information retrieval.
 				</p>
@@ -67,7 +67,7 @@
 
 			<!-- GENERATIVE AI -->
 			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">🎨 Generative AI</summary>
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">Generative AI</summary>
 				<p class="mt-4 text-zinc-300 leading-relaxed">
 					Creates new content — text, images, music, or video — from prompts.
 				</p>
@@ -92,7 +92,7 @@
 
 			<!-- AI AGENTS -->
 			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">🤖 AI Agents</summary>
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">AI Agents</summary>
 				<p class="mt-4 text-zinc-300 leading-relaxed">
 					Autonomous systems that combine tools to perform multi‑step tasks.
 				</p>
