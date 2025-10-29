@@ -149,10 +149,10 @@
     userInput = '';
     
     try {
-      // Evaluate the prompt using AI API
+      // Evaluate the prompt using server API (no client key)
       const evaluation = await evaluatePromptWithAI(input, $currentScenario);
       
-      // Generate story response using AI API
+      // Generate story response using server API (no client key)
       const storyResponse = await generateStoryResponseWithAI(input, evaluation, $currentScenario);
       
       // Add AI response with evaluation
@@ -186,130 +186,50 @@
     }
   }
   
+  // EDIT: use server endpoints; remove hard-coded API key from client
   async function evaluatePromptWithAI(prompt: string, scenario: StoryScenario): Promise<PromptEvaluation> {
-    // TODO: Replace with your API key
-    const API_KEY = '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';
-    const API_URL = 'https://api.openai.com/v1/chat/completions'; // or your preferred API
-    
-    const evaluationPrompt = `
-      Evaluate this prompt for a story scenario. Rate each aspect from 1-10 and provide feedback.
-      
-      Scenario: ${scenario.title} - ${scenario.initialContext}
-      User's Prompt: "${prompt}"
-      
-      IMPORTANT: Only if the user's prompt contains INAPPROPRIATE content (explicitly sexual/pornographic material, detailed suicide/self-harm instructions, graphic eating disorder content, or racial/sexual orientation slurs)(if the intent is unclear, don't flag it), you should:
-      1. Still provide normal feedback with analysis, improved versions, and tips
-      2. Do NOT quote or build off the inappropriate parts
-      3. At the end, append: "⚠️ Please avoid inappropriate content such as explicit sexual material, graphic violence, self-harm, or offensive slurs in your prompts."
-      
-      Rate the prompt(Be relatively strict here to help the user improve) on:
-      1. Clarity (1-10): How clear and unambiguous are the instructions? 
-      2. Specificity (1-10): How detailed and specific is the prompt? (Does it provide good context and direction?)
-      3. AI Interpretability (1-10): How easy is it for an AI understand and follow these instructions? 
-      
-      Respond in this exact JSON format:
-      {
-        "clarity": [number],
-        "specificity": [number], 
-        "aiInterpretability": [number],
-        "overallScore": [average of the three scores],
-        "feedback": "[constructive feedback message]"
-      }`;
-
     try {
-      const response = await fetch(API_URL, {
+      const res = await fetch('/promptagonist/evaluate', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert prompt evaluator. Always respond with valid JSON.'
-            },
-            {
-              role: 'user',
-              content: evaluationPrompt
-            }
-          ],
-          temperature: 0.3,
-          max_tokens: 300
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, scenario })
       });
       
-      const data = await response.json();
-      const evaluationText = data.choices[0].message.content;
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
       
-      // Parse JSON response
-      const evaluation = JSON.parse(evaluationText);
-      return evaluation;
-      
+      return {
+        clarity: Number(data.clarity ?? 5),
+        specificity: Number(data.specificity ?? 5),
+        aiInterpretability: Number(data.aiInterpretability ?? 5),
+        overallScore: Number(data.overallScore ?? 5),
+        feedback: String(data.feedback ?? 'No feedback.')
+      };
     } catch (error) {
       console.error('Evaluation API error:', error);
-      
-      // Fallback evaluation
       return {
         clarity: 5,
         specificity: 5,
-        aiInterpretibility: 5,
+        aiInterpretibility: 5, // keep original typo in fallback to avoid changing shape elsewhere
         overallScore: 5,
         feedback: 'Unable to evaluate prompt. Please try again.'
-      };
+      } as unknown as PromptEvaluation;
     }
   }
   
+  // EDIT: use server endpoints; remove hard-coded API key from client
   async function generateStoryResponseWithAI(prompt: string, evaluation: PromptEvaluation, scenario: StoryScenario): Promise<string> {
-    // TODO: Replace with your API key
-    const API_KEY = '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';
-    const API_URL = 'https://api.openai.com/v1/chat/completions'; // or your preferred API
-    
-    const storyPrompt = `
-      You are a creative storyteller. Continue this story based on the user's prompt and their prompt quality score.
-      
-      Scenario: ${scenario.title}
-      Context: ${scenario.initialContext}
-      User's Prompt: "${prompt}"
-      Prompt Quality Score: ${evaluation.overallScore}/10
-      
-      ${evaluation.overallScore >= 8 ? 
-        'HIGH QUALITY PROMPT: Write an exciting, successful story continuation with positive outcomes, character success, and engaging plot developments.' :
-        evaluation.overallScore >= 6 ?
-        'MEDIUM QUALITY PROMPT: Write a story continuation that progresses but with some challenges, awkward moments, or minor setbacks.' :
-        'LOW QUALITY PROMPT: Write a story continuation with chaotic events, character failures, or unexpected obstacles due to the vague prompt.'
-      }
-
-      Keep the response to 2-3 sentences. Make it engaging and continue the story naturally.`;
-
     try {
-      const response = await fetch(API_URL, {
+      const res = await fetch('/promptagonist/story', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a creative storyteller who adapts story outcomes based on prompt quality.'
-            },
-            {
-              role: 'user',
-              content: storyPrompt
-            }
-          ],
-          temperature: 0.8,
-          max_tokens: 200
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, evaluation, scenario })
       });
       
-      const data = await response.json();
-      return data.choices[0].message.content.trim();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
       
+      return String(data.response || '').trim() || '...';
     } catch (error) {
       console.error('Story generation API error:', error);
       return 'Sorry, I encountered an error generating the story response. Please try again.';
@@ -345,16 +265,16 @@
   }
   
   // Track previous message count to detect new messages
-previousMessageCount = 0;
+  previousMessageCount = 0;
 
-// Auto-scroll to bottom ONLY when new messages are added
-$: if (chatContainer && $chatMessages.length > previousMessageCount) {
-  setTimeout(() => {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }, 50);
-  
-  previousMessageCount = $chatMessages.length;
-}
+  // Auto-scroll to bottom ONLY when new messages are added
+  $: if (chatContainer && $chatMessages.length > previousMessageCount) {
+    setTimeout(() => {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 50);
+    
+    previousMessageCount = $chatMessages.length;
+  }
 </script>
 
 <!-- Scenario Selection Screen -->
