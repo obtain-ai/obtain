@@ -2,18 +2,13 @@
 	import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
 </script>
 
-<svelte:head>
-  <title>Promptpedia</title>
-  <meta property="og:title" content="Promptpedia" />
-</svelte:head>
-
 <!-- Main container -->
 <div class="min-h-screen bg-zinc-800 text-zinc-200 w-full">
 	<!-- Outer 80% wrapper -->
 	<div class="w-[80%] mx-auto py-16">
 		<header class="text-center mb-12">
 			<h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-				Promptpedia
+				AI Listings
 			</h1>
 			<p class="text-xl text-zinc-300 font-normal">Discover the right AI tool for your needs</p>
 		</header>
@@ -27,102 +22,211 @@
 			</InfoDisplay>
 		</div>
 
-		<div class="mb-8">
-			<InfoDisplay>
-				{#snippet title()} Instructions {/snippet}
-				{#snippet content()}
-					This section introduces popular AI tools, explains what they do, and highlights their strengths. You can explore examples of chatbots, generative AI, and AI agents, learn what they are best at, and decide which ones fit your needs.
-				{/snippet}
-			</InfoDisplay>
-		</div>
-
 		<h2 class="text-2xl font-semibold text-zinc-200 text-center mb-8">Explore AI by Type</h2>
 
-<!-- Inner 80% wrapper (=> 64% total width) -->
+		<!-- Inner 80% wrapper (=> 64% total width) -->
 		<div class="w-[80%] mx-auto">
 			<!-- CHATBOTS -->
-			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">Chatbots</summary>
-				<p class="mt-4 text-zinc-300 leading-relaxed">
-					Chatbots simulate conversation and are best for interactive problem‑solving or information retrieval.
-				</p>
-				<ul class="mt-4 space-y-3 text-zinc-300">
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">ChatGPT</a>
-						</strong> — Q&A, tutoring, brainstorming, drafting.
-					</li>
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://chat.deepseek.com" target="_blank" rel="noopener noreferrer">DeepSeek</a>
-						</strong> — Prompt refinement; better outputs.
-					</li>
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://claude.ai" target="_blank" rel="noopener noreferrer">Claude</a>
-						</strong> — Clear, safe explanations.
-					</li>
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://you.com" target="_blank" rel="noopener noreferrer">YouChat</a>
-						</strong> — Chat + live web search.
-					</li>
-				</ul>
+			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors mb-4">
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">
+					<div>
+						<p class="text-lg font-bold mb-2">CHATBOT:</p>
+						<p class="text-base font-normal">Why this matters: Chatbots are AI systems designed to simulate conversation with humans. They can answer questions, provide guidance, or help with tasks like research, learning, or customer support. Chatbots are best for interactive problem-solving or information retrieval.</p>
+					</div>
+				</summary>
+				<div class="mt-4 space-y-4 text-zinc-300">
+					<p class="leading-relaxed">
+						Chatbots are AI systems designed to simulate conversation with humans. They can answer questions, provide guidance, or help with tasks like research, learning, or customer support. Chatbots are best for interactive problem-solving or information retrieval.
+					</p>
+					<p class="leading-relaxed">
+						Explore different chatbots, see what they're best at, and discover which one suits your needs. This tool highlights their strengths, so you can pick the right chatbot for learning, productivity, or problem-solving.
+					</p>
+					
+					<div class="space-y-4 mt-6">
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">ChatGPT</a>
+							</h3>
+							<p class="mb-2">A conversational AI that can answer questions, generate text, tutor, and brainstorm ideas. It adapts to your prompts and can assist with a wide range of topics.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Great for learning and research</li>
+								<li>Can draft essays, stories, or scripts</li>
+								<li>Easy to use for beginners</li>
+							</ul>
+						</div>
+
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://chat.deepseek.com" target="_blank" rel="noopener noreferrer">DeepSeek</a>
+							</h3>
+							<p class="mb-2">Specializes in helping users refine prompts and get more accurate, useful AI responses. It's focused on teaching effective communication with AI.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Improves AI output quality</li>
+								<li>Helps users learn how to write effective prompts</li>
+								<li>Encourages efficient AI interaction</li>
+							</ul>
+						</div>
+
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://claude.ai" target="_blank" rel="noopener noreferrer">Claude</a>
+							</h3>
+							<p class="mb-2">A chatbot focused on safe and responsible conversations, ideal for explanations, reasoning, and ethical guidance.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Provides clear and careful responses</li>
+								<li>Emphasizes safety and ethics</li>
+								<li>Great for educational purposes</li>
+							</ul>
+						</div>
+
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://you.com" target="_blank" rel="noopener noreferrer">YouChat</a>
+							</h3>
+							<p class="mb-2">Combines conversational AI with live search results, providing answers that include up-to-date information.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Accesses current information quickly</li>
+								<li>Interactive learning tool</li>
+								<li>Combines search and AI reasoning</li>
+							</ul>
+						</div>
+					</div>
+				</div>
 			</details>
 
 			<!-- GENERATIVE AI -->
-			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">Generative AI</summary>
-				<p class="mt-4 text-zinc-300 leading-relaxed">
-					Creates new content — text, images, music, or video — from prompts.
-				</p>
-				<ul class="mt-4 space-y-3 text-zinc-300">
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://openai.com/dall-e-3" target="_blank" rel="noopener noreferrer">DALL·E</a>
-						</strong> — Images from text.
-					</li>
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://www.midjourney.com" target="_blank" rel="noopener noreferrer">MidJourney</a>
-						</strong> — Stylized images.
-					</li>
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://openai.com/sora" target="_blank" rel="noopener noreferrer">Sora</a>
-						</strong> — Short videos from text.
-					</li>
-				</ul>
+			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors mb-4">
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">
+					<div>
+						<p class="text-lg font-bold mb-2">Generative AI:</p>
+						<p class="text-base font-normal">Why this matters: Generative AI creates new content based on prompts you give it including text, images, music, or code. It's useful for creative projects, idea generation, writing, and visual design.</p>
+					</div>
+				</summary>
+				<div class="mt-4 space-y-4 text-zinc-300">
+					<p class="leading-relaxed">
+						Generative AI creates new content based on prompts you give it including text, images, music, or code. It's useful for creative projects, idea generation, writing, and visual design.
+					</p>
+					<p class="leading-relaxed">
+						See the most popular generative AI tools and learn what they're best at. This section helps you choose the right AI to create content, explore ideas, or bring your imagination to life.
+					</p>
+					
+					<div class="space-y-4 mt-6">
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://openai.com/dall-e-3" target="_blank" rel="noopener noreferrer">DALL·E</a>
+							</h3>
+							<p class="mb-2">Generates images from text prompts, turning ideas into visual art.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Great for creativity and design</li>
+								<li>Produces high-quality visuals</li>
+								<li>Fast concept visualization</li>
+							</ul>
+						</div>
+
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://www.midjourney.com" target="_blank" rel="noopener noreferrer">MidJourney</a>
+							</h3>
+							<p class="mb-2">Focused on artistic image generation, producing detailed and stylized visuals from prompts.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Ideal for artistic projects</li>
+								<li>Produces professional-looking results</li>
+								<li>Supports creative experimentation</li>
+							</ul>
+						</div>
+
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://openai.com/sora" target="_blank" rel="noopener noreferrer">Sora</a>
+							</h3>
+							<p class="mb-2">Sora converts text prompts or images into video clips, offering users the ability to generate videos up to 20 seconds long.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Generate professional-quality videos swiftly</li>
+								<li>Utilize tools to personalize videos</li>
+								<li>Enables video generation directly on smartphones</li>
+							</ul>
+						</div>
+					</div>
+				</div>
 			</details>
 
 			<!-- AI AGENTS -->
-			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">AI Agents</summary>
-				<p class="mt-4 text-zinc-300 leading-relaxed">
-					Autonomous systems that combine tools to perform multi‑step tasks.
-				</p>
-				<ul class="mt-4 space-y-3 text-zinc-300">
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://autogpt.net" target="_blank" rel="noopener noreferrer">AutoGPT</a>
-						</strong> — Plans and executes tasks.
-					</li>
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://agentgpt.reworkd.ai" target="_blank" rel="noopener noreferrer">AgentGPT</a>
-						</strong> — Build custom agents.
-					</li>
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://huggingface.co/docs/transformers/agents" target="_blank" rel="noopener noreferrer">Hugging Face Agents</a>
-						</strong> — Modular pipelines.
-					</li>
-					<li>
-						<strong class="text-zinc-200">
-							<a class="text-purple-400 hover:text-purple-300 underline" href="https://www.notion.so/product/ai" target="_blank" rel="noopener noreferrer">Notion AI</a>
-						</strong> — Writing and organization inside Notion.
-					</li>
-				</ul>
+			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors mb-4">
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">
+					<div>
+						<p class="text-lg font-bold mb-2">Agent:</p>
+						<p class="text-base font-normal">Why this matters: AI agents are autonomous systems that can perform tasks for you, often combining multiple steps or tools. They can handle complex workflows, research topics, summarize information, generate content, or even write code so you don't need to know everything, just the basics. This makes them ideal for boosting productivity, learning, or creative projects.</p>
+					</div>
+				</summary>
+				<div class="mt-4 space-y-4 text-zinc-300">
+					<p class="leading-relaxed">
+						AI agents are autonomous systems that can perform tasks for you, often combining multiple steps or tools. They can handle complex workflows, research topics, summarize information, generate content, or even write code so you don't need to know everything, just the basics. This makes them ideal for boosting productivity, learning, or creative projects.
+					</p>
+					<p class="leading-relaxed">
+						Discover AI agents that can work for you automatically. This section shows you which agents excel at productivity, research, or task automation so you can pick the right one to simplify your work.
+					</p>
+					
+					<div class="space-y-4 mt-6">
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://autogpt.net" target="_blank" rel="noopener noreferrer">AutoGPT</a>
+							</h3>
+							<p class="mb-2">An autonomous GPT-based agent that can plan and complete multi-step tasks on its own, such as researching a topic or generating a report.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Saves time on repetitive tasks</li>
+								<li>Helps beginners complete complex projects</li>
+								<li>Can act as a personal research assistant</li>
+							</ul>
+						</div>
+
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://agentgpt.reworkd.ai" target="_blank" rel="noopener noreferrer">AgentGPT</a>
+							</h3>
+							<p class="mb-2">Lets you create custom AI agents for specific goals, from automating workflows to managing multiple AI tools simultaneously.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Automates processes</li>
+								<li>Reduces need for manual coordination</li>
+								<li>Useful for personal productivity</li>
+							</ul>
+						</div>
+
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://huggingface.co/docs/transformers/agents" target="_blank" rel="noopener noreferrer">HuggingFace Agents</a>
+							</h3>
+							<p class="mb-2">Customizable agents that can combine AI tools for specialized workflows, like text generation, translation, or summarization.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Flexible and modular</li>
+								<li>Supports multiple AI tasks</li>
+								<li>Great for experimenting with AI pipelines</li>
+							</ul>
+						</div>
+
+						<div class="border-l-4 border-purple-500 pl-4">
+							<h3 class="text-lg font-bold text-zinc-200 mb-2">
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://www.notion.so/product/ai" target="_blank" rel="noopener noreferrer">Notion AI</a>
+							</h3>
+							<p class="mb-2">Automates tasks in Notion like summarizing notes, generating ideas, and organizing workflows without requiring deep technical knowledge.</p>
+							<p class="font-semibold text-zinc-200">Pros:</p>
+							<ul class="list-disc list-inside ml-2 space-y-1">
+								<li>Simplifies knowledge management</li>
+								<li>Speeds up creative and organizational tasks</li>
+								<li>Beginner-friendly</li>
+							</ul>
+						</div>
+					</div>
+				</div>
 			</details>
 
 			<div class="text-center text-zinc-400 text-sm mt-12">
