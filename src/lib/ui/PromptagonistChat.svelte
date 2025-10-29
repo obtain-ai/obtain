@@ -1,4 +1,3 @@
-<!-- lib/ui/PromptagonistChat.svelte -->
 <script lang="ts">
   import { writable } from 'svelte/store';
   
@@ -356,17 +355,19 @@
   }
 </script>
 
-<!-- Scenario Selection Screen -->
 {#if $showScenarioSelection}
-  <div class="flex flex-col w-full h-[600px] border border-zinc-600 rounded-lg bg-zinc-700 shadow-lg">
-    <div class="p-6">
-      <h3 class="text-2xl font-bold text-zinc-200 mb-2 text-center">Choose Your Adventure</h3>
-      <p class="text-center text-zinc-400 mb-6">Select a scenario or create your own story!</p>
+  <div class="flex flex-col w-full h-[600px] rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900 to-zinc-950 shadow-xl overflow-hidden">
+    <div class="p-6 md:p-8">
+      <h3 class="text-2xl font-bold text-zinc-100 mb-2 text-center tracking-tight">
+        Choose Your Adventure
+      </h3>
+      <p class="text-center text-zinc-400 mb-8">
+        Select a scenario or craft your own story.
+      </p>
       
-      <!-- Custom Scenario Form -->
       {#if $showCustomForm}
-        <div class="max-w-2xl mx-auto mb-6 p-6 bg-zinc-800 border border-zinc-600 rounded-lg">
-          <h4 class="text-lg font-semibold text-zinc-200 mb-4">Create Custom Scenario</h4>
+        <div class="max-w-2xl mx-auto mb-8 p-6 md:p-7 rounded-xl border border-white/10 bg-zinc-900/60 backdrop-blur-sm">
+          <h4 class="text-lg font-semibold text-zinc-100 mb-4">Create Custom Scenario</h4>
           
           <div class="space-y-4">
             <div>
@@ -374,7 +375,7 @@
               <input
                 type="text"
                 bind:value={customTitle}
-                class="w-full p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-500 bg-zinc-700"
+                class="w-full h-11 px-3 rounded-lg border border-white/10 bg-zinc-900/70 text-zinc-100 placeholder-zinc-500 outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-400/40 transition"
                 placeholder="e.g., Zombie Apocalypse"
               />
             </div>
@@ -384,7 +385,7 @@
               <input
                 type="text"
                 bind:value={customDescription}
-                class="w-full p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-500 bg-zinc-700"
+                class="w-full h-11 px-3 rounded-lg border border-white/10 bg-zinc-900/70 text-zinc-100 placeholder-zinc-500 outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-400/40 transition"
                 placeholder="e.g., You're a survivor in a post-apocalyptic world"
               />
             </div>
@@ -393,7 +394,7 @@
               <label class="block text-sm font-medium text-zinc-300 mb-1">Initial Context</label>
               <textarea
                 bind:value={customContext}
-                class="w-full p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-500 bg-zinc-700"
+                class="w-full px-3 py-2 rounded-lg border border-white/10 bg-zinc-900/70 text-zinc-100 placeholder-zinc-500 outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-400/40 transition"
                 placeholder="Describe the starting situation and what the user needs to do..."
               ></textarea>
             </div>
@@ -403,21 +404,21 @@
               <input
                 type="text"
                 bind:value={customGenre}
-                class="w-full p-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-zinc-200 placeholder-zinc-500 bg-zinc-700"
+                class="w-full h-11 px-3 rounded-lg border border-white/10 bg-zinc-900/70 text-zinc-100 placeholder-zinc-500 outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-400/40 transition"
                 placeholder="e.g., Horror Thriller"
               />
             </div>
           </div>
           
-          <div class="flex gap-2 mt-4">
+          <div class="flex gap-3 mt-5">
             <button 
-              class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+              class="px-4 py-2.5 rounded-lg text-white font-medium bg-gradient-to-r from-indigo-500 to-fuchsia-600 hover:from-indigo-400 hover:to-fuchsia-500 transition-colors shadow-md"
               on:click={createCustomScenario}
             >
               Create Scenario
             </button>
             <button 
-              class="px-4 py-2 bg-zinc-600 hover:bg-zinc-500 text-white rounded-md transition-colors"
+              class="px-4 py-2.5 rounded-lg text-zinc-100 font-medium bg-zinc-800/70 hover:bg-zinc-800 border border-white/10 transition"
               on:click={cancelCustomScenario}
             >
               Cancel
@@ -425,23 +426,24 @@
           </div>
         </div>
       {:else}
-        <!-- Pre-made Scenarios -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {#each scenarios as scenario}
             <button 
-              class="p-4 bg-zinc-700 border border-zinc-600 rounded-lg hover:shadow-md hover:bg-zinc-650 transition-colors text-left"
+              class="group p-5 rounded-xl text-left border border-white/10 bg-zinc-900/60 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-fuchsia-500/30 transition shadow-sm hover:shadow-fuchsia-600/10"
               on:click={() => selectScenario(scenario)}
             >
-              <h4 class="font-semibold text-zinc-200 mb-2">{scenario.title}</h4>
-              <p class="text-sm text-zinc-400 mb-2">{scenario.description}</p>
-              <span class="text-xs text-purple-400 font-medium">{scenario.genre}</span>
+              <h4 class="font-semibold text-zinc-100 mb-2 tracking-tight">{scenario.title}</h4>
+              <p class="text-sm text-zinc-400 mb-3">{scenario.description}</p>
+              <span class="inline-flex items-center text-xs font-medium text-fuchsia-300">
+                {scenario.genre}
+              </span>
             </button>
           {/each}
         </div>
         
         <div class="text-center">
           <button 
-            class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+            class="px-6 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-indigo-500 to-fuchsia-600 hover:from-indigo-400 hover:to-fuchsia-500 transition-colors shadow-lg"
             on:click={showCustomScenarioForm}
           >
             Create Custom Scenario
@@ -451,56 +453,55 @@
     </div>
   </div>
 {:else}
-  <!-- Chat Interface -->
-  <div class="flex flex-col w-full h-[600px] border border-zinc-600 rounded-lg bg-zinc-700 shadow-lg">
-    <!-- Header -->
-    <div class="flex justify-between items-center p-4 border-b border-zinc-600 bg-zinc-800 rounded-t-lg">
+  <div class="flex flex-col w-full h-[600px] rounded-2xl border border-white/10 bg-zinc-950 shadow-xl overflow-hidden">
+    <div class="flex justify-between items-center p-4 border-b border-white/10 bg-zinc-900/70 backdrop-blur-sm">
       <div class="flex gap-2">
         <button 
-          class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-md transition-colors" 
+          class="px-3 py-1.5 rounded-lg text-white text-sm font-medium bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 hover:to-red-500 transition-colors shadow"
           on:click={resetStory}
         >
           Reset Story
         </button>
       </div>
-      <h3 class="font-semibold text-zinc-200">{$currentScenario?.title}</h3>
+      <h3 class="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-fuchsia-400">
+        {$currentScenario?.title}
+      </h3>
     </div>
 
-    <!-- Chat Area -->
     <div 
       bind:this={chatContainer} 
-      class="flex-1 overflow-y-auto p-4 space-y-3 bg-zinc-800"
+      class="flex-1 overflow-y-auto p-4 space-y-3 bg-[radial-gradient(1200px_600px_at_80%_-100px,rgba(139,92,246,0.15),transparent)]"
     >
       {#each $chatMessages as msg (msg.id)}
         <div class="flex {msg.type === 'user' ? 'justify-end' : 'justify-start'}">
-          <div class="max-w-[80%] p-3 rounded-lg border {
-            msg.type === 'user' ? 'bg-purple-600 text-white border-purple-500' : 
-            msg.type === 'system' ? 'bg-yellow-100 text-yellow-900 border-yellow-300' :
-            'bg-zinc-700 text-zinc-200 border-zinc-600'
+          <div class="max-w-[80%] p-3 rounded-xl border shadow-sm {
+            msg.type === 'user' ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-600 text-white border-fuchsia-500/30 shadow-fuchsia-600/20' : 
+            msg.type === 'system' ? 'bg-amber-100/90 text-amber-900 border-amber-300' :
+            'bg-zinc-900/70 text-zinc-100 border-white/10'
           }">
-            <div class="whitespace-pre-wrap text-sm break-words">{msg.content}</div>
+            <div class="whitespace-pre-wrap text-sm leading-relaxed break-words">{msg.content}</div>
             
             {#if msg.evaluation}
-              <div class="mt-2 pt-2 border-t border-zinc-500">
+              <div class="mt-2 pt-2 border-t {msg.type === 'user' ? 'border-white/30' : 'border-white/10'}">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="text-xs font-semibold text-zinc-300">Prompt Score:</span>
+                  <span class="text-xs font-semibold {msg.type === 'user' ? 'text-white/90' : 'text-zinc-300'}">Prompt Score:</span>
                   <span class="text-xs font-bold {
-                    msg.evaluation.overallScore >= 8 ? 'text-green-400' :
-                    msg.evaluation.overallScore >= 6 ? 'text-yellow-400' :
-                    'text-red-400'
+                    msg.evaluation.overallScore >= 8 ? 'text-emerald-400' :
+                    msg.evaluation.overallScore >= 6 ? 'text-amber-300' :
+                    'text-rose-300'
                   }">
                     {msg.evaluation.overallScore}/10
                   </span>
                 </div>
-                <div class="text-xs text-zinc-400 mb-1">
-                  Clarity: {msg.evaluation.clarity}/10 | 
-                  Specificity: {msg.evaluation.specificity}/10 | 
+                <div class="text-[11px] {msg.type === 'user' ? 'text-white/85' : 'text-zinc-400'} mb-1">
+                  Clarity: {msg.evaluation.clarity}/10 · 
+                  Specificity: {msg.evaluation.specificity}/10 · 
                   AI Interpretability: {msg.evaluation.aiInterpretability}/10
                 </div>
                 <div class="text-xs font-medium {
-                  msg.evaluation.overallScore >= 8 ? 'text-green-400' :
-                  msg.evaluation.overallScore >= 6 ? 'text-yellow-400' :
-                  'text-red-400'
+                  msg.evaluation.overallScore >= 8 ? 'text-emerald-300' :
+                  msg.evaluation.overallScore >= 6 ? 'text-amber-300' :
+                  'text-rose-300'
                 }">
                   {msg.evaluation.feedback}
                 </div>
@@ -512,22 +513,21 @@
       
       {#if $isLoading}
         <div class="flex justify-start">
-          <div class="bg-zinc-700 p-3 rounded-lg border border-zinc-600">
+          <div class="p-3 rounded-xl border border-white/10 bg-zinc-900/70 text-zinc-200">
             <div class="flex items-center gap-2">
-              <div class="animate-spin w-4 h-4 border-2 border-zinc-400 border-t-transparent rounded-full"></div>
-              <span class="text-sm text-zinc-300">Generating story response...</span>
+              <div class="animate-spin w-4 h-4 border-2 border-fuchsia-400/60 border-t-transparent rounded-full"></div>
+              <span class="text-sm">Generating story response...</span>
             </div>
           </div>
         </div>
       {/if}
     </div>
 
-    <!-- Input Area -->
-    <div class="p-4 border-t border-zinc-600 bg-zinc-800 rounded-b-lg">
+    <div class="p-4 border-t border-white/10 bg-zinc-900/60 backdrop-blur-sm">
       <div class="flex gap-2">
         <textarea
           bind:this={inputElement}
-          class="flex-1 p-3 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-zinc-200 placeholder-zinc-500 bg-zinc-700 resize-none overflow-y-auto"
+          class="flex-1 p-3 rounded-xl border border-white/10 bg-zinc-950/60 text-zinc-100 placeholder-zinc-500 outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-400/40 transition resize-none overflow-y-auto"
           bind:value={userInput}
           placeholder="Write your prompt to continue the story..."
           on:keydown={handleKeydown}
@@ -537,7 +537,7 @@
           style="max-height: 150px;"
         />
         <button 
-          class="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
+          class="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-fuchsia-600 hover:from-indigo-400 hover:to-fuchsia-500 disabled:from-zinc-700 disabled:to-zinc-700 disabled:text-zinc-300/60 transition-colors shadow-lg" 
           on:click={sendMessage}
           disabled={!userInput.trim() || $isLoading}
         >
