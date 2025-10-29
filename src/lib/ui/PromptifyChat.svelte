@@ -238,7 +238,7 @@ Format your response with clear headings and bullet points for easy reading.`;
       <div class="flex items-center justify-center h-full text-zinc-400">
         <div class="text-center">
           <p class="text-lg mb-2 font-semibold text-zinc-200">👋 Welcome to Promptify!</p>
-          <p class="text-sm text-zinc-400">Start by typing your prompt to get AI-powered feedback.</p>
+          <p class="text-sm text-zinc-400">Start by typing a practice prompt to get AI-powered feedback.</p>
         </div>
       </div>
     {/if}
