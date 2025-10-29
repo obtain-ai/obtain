@@ -38,18 +38,22 @@
 		<div class="w-[80%] mx-auto space-y-6">
 			<a href="/promptify" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				Promptify
+				<div class="text-sm font-normal mt-1">Improve your prompts</div>
 			</a>
 			
 			<a href="/promptagonist" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				Promptagonist
+			   <div class="text-sm font-normal mt-1">Prompt your own story</div>
 			</a>
 			
 			<a href="/news" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				Promptpress
+			   <div class="text-sm font-normal mt-1">AI News</div>
 			</a>
 			
 			<a href="/AIListings" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				Promptpedia
+				<div class="text-sm font-normal mt-1">Different AI's explained</div>
 			</a>
 		</div>
 	</div>
