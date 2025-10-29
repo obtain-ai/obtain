@@ -27,8 +27,9 @@
 		<!-- Inner 80% wrapper (=> 64% total width) -->
 		<div class="w-[80%] mx-auto">
 			<!-- CHATBOTS -->
-			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors mb-4">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">
+			<details class="mb-4">
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors list-none flex items-start gap-3">
+					<span class="transform transition-transform duration-200 details-open:rotate-90">▶</span>
 					<div>
 						<p class="text-lg font-bold mb-2">CHATBOT:</p>
 						<p class="text-base font-normal">Why this matters: Chatbots are AI systems designed to simulate conversation with humans. They can answer questions, provide guidance, or help with tasks like research, learning, or customer support. Chatbots are best for interactive problem-solving or information retrieval.</p>
@@ -99,8 +100,9 @@
 			</details>
 
 			<!-- GENERATIVE AI -->
-			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors mb-4">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">
+			<details class="mb-4">
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors list-none flex items-start gap-3">
+					<span class="transform transition-transform duration-200 details-open:rotate-90">▶</span>
 					<div>
 						<p class="text-lg font-bold mb-2">Generative AI:</p>
 						<p class="text-base font-normal">Why this matters: Generative AI creates new content based on prompts you give it including text, images, music, or code. It's useful for creative projects, idea generation, writing, and visual design.</p>
@@ -158,8 +160,9 @@
 			</details>
 
 			<!-- AI AGENTS -->
-			<details class="w-full border border-zinc-600 rounded-xl p-6 bg-zinc-700 hover:bg-zinc-750 transition-colors mb-4">
-				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors">
+			<details class="mb-4">
+				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors list-none flex items-start gap-3">
+					<span class="transform transition-transform duration-200 details-open:rotate-90">▶</span>
 					<div>
 						<p class="text-lg font-bold mb-2">Agent:</p>
 						<p class="text-base font-normal">Why this matters: AI agents are autonomous systems that can perform tasks for you, often combining multiple steps or tools. They can handle complex workflows, research topics, summarize information, generate content, or even write code so you don't need to know everything, just the basics. This makes them ideal for boosting productivity, learning, or creative projects.</p>
