@@ -38,7 +38,7 @@
 					Instructions
 				{/snippet}
 				{#snippet content()}
-					Enter a practice prompt for AI in the chat below to receive feedback on how to make it more clear and specific in order to get better results from AI.
+					Write a sample prompt you’d normally use with an AI, and Promptify will give you tips to make it stronger and get better results.
 				{/snippet}
 			</InfoDisplay>
 		</div>
