@@ -2,6 +2,11 @@
 	import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
 </script>
 
+<svelte:head>
+  <title>Promptpedia</title>
+  <meta property="og:title" content="Promptpedia" />
+</svelte:head>
+
 <!-- Main container -->
 <div class="min-h-screen bg-zinc-800 text-zinc-200 w-full">
 	<!-- Outer 80% wrapper -->
