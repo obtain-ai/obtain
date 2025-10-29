@@ -1,7 +1,6 @@
-<!-- lib/ui/PromptagonistChat.svelte -->
 <script lang="ts">
   import { writable } from 'svelte/store';
-  
+
   interface StoryScenario {
     id: string;
     title: string;
@@ -10,15 +9,15 @@
     genre: string;
     isCustom?: boolean;
   }
-  
+
   interface PromptEvaluation {
-    clarity: number; // 1-10
-    specificity: number; // 1-10
-    aiInterpretability: number; // 1-10
-    overallScore: number; // 1-10
+    clarity: number;
+    specificity: number;
+    aiInterpretability: number;
+    overallScore: number;
     feedback: string;
   }
-  
+
   interface ChatMessage {
     id: string;
     type: 'user' | 'ai' | 'system';
@@ -26,7 +25,7 @@
     evaluation?: PromptEvaluation;
     timestamp: Date;
   }
-  
+
   let currentScenario = writable<StoryScenario | null>(null);
   let chatMessages = writable<ChatMessage[]>([]);
   let userInput = '';
@@ -36,68 +35,74 @@
   let showScenarioSelection = writable(true);
   let showCustomForm = writable(false);
   let previousMessageCount = 0;
-  
+
   // Custom scenario form
   let customTitle = '';
   let customDescription = '';
   let customContext = '';
   let customGenre = '';
-  
-  // Pre-made scenarios
+
   const scenarios: StoryScenario[] = [
     {
       id: 'space_explorer',
       title: 'Space Explorer',
-      description: 'You\'re an astronaut on a mission to explore a mysterious planet.',
-      initialContext: 'You\'ve just landed on Planet X-47, an uncharted world with strange energy readings. Your mission is to investigate the source of these readings and determine if the planet is safe for colonization.',
+      description: "You're an astronaut on a mission to explore a mysterious planet.",
+      initialContext:
+        "You've just landed on Planet X-47, an uncharted world with strange energy readings. Your mission is to investigate the source of these readings and determine if the planet is safe for colonization.",
       genre: 'Sci-Fi Adventure'
     },
     {
       id: 'detective_mystery',
       title: 'Detective Mystery',
-      description: 'You\'re a detective solving a complex case in a noir city.',
-      initialContext: 'A wealthy businessman has been found dead in his locked office. The only clues are a cryptic note and a broken window. You have 24 hours before the case goes cold.',
+      description: "You're a detective solving a complex case in a noir city.",
+      initialContext:
+        'A wealthy businessman has been found dead in his locked office. The only clues are a cryptic note and a broken window. You have 24 hours before the case goes cold.',
       genre: 'Mystery Thriller'
     },
     {
       id: 'fantasy_quest',
       title: 'Fantasy Quest',
-      description: 'You\'re a hero on a quest to save a magical kingdom.',
-      initialContext: 'The Crystal of Power has been stolen by the Dark Sorcerer, plunging the kingdom into eternal winter. You must journey through dangerous lands to retrieve it before the kingdom falls.',
+      description: "You're a hero on a quest to save a magical kingdom.",
+      initialContext:
+        'The Crystal of Power has been stolen by the Dark Sorcerer, plunging the kingdom into eternal winter. You must journey through dangerous lands to retrieve it before the kingdom falls.',
       genre: 'Fantasy Adventure'
     },
     {
       id: 'college_drama',
       title: 'College Drama',
       description: 'Navigate the challenges of college life and relationships.',
-      initialContext: 'It\'s your first week of sophomore year. You\'re trying to balance academics, friendships, and a new romantic interest while dealing with family pressure about your major choice.',
+      initialContext:
+        "It's your first week of sophomore year. You're trying to balance academics, friendships, and a new romantic interest while dealing with family pressure about your major choice.",
       genre: 'Contemporary Drama'
     },
     {
       id: 'startup_founder',
       title: 'Startup Founder',
       description: 'Build your tech startup from the ground up.',
-      initialContext: 'You\'ve just launched your app MVP and secured your first round of funding. Now you need to scale your team, acquire users, and prepare for your Series A pitch in 6 months.',
+      initialContext:
+        "You've just launched your app MVP and secured your first round of funding. Now you need to scale your team, acquire users, and prepare for your Series A pitch in 6 months.",
       genre: 'Business Drama'
     }
   ];
-  
+
   function selectScenario(scenario: StoryScenario) {
     currentScenario.set(scenario);
     showScenarioSelection.set(false);
     showCustomForm.set(false);
     chatMessages.set([]);
     userInput = '';
-    
-    // Add initial story context
-    chatMessages.update(msgs => [...msgs, {
-      id: `system_${Date.now()}`,
-      type: 'system',
-      content: `<strong>${scenario.title}</strong>\n\n${scenario.initialContext}\n\nWrite a prompt to take action in this story. The better your prompt, the more exciting the story becomes!`,
-      timestamp: new Date()
-    }]);
+
+    chatMessages.update((msgs) => [
+      ...msgs,
+      {
+        id: `system_${Date.now()}`,
+        type: 'system',
+        content: `<strong>${scenario.title}</strong>\n\n${scenario.initialContext}\n\nWrite a prompt to take action in this story. The better your prompt, the more exciting the story becomes!`,
+        timestamp: new Date()
+      }
+    ]);
   }
-  
+
   function showCustomScenarioForm() {
     showCustomForm.set(true);
     customTitle = '';
@@ -105,13 +110,13 @@
     customContext = '';
     customGenre = '';
   }
-  
+
   function createCustomScenario() {
     if (!customTitle || !customDescription || !customContext || !customGenre) {
       alert('Please fill in all fields');
       return;
     }
-    
+
     const customScenario: StoryScenario = {
       id: `custom_${Date.now()}`,
       title: customTitle,
@@ -120,10 +125,10 @@
       genre: customGenre,
       isCustom: true
     };
-    
+
     selectScenario(customScenario);
   }
-  
+
   function cancelCustomScenario() {
     showCustomForm.set(false);
     customTitle = '';
@@ -131,191 +136,119 @@
     customContext = '';
     customGenre = '';
   }
-  
+
   async function sendMessage() {
     if (!userInput.trim() || !$currentScenario) return;
-    
+
     isLoading.set(true);
-    
+
     // Add user message
-    chatMessages.update(msgs => [...msgs, {
-      id: `user_${Date.now()}`,
-      type: 'user',
-      content: userInput,
-      timestamp: new Date()
-    }]);
-    
+    chatMessages.update((msgs) => [
+      ...msgs,
+      {
+        id: `user_${Date.now()}`,
+        type: 'user',
+        content: userInput,
+        timestamp: new Date()
+      }
+    ]);
+
     const input = userInput;
     userInput = '';
-    
+
     try {
-      // Evaluate the prompt using AI API
-      const evaluation = await evaluatePromptWithAI(input, $currentScenario);
-      
-      // Generate story response using AI API
-      const storyResponse = await generateStoryResponseWithAI(input, evaluation, $currentScenario);
-      
-      // Add AI response with evaluation
-      chatMessages.update(msgs => [...msgs, {
-        id: `ai_${Date.now()}`,
-        type: 'ai',
-        content: storyResponse,
-        evaluation: evaluation,
-        timestamp: new Date()
-      }]);
-      
+      // 1) Evaluate prompt via server route
+      const evaluation = await evaluatePrompt(input, $currentScenario);
+
+      // 2) Generate story via server route
+      const storyResponse = await generateStory(input, evaluation, $currentScenario);
+
+      // 3) Append AI response
+      chatMessages.update((msgs) => [
+        ...msgs,
+        {
+          id: `ai_${Date.now()}`,
+          type: 'ai',
+          content: storyResponse,
+          evaluation,
+          timestamp: new Date()
+        }
+      ]);
     } catch (error) {
       console.error('Error generating response:', error);
-      
-      // Fallback response if API fails
-      chatMessages.update(msgs => [...msgs, {
-        id: `ai_${Date.now()}`,
-        type: 'ai',
-        content: 'Sorry, I encountered an error. Please try again.',
-        timestamp: new Date()
-      }]);
+      chatMessages.update((msgs) => [
+        ...msgs,
+        {
+          id: `ai_${Date.now()}`,
+          type: 'ai',
+          content: 'Sorry, I encountered an error. Please try again.',
+          timestamp: new Date()
+        }
+      ]);
     } finally {
       isLoading.set(false);
-      
-      // Keep input focused
       setTimeout(() => {
-        if (inputElement) {
-          inputElement.focus();
-        }
+        if (inputElement) inputElement.focus();
       }, 10);
     }
   }
-  
-  async function evaluatePromptWithAI(prompt: string, scenario: StoryScenario): Promise<PromptEvaluation> {
-    // TODO: Replace with your API key
-    const API_KEY = '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';
-    const API_URL = 'https://api.openai.com/v1/chat/completions';
-    
-    const evaluationPrompt = `
-      Evaluate this prompt for a story scenario. Rate each aspect from 1-10 and provide feedback.
-      
-      Scenario: ${scenario.title} - ${scenario.initialContext}
-      User's Prompt: "${prompt}"
-      
-      IMPORTANT: Only if the user's prompt contains INAPPROPRIATE content (explicitly sexual/pornographic material, detailed suicide/self-harm instructions, graphic eating disorder content, or racial/sexual orientation slurs)(if the intent is unclear, don't flag it), you should:
-      1. Still provide normal feedback with analysis, improved versions, and tips
-      2. Do NOT quote or build off the inappropriate parts
-      3. At the end, append: "⚠️ Please avoid inappropriate content such as explicit sexual material, graphic violence, self-harm, or offensive slurs in your prompts."
-      
-      Rate the prompt(Be relatively strict here to help the user improve) on:
-      1. Clarity (1-10): How clear and unambiguous are the instructions? 
-      2. Specificity (1-10): How detailed and specific is the prompt? (Does it provide good context and direction?)
-      3. AI Interpretability (1-10): How easy is it for an AI understand and follow these instructions? 
-      
-      Respond in this exact JSON format:
-      {
-        "clarity": [number],
-        "specificity": [number], 
-        "aiInterpretability": [number],
-        "overallScore": [average of the three scores],
-        "feedback": "[constructive feedback message]"
-      }`;
 
+  async function evaluatePrompt(prompt: string, scenario: StoryScenario): Promise<PromptEvaluation> {
     try {
-      const response = await fetch(API_URL, {
+      const res = await fetch('/promptagonist/evaluate', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert prompt evaluator. Always respond with valid JSON.'
-            },
-            {
-              role: 'user',
-              content: evaluationPrompt
-            }
-          ],
-          temperature: 0.3,
-          max_tokens: 300
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, scenario })
       });
-      
-      const data = await response.json();
-      const evaluationText = data.choices[0].message.content;
-      
-      // Parse JSON response
-      const evaluation = JSON.parse(evaluationText);
-      return evaluation;
-      
-    } catch (error) {
-      console.error('Evaluation API error:', error);
-      
-      // Fallback evaluation
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+
+      // Ensure the shape is correct
+      return {
+        clarity: Number(data.clarity ?? 5),
+        specificity: Number(data.specificity ?? 5),
+        aiInterpretability: Number(data.aiInterpretability ?? 5),
+        overallScore: Number(data.overallScore ?? 5),
+        feedback: String(data.feedback ?? 'No feedback provided.')
+      };
+    } catch (err) {
+      console.error('Evaluation API error:', err);
       return {
         clarity: 5,
         specificity: 5,
-        aiInterpretibility: 5,
+        aiInterpretability: 5, // fixed typo to match UI usage
         overallScore: 5,
         feedback: 'Unable to evaluate prompt. Please try again.'
-      } as unknown as PromptEvaluation;
+      };
     }
   }
-  
-  async function generateStoryResponseWithAI(prompt: string, evaluation: PromptEvaluation, scenario: StoryScenario): Promise<string> {
-    // TODO: Replace with your API key
-    const API_KEY = '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';
-    const API_URL = 'https://api.openai.com/v1/chat/completions';
-    
-    const storyPrompt = `
-      You are a creative storyteller. Continue this story based on the user's prompt and their prompt quality score.
-      
-      Scenario: ${scenario.title}
-      Context: ${scenario.initialContext}
-      User's Prompt: "${prompt}"
-      Prompt Quality Score: ${evaluation.overallScore}/10
-      
-      ${evaluation.overallScore >= 8 ? 
-        'HIGH QUALITY PROMPT: Write an exciting, successful story continuation with positive outcomes, character success, and engaging plot developments.' :
-        evaluation.overallScore >= 6 ?
-        'MEDIUM QUALITY PROMPT: Write a story continuation that progresses but with some challenges, awkward moments, or minor setbacks.' :
-        'LOW QUALITY PROMPT: Write a story continuation with chaotic events, character failures, or unexpected obstacles due to the vague prompt.'
-      }
 
-      Keep the response to 2-3 sentences. Make it engaging and continue the story naturally.`;
-
+  async function generateStory(
+    prompt: string,
+    evaluation: PromptEvaluation,
+    scenario: StoryScenario
+  ): Promise<string> {
     try {
-      const response = await fetch(API_URL, {
+      const res = await fetch('/promptagonist/story', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a creative storyteller who adapts story outcomes based on prompt quality.'
-            },
-            {
-              role: 'user',
-              content: storyPrompt
-            }
-          ],
-          temperature: 0.8,
-          max_tokens: 200
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, evaluation, scenario })
       });
-      
-      const data = await response.json();
-      return data.choices[0].message.content.trim();
-      
-    } catch (error) {
-      console.error('Story generation API error:', error);
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
+      return String(data.response || '').trim() || '...';
+    } catch (err) {
+      console.error('Story generation API error:', err);
       return 'Sorry, I encountered an error generating the story response. Please try again.';
     }
   }
-  
+
   function resetStory() {
     showScenarioSelection.set(true);
     showCustomForm.set(false);
@@ -330,7 +263,7 @@
       inputElement.style.height = `${Math.min(inputElement.scrollHeight, 150)}px`;
     }
   }
-  
+
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -338,16 +271,14 @@
     }
     setTimeout(() => adjustTextareaHeight(), 0);
   }
-  
+
   // Watch userInput for changes and adjust height
   $: if (userInput !== undefined) {
     setTimeout(() => adjustTextareaHeight(), 0);
   }
-  
-  // Track previous message count to detect new messages
-  previousMessageCount = 0;
 
   // Auto-scroll to bottom ONLY when new messages are added
+  previousMessageCount = 0;
   $: if (chatContainer && $chatMessages.length > previousMessageCount) {
     setTimeout(() => {
       chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -361,11 +292,11 @@
     <div class="p-6">
       <h3 class="text-2xl font-bold text-zinc-200 mb-2 text-center">Choose Your Adventure</h3>
       <p class="text-center text-zinc-400 mb-6">Select a scenario or create your own story!</p>
-      
+
       {#if $showCustomForm}
         <div class="max-w-2xl mx-auto mb-6 p-6 bg-zinc-800 border border-zinc-600 rounded-lg">
           <h4 class="text-lg font-semibold text-zinc-200 mb-4">Create Custom Scenario</h4>
-          
+
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-zinc-300 mb-1">Title</label>
@@ -376,7 +307,7 @@
                 placeholder="e.g., Zombie Apocalypse"
               />
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-zinc-300 mb-1">Description</label>
               <input
@@ -386,7 +317,7 @@
                 placeholder="e.g., You're a survivor in a post-apocalyptic world"
               />
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-zinc-300 mb-1">Initial Context</label>
               <textarea
@@ -395,7 +326,7 @@
                 placeholder="Describe the starting situation and what the user needs to do..."
               ></textarea>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium text-zinc-300 mb-1">Genre</label>
               <input
@@ -406,15 +337,15 @@
               />
             </div>
           </div>
-          
+
           <div class="flex gap-2 mt-4">
-            <button 
+            <button
               class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
               on:click={createCustomScenario}
             >
               Create Scenario
             </button>
-            <button 
+            <button
               class="px-4 py-2 bg-zinc-600 hover:bg-zinc-500 text-white rounded-md transition-colors"
               on:click={cancelCustomScenario}
             >
@@ -425,7 +356,7 @@
       {:else}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {#each scenarios as scenario}
-            <button 
+            <button
               class="p-4 bg-zinc-700 border border-zinc-600 rounded-lg hover:shadow-md hover:bg-zinc-650 transition-colors text-left"
               on:click={() => selectScenario(scenario)}
             >
@@ -435,9 +366,9 @@
             </button>
           {/each}
         </div>
-        
+
         <div class="text-center">
-          <button 
+          <button
             class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
             on:click={showCustomScenarioForm}
           >
@@ -451,8 +382,8 @@
   <div class="flex flex-col w-full h-[600px] border border-zinc-600 rounded-lg bg-zinc-700 shadow-lg">
     <div class="flex justify-between items-center p-4 border-b border-zinc-600 bg-zinc-800 rounded-t-lg">
       <div class="flex gap-2">
-        <button 
-          class="px-3 py-1.5 rounded-lg text-white text-sm font-medium bg-gradient-to-r from-indigo-500 to-fuchsia-600 hover:from-indigo-400 hover:to-fuchsia-500 transition-colors shadow" 
+        <button
+          class="px-3 py-1.5 rounded-lg text-white text-sm font-medium bg-gradient-to-r from-indigo-500 to-fuchsia-600 hover:from-indigo-400 hover:to-fuchsia-500 transition-colors shadow"
           on:click={resetStory}
         >
           Reset Story
@@ -461,19 +392,18 @@
       <h3 class="font-semibold text-zinc-200">{$currentScenario?.title}</h3>
     </div>
 
-    <div 
-      bind:this={chatContainer} 
-      class="flex-1 overflow-y-auto p-4 space-y-3 bg-zinc-800"
-    >
+    <div bind:this={chatContainer} class="flex-1 overflow-y-auto p-4 space-y-3 bg-zinc-800">
       {#each $chatMessages as msg (msg.id)}
         <div class="flex {msg.type === 'user' ? 'justify-end' : 'justify-start'}">
-          <div class="max-w-[80%] p-3 rounded-lg border {
-            msg.type === 'user' ? 'bg-purple-600 text-white border-purple-500' : 
-            msg.type === 'system' ? 'bg-gradient-to-br from-indigo-950/60 to-fuchsia-950/30 text-zinc-100 border-fuchsia-400/30' :
-            'bg-zinc-700 text-zinc-200 border-zinc-600'
-          }">
+          <div
+            class="max-w-[80%] p-3 rounded-lg border {
+              msg.type === 'user'
+                ? 'bg-purple-600 text-white border-purple-500'
+                : 'bg-zinc-50 text-zinc-800 border-zinc-200'
+            }"
+          >
             <div class="whitespace-pre-wrap text-sm break-words">{msg.content}</div>
-            
+
             {#if msg.evaluation}
               <div class="mt-2 pt-2 border-t border-zinc-500">
                 <div class="flex items-center gap-2 mb-1">
@@ -487,8 +417,8 @@
                   </span>
                 </div>
                 <div class="text-xs text-zinc-400 mb-1">
-                  Clarity: {msg.evaluation.clarity}/10 | 
-                  Specificity: {msg.evaluation.specificity}/10 | 
+                  Clarity: {msg.evaluation.clarity}/10 |
+                  Specificity: {msg.evaluation.specificity}/10 |
                   AI Interpretability: {msg.evaluation.aiInterpretability}/10
                 </div>
                 <div class="text-xs font-medium {
@@ -503,7 +433,7 @@
           </div>
         </div>
       {/each}
-      
+
       {#if $isLoading}
         <div class="flex justify-start">
           <div class="bg-zinc-700 p-3 rounded-lg border border-zinc-600">
@@ -529,8 +459,8 @@
           rows="1"
           style="max-height: 150px;"
         />
-        <button 
-          class="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
+        <button
+          class="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium"
           on:click={sendMessage}
           disabled={!userInput.trim() || $isLoading}
         >
