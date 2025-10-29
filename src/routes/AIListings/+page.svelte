@@ -179,53 +179,40 @@
 					<div class="space-y-4 mt-6">
 						<div class="border-l-4 border-purple-500 pl-4">
 							<h3 class="text-lg font-bold text-zinc-200 mb-2">
-								<a class="text-purple-400 hover:text-purple-300 underline" href="https://autogpt.net" target="_blank" rel="noopener noreferrer">AutoGPT</a>
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://claude.ai" target="_blank" rel="noopener noreferrer">Claude</a>
 							</h3>
-							<p class="mb-2">An autonomous GPT-based agent that can plan and complete multi-step tasks on its own, such as researching a topic or generating a report.</p>
+							<p class="mb-2">An advanced AI model by Anthropic designed for natural conversation, analysis, and creative or technical writing. Known for its strong reasoning, long context window, and safety alignment.</p>
 							<p class="font-semibold text-zinc-200">Pros:</p>
 							<ul class="list-disc list-inside ml-2 space-y-1">
-								<li>Saves time on repetitive tasks</li>
-								<li>Helps beginners complete complex projects</li>
-								<li>Can act as a personal research assistant</li>
+								<li>Excellent at understanding nuanced instructions</li>
+								<li>Great for writing, summarizing, and analysis</li>
+								<li>Handles large documents and long conversations effectively</li>
 							</ul>
 						</div>
 
 						<div class="border-l-4 border-purple-500 pl-4">
 							<h3 class="text-lg font-bold text-zinc-200 mb-2">
-								<a class="text-purple-400 hover:text-purple-300 underline" href="https://agentgpt.reworkd.ai" target="_blank" rel="noopener noreferrer">AgentGPT</a>
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://cursor.sh" target="_blank" rel="noopener noreferrer">Cursor</a>
 							</h3>
-							<p class="mb-2">Lets you create custom AI agents for specific goals, from automating workflows to managing multiple AI tools simultaneously.</p>
+							<p class="mb-2">An AI-powered code editor that integrates models like GPT and Claude to provide intelligent autocompletion, debugging, and documentation generation directly in your coding workspace.</p>
 							<p class="font-semibold text-zinc-200">Pros:</p>
 							<ul class="list-disc list-inside ml-2 space-y-1">
-								<li>Automates processes</li>
-								<li>Reduces need for manual coordination</li>
-								<li>Useful for personal productivity</li>
+								<li>Streamlines coding and debugging</li>
+								<li>Improves productivity for developers</li>
+								<li>Integrates seamlessly with GitHub and existing projects</li>
 							</ul>
 						</div>
 
 						<div class="border-l-4 border-purple-500 pl-4">
 							<h3 class="text-lg font-bold text-zinc-200 mb-2">
-								<a class="text-purple-400 hover:text-purple-300 underline" href="https://huggingface.co/docs/transformers/agents" target="_blank" rel="noopener noreferrer">HuggingFace Agents</a>
+								<a class="text-purple-400 hover:text-purple-300 underline" href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer">Perplexity</a>
 							</h3>
-							<p class="mb-2">Customizable agents that can combine AI tools for specialized workflows, like text generation, translation, or summarization.</p>
+							<p class="mb-2">An AI search and research assistant that combines conversational AI with real-time web access to provide accurate, sourced answers and summaries.</p>
 							<p class="font-semibold text-zinc-200">Pros:</p>
 							<ul class="list-disc list-inside ml-2 space-y-1">
-								<li>Flexible and modular</li>
-								<li>Supports multiple AI tasks</li>
-								<li>Great for experimenting with AI pipelines</li>
-							</ul>
-						</div>
-
-						<div class="border-l-4 border-purple-500 pl-4">
-							<h3 class="text-lg font-bold text-zinc-200 mb-2">
-								<a class="text-purple-400 hover:text-purple-300 underline" href="https://www.notion.so/product/ai" target="_blank" rel="noopener noreferrer">Notion AI</a>
-							</h3>
-							<p class="mb-2">Automates tasks in Notion like summarizing notes, generating ideas, and organizing workflows without requiring deep technical knowledge.</p>
-							<p class="font-semibold text-zinc-200">Pros:</p>
-							<ul class="list-disc list-inside ml-2 space-y-1">
-								<li>Simplifies knowledge management</li>
-								<li>Speeds up creative and organizational tasks</li>
-								<li>Beginner-friendly</li>
+								<li>Provides up-to-date, cited information</li>
+								<li>Great for research and fact-checking</li>
+								<li>Fast, intuitive, and easy to use</li>
 							</ul>
 						</div>
 					</div>
