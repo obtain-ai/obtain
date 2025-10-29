@@ -5,6 +5,10 @@
 	export const title = 'ObtAIn';
 </script>
 
+<svelte:head>
+  <title>ObtAIn</title>
+</svelte:head>
+
 <!-- Main container with dark background -->
 <div class="min-h-screen bg-zinc-800 text-zinc-200 w-full">
 	<!-- Wrapper that maintains 80% width at all screen sizes -->
