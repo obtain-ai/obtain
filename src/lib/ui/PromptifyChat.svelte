@@ -45,9 +45,7 @@
 
     // Focus immediately after clearing input
     setTimeout(() => {
-      if (inputElement) {
-        inputElement.focus();
-      }
+      if (inputElement) inputElement.focus();
     }, 0);
 
     try {
@@ -64,9 +62,7 @@
       
       // Scroll to bottom after content is updated
       setTimeout(() => {
-        if (chatContainer) {
-          chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
+        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
       }, 50);
       
     } catch (error) {
@@ -82,17 +78,13 @@
       
       // Scroll to bottom after error content is updated
       setTimeout(() => {
-        if (chatContainer) {
-          chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
+        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
       }, 50);
     }
     
     // Focus again after loading is complete
     setTimeout(() => {
-      if (inputElement) {
-        inputElement.focus();
-      }
+      if (inputElement) inputElement.focus();
     }, 50);
   }
 
@@ -166,9 +158,7 @@ Format your response with clear headings and bullet points for easy reading.`;
     chatMessages.set([]);
     // Focus input after reset
     setTimeout(() => {
-      if (inputElement) {
-        inputElement.focus();
-      }
+      if (inputElement) inputElement.focus();
     }, 50);
   }
 
@@ -189,7 +179,6 @@ Format your response with clear headings and bullet points for easy reading.`;
     setTimeout(() => {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }, 50);
-    
     previousMessageCount = $chatMessages.length;
   }
 
@@ -202,29 +191,28 @@ Format your response with clear headings and bullet points for easy reading.`;
     setTimeout(() => adjustTextareaHeight(), 0);
   }
 
-  // Focus input when component mounts //IS THIS AN ISSUEEEEEEEEEEEEEEEEEEEEEEEEE
+  // Focus input when component mounts
   function focusInput() {
     setTimeout(() => {
-      if (inputElement) {
-        inputElement.focus();
-      }
+      if (inputElement) inputElement.focus();
     }, 100);
   }
 </script>
 
-<div class="flex flex-col w-full h-[800px] border border-zinc-200 rounded-lg bg-zinc-700 shadow-lg overflow-hidden">
-  <!-- Reset Button -->
+<!-- Dark-theme, app-vibe container -->
+<div class="flex flex-col w-full h-[600px] border border-zinc-600 rounded-lg bg-zinc-700 shadow-lg overflow-hidden">
+  <!-- Header -->
   <div class="flex justify-between items-center p-3 border-b border-zinc-600 bg-zinc-800">
     <h3 class="font-semibold text-zinc-200">Promptify Chat</h3>
     <button 
-      class="px-3 py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm rounded-md transition-colors" 
+      class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md transition-colors" 
       on:click={resetChat}
     >
       Reset Chat
     </button>
   </div>
 
-  <!-- Messages Container -->
+  <!-- Messages -->
   <div 
     bind:this={chatContainer} 
     class="flex-1 overflow-y-auto p-4 space-y-3 bg-zinc-800"
@@ -244,7 +232,7 @@ Format your response with clear headings and bullet points for easy reading.`;
     {/if}
   </div>
 
-  <!-- Input Area -->
+  <!-- Input -->
   <div class="p-4 border-t border-zinc-600 bg-zinc-800">
     <div class="flex gap-2">
       <textarea
