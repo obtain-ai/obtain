@@ -38,7 +38,7 @@
 					Instructions
 				{/snippet}
 				{#snippet content()}
-					Write a sample prompt you’d normally use with an AI, and Promptify will give you tips to make it stronger and get better results.
+					Write a sample prompt you’d normally use with an AI, and Promptify will give you tips on how to make it stronger and get better results.
 				{/snippet}
 			</InfoDisplay>
 		</div>
