@@ -38,7 +38,7 @@
 					Instructions
 				{/snippet}
 				{#snippet content()}
-					Enter your prompt in the chat below to receive feedback from our AI on how to make it more clear and specific.
+					Enter a practice prompt for AI in the chat below to receive feedback on how to make it more clear and specific in order to get better results from AI.
 				{/snippet}
 			</InfoDisplay>
 		</div>
