@@ -368,16 +368,16 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
   <!-- Chat Interface -->
   <div class="flex flex-col w-full h-[600px] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
     <!-- Header -->
-    <div class="flex justify-between items-center p-4 border-b border-zinc-200 bg-zinc-100 rounded-t-lg">
-      <h3 class="font-semibold text-zinc-800">{$currentScenario?.title}</h3>
-      <div class="flex gap-2">
-        <button
-          class="px-3 py-1.5 rounded-md text-white text-sm font-medium bg-[#5B2FD3] hover:bg-[#4B25B6] active:bg-[#401fa1] transition-colors shadow-sm"
-          on:click={resetStory}
-        >
-          Reset Story
-        </button>
-      </div>
+    <div class="flex justify-between items-center p-4 border-b border-white/10 bg-zinc-900/70 rounded-t-lg backdrop-blur-sm">
+      <h3 class="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-fuchsia-400">
+        Promptify Chat
+      </h3>
+      <button
+        class="px-3 py-1.5 rounded-lg text-white text-sm font-medium bg-gradient-to-r from-indigo-500 to-fuchsia-600 hover:from-indigo-400 hover:to-fuchsia-500 transition-colors shadow"
+        on:click={resetChat}
+      >
+        Reset Chat
+      </button>
     </div>
 
     <!-- Chat Area -->
