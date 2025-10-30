@@ -274,77 +274,161 @@ function applySourceDiversity(articles: NewsItem[], maxPerSource: number = 2): N
 // ------- Summarize Articles -------
 async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
   if (!articles.length || !OPENAI_API_KEY) return articles;
-  
+
+  // Build compact inputs (avoid huge prompts)
+  const items = articles.map((a, i) => ({
+    id: i + 1,
+    title: a.title,
+    // Trim description to ~600 chars to keep tokens down; strip HTML
+    description: (a.description || '')
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .slice(0, 600),
+    source: a.source
+  }));
+
+  const systemPrompt =
+    [
+      'You are a strict news summarizer.',
+      'For EACH article, write a SHORT 2–3 sentence summary in your own words.',
+      'Rules:',
+      '- Do NOT copy or closely paraphrase the original text.',
+      '- Do NOT include the article title, links, HTML, or bullet points.',
+      '- Max ~120 words per summary; be concise and factual.',
+      '- Focus on the core event, who/what/when/why it matters.',
+      'Output ONLY valid JSON array: [{"id": 1, "summary": "..."}, ...] with one object per input id in the same order.'
+    ].join('\n');
+
+  const userPrompt =
+    'Summarize these articles and return JSON array as specified:\n\n' +
+    JSON.stringify(items, null, 2);
+
   const openaiUrl = 'https://api.openai.com/v1/chat/completions';
-  
-  // Truncate descriptions to prevent token overflow and improve summarization
-  const content = articles.map((a, i) => {
-    const truncatedDesc = a.description.length > 500 
-      ? a.description.substring(0, 500) + '...' 
-      : a.description;
-    
-    return `${i + 1}. Title: ${a.title}\n   Description: ${truncatedDesc}\n   Source: ${a.source}`;
-  }).join('\n\n');
 
   try {
     const res = await fetch(openaiUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${OPENAI_API_KEY}`
+      },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
+        temperature: 0.3,
+        max_tokens: 900,
         messages: [
-          { 
-            role: 'system', 
-            content: `You are a news summarizer. For each article, write a SHORT, CONCISE summary in 2-3 sentences maximum. 
-
-CRITICAL RULES:
-- Write ONLY 2-3 sentences per article
-- Do NOT copy-paste or paraphrase the original description
-- Focus on the main story and why it matters
-- Use bullet points or simple sentences
-- Return each summary separated by "---" in the same order
-- Keep each summary under 100 words
-- Do NOT include HTML tags, links, or formatting
-
-Example format:
-Google launched a new AI coding tool that lets anyone build apps in minutes. The tool uses natural language prompts to generate working applications without coding knowledge. It's free to start but requires paid plans for advanced features.
-
----` 
-          },
-          { role: 'user', content: `Summarize these ${articles.length} AI news articles:\n\n${content}` }
-        ],
-        max_tokens: 800,
-        temperature: 0.3
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ]
       })
     });
-    
+
     if (!res.ok) {
       console.error('OpenAI API error:', res.status, res.statusText);
-      return articles; // Return original articles if API fails
+      return fallbackSummaries(articles);
     }
-    
+
     const data: OpenAIResponse = await res.json();
     const raw = data.choices?.[0]?.message?.content || '';
-    
-    // Clean up the response
-    const summaries = raw
-      .split('---')
-      .map(s => s.trim())
-      .filter(Boolean)
-      .map(s => s.replace(/^\d+\.\s*/, '')) // Remove numbering
-      .map(s => s.replace(/<[^>]*>/g, '')) // Remove HTML tags
-      .map(s => s.trim());
-    
-    console.log(`Generated ${summaries.length} summaries from ${articles.length} articles`);
-    
-    return articles.map((article, index) => ({
-      ...article,
-      summary: summaries[index] || article.title // Fallback to title if no summary
-    }));
+
+    // Try to parse JSON safely
+    let parsed: Array<{ id: number; summary: string }> | null = null;
+    try {
+      // Extract JSON block if model wrapped it in extra text
+      const jsonMatch = raw.match(/\[[\s\S]*\]/);
+      parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(raw);
+    } catch {
+      parsed = null;
+    }
+
+    if (!parsed || !Array.isArray(parsed)) {
+      console.warn('Summarizer returned non-JSON or invalid shape. Using fallback.');
+      return fallbackSummaries(articles);
+    }
+
+    // Map id -> clean summary; ensure not copying, not empty, and length-safe
+    const idToSummary = new Map<number, string>();
+    for (const row of parsed) {
+      if (!row || typeof row.id !== 'number' || typeof row.summary !== 'string') continue;
+
+      let s = row.summary.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+
+      // Hard limits
+      if (s.length > 700) s = s.slice(0, 700) + '…';
+
+      idToSummary.set(row.id, s);
+    }
+
+    // Build final array with robust fallbacks per article
+    return articles.map((article, idx) => {
+      const id = idx + 1;
+      let s = idToSummary.get(id) || '';
+
+      // If missing or suspicious, fall back to extractive 2-sentences from description (not title)
+      if (!s || s.length < 20) {
+        s = makeExtractiveSummary(article.description || article.title || '');
+      }
+
+      // If summary is basically the title, replace with extractive summary
+      if (isTooSimilar(s, article.title)) {
+        s = makeExtractiveSummary(article.description || article.title || '');
+      }
+
+      // If summary matches large chunks of description (copy risk), truncate to first 2 sentences
+      if (isCopyLike(s, article.description || '')) {
+        s = makeExtractiveSummary(article.description || '');
+      }
+
+      return { ...article, summary: s };
+    });
   } catch (e) {
-    console.error('OpenAI summarization failed:', e);
-    return articles; // Return original articles if summarization fails
+    console.error('Summarization call failed:', e);
+    return fallbackSummaries(articles);
   }
+}
+
+// ------- Helpers for summarization fallbacks -------
+function splitSentences(text: string): string[] {
+  const clean = (text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  if (!clean) return [];
+  // naive sentence split
+  return clean.split(/(?<=[.!?])\s+/).filter(Boolean);
+}
+
+function makeExtractiveSummary(text: string): string {
+  const sentences = splitSentences(text);
+  if (sentences.length === 0) return '';
+  const pick = sentences.slice(0, 2).join(' ');
+  return pick.length > 700 ? pick.slice(0, 700) + '…' : pick;
+}
+
+function normalized(s: string): string {
+  return (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function isTooSimilar(a: string, b: string): boolean {
+  const A = normalized(a);
+  const B = normalized(b);
+  if (!A || !B) return false;
+  const shorter = A.length < B.length ? A : B;
+  const longer = A.length < B.length ? B : A;
+  return longer.includes(shorter) && shorter.length > 10; // crude containment check
+}
+
+function isCopyLike(summary: string, description: string): boolean {
+  const S = normalized(summary);
+  const D = normalized(description);
+  if (!S || !D) return false;
+  // If most of the summary appears verbatim in the description, treat as copy
+  const overlap = S.length > 0 ? (S.split(' ').filter(w => D.includes(w)).length / S.split(' ').length) : 0;
+  return overlap > 0.75 && S.length > 80;
+}
+
+function fallbackSummaries(articles: NewsItem[]): NewsItem[] {
+  return articles.map((a) => {
+    const s = makeExtractiveSummary(a.description || a.title || '');
+    return { ...a, summary: s };
+  });
 }
 
 // ------- Main News Fetching Function with Week Filtering -------
