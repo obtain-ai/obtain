@@ -386,12 +386,14 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
       class="flex-1 overflow-y-auto p-4 space-y-3 bg-white"
     >
       {#each $chatMessages as msg (msg.id)}
-        <div class="flex {msg.type === 'user' ? 'justify-end' : 'justify-start'}">
-          <div class="max-w-[80%] p-3 rounded-lg {
-            msg.type === 'user' ? 'bg-blue-600 text-white' : 
-            msg.type === 'system' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
-            'bg-zinc-100 text-zinc-800 border border-zinc-200'
-          }">
+          <div class="flex {msg.type === 'user' ? 'justify-end' : 'justify-start'}">
+            <div class="max-w-[80%] p-3 rounded-lg border {
+              msg.type === 'user' ? 'bg-purple-600 text-white border-purple-500' : 
+              msg.type === 'system' ? 'bg-white text-zinc-900 border-zinc-200' :
+              'bg-zinc-100 text-zinc-800 border border-zinc-200'
+                ? 'bg-white text-zinc-900 border-zinc-200'
+                : 'bg-gradient-to-br from-indigo-950/60 to-fuchsia-950/30 text-zinc-100 border-fuchsia-400/30'
+            }">
             <div class="whitespace-pre-wrap text-sm break-words">{msg.content}
       </div>
             
