@@ -93,7 +93,7 @@
     chatMessages.update(msgs => [...msgs, {
       id: `system_${Date.now()}`,
       type: 'system',
-      content: `${scenario.title}\n\n${scenario.initialContext}\n\nWrite a prompt to take action in this story. The better your prompt, the more exciting the story becomes!`,
+      content: `🎭 **${scenario.title}**\n\n${scenario.initialContext}\n\n*Write a prompt to take action in this story. The better your prompt, the more exciting the story becomes!*`,
       timestamp: new Date()
     }]);
   }
