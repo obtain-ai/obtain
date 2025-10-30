@@ -340,22 +340,22 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
         </div>
       {:else}
         <!-- Pre-made Scenarios -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           {#each scenarios as scenario}
-            <button 
-              class="p-4 bg-white border border-zinc-200 rounded-lg hover:shadow-md transition-shadow text-left"
+            <button
+              class="group p-5 rounded-xl text-left border border-zinc-200 bg-white hover:bg-zinc-50 hover:border-[#5B2FD3]/40 transition shadow-sm hover:shadow-md"
               on:click={() => selectScenario(scenario)}
             >
-              <h4 class="font-semibold text-zinc-800 mb-2">{scenario.title}</h4>
-              <p class="text-sm text-zinc-600 mb-2">{scenario.description}</p>
-              <span class="text-xs text-blue-600 font-medium">{scenario.genre}</span>
+              <h4 class="font-semibold text-zinc-900 mb-1 tracking-tight">{scenario.title}</h4>
+              <p class="text-sm text-zinc-600 mb-3">{scenario.description}</p>
+              <span class="inline-flex items-center text-xs font-medium text-[#5B2FD3]"> {scenario.genre} </span>
             </button>
           {/each}
         </div>
         
         <div class="text-center">
-          <button 
-            class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+          <button
+            class="px-6 py-3 rounded-xl text-white font-semibold bg-[#5B2FD3] hover:bg-[#4B25B6] active:bg-[#401fa1] transition-colors shadow"
             on:click={showCustomScenarioForm}
           >
             Create Custom Scenario
@@ -369,15 +369,15 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
   <div class="flex flex-col w-full h-[600px] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
     <!-- Header -->
     <div class="flex justify-between items-center p-4 border-b border-zinc-200 bg-zinc-100 rounded-t-lg">
+      <h3 class="font-semibold text-zinc-800">{$currentScenario?.title}</h3>
       <div class="flex gap-2">
-        <button 
-          class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-md transition-colors" 
+        <button
+          class="px-3 py-1.5 rounded-md text-white text-sm font-medium bg-[#5B2FD3] hover:bg-[#4B25B6] active:bg-[#401fa1] transition-colors shadow-sm"
           on:click={resetStory}
         >
           Reset Story
         </button>
       </div>
-      <h3 class="font-semibold text-zinc-800">{$currentScenario?.title}</h3>
     </div>
 
     <!-- Chat Area -->
