@@ -189,7 +189,7 @@
   //call for api key securely
   async function evaluatePromptWithAI(prompt: string, scenario: StoryScenario): Promise<PromptEvaluation> {
     try {
-      const response = await fetch('/api/promptagonist/evaluate', {
+      const response = await fetch('/promptagonist/evaluate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -213,7 +213,7 @@
   
   async function generateStoryResponseWithAI(prompt: string, evaluation: PromptEvaluation, scenario: StoryScenario): Promise<string> {
     try {
-      const response = await fetch('/api/promptagonist/story', {
+      const response = await fetch('/promptagonist/story', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
