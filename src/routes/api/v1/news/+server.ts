@@ -106,13 +106,38 @@ function isTooSimilar(a: string, b: string): boolean {
   return longer.includes(shorter) && shorter.length > 10;
 }
 
+// REPLACED: stronger copy detector using 5-gram overlap (mild thresholds)
 function isCopyLike(summary: string, description: string): boolean {
   const S = normalized(summary);
   const D = normalized(description);
   if (!S || !D) return false;
-  const sTokens = S.split(' ');
-  const overlap = sTokens.filter((w) => D.includes(w)).length / sTokens.length;
-  return overlap > 0.75 && S.length > 80;
+
+  // Early quick check for leading chunk reuse
+  if (D.length > 140 && S.includes(D.slice(0, 120))) return true;
+
+  const sWords = S.split(' ').filter(Boolean);
+  const dWords = D.split(' ').filter(Boolean);
+
+  // Classic word overlap (kept mild)
+  const wordOverlap = sWords.filter((w) => D.includes(w)).length / Math.max(1, sWords.length);
+  if (wordOverlap > 0.85 && S.length > 100) return true;
+
+  // 5-gram Jaccard-style overlap to catch long verbatim blocks
+  const to5 = (ws: string[]) => {
+    const set = new Set<string>();
+    for (let i = 0; i <= ws.length - 5; i++) set.add(ws.slice(i, i + 5).join(' '));
+    return set;
+  };
+  const s5 = to5(sWords);
+  const d5 = to5(dWords);
+  if (s5.size && d5.size) {
+    let inter = 0;
+    for (const g of s5) if (d5.has(g)) inter++;
+    const ratio = inter / Math.min(s5.size, d5.size);
+    if (ratio > 0.60) return true;
+  }
+
+  return false;
 }
 
 // ------- Parse RSS Feed -------
