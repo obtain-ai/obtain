@@ -1,16 +1,11 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
-	import { page } from '$app/stores';
-	import { navigating } from '$app/navigation';
+
+	import { navigating } from '$app/stores';
 	import { fly } from 'svelte/transition';
 
 	let { children } = $props();
 </script>
-
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
 
 <div class="relative min-h-screen overflow-y-auto bg-zinc-800 text-zinc-200">
 	{#key $page.url.pathname}
