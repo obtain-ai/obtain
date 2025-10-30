@@ -289,7 +289,9 @@ async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
     'Output ONLY valid JSON array: [{"id": 1, "summary": "..."}, ...] with one object per input id in the same order.'
   ].join('\n');
 
-  const userPrompt = 'Summarize these articles and return JSON array as specified:\n\n' + JSON.stringify(items, null, 2);
+  const userPrompt =
+    'Summarize these articles and return JSON array as specified:\n\n' +
+    JSON.stringify(items, null, 2);
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
