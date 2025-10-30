@@ -275,43 +275,32 @@ function applySourceDiversity(articles: NewsItem[], maxPerSource: number = 2): N
 async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
   if (!articles.length || !OPENAI_API_KEY) return articles;
 
-  // Build compact inputs (avoid huge prompts)
   const items = articles.map((a, i) => ({
     id: i + 1,
     title: a.title,
-    // Trim description to ~600 chars to keep tokens down; strip HTML
-    description: (a.description || '')
-      .replace(/<[^>]*>/g, '')
-      .replace(/\s+/g, ' ')
-      .slice(0, 600),
+    description: decodeEntities(
+      (a.description || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').slice(0, 600)
+    ),
     source: a.source
   }));
 
-  const systemPrompt =
-    [
-      'You are a strict news summarizer.',
-      'For EACH article, write a SHORT 2–3 sentence summary in your own words.',
-      'Rules:',
-      '- Do NOT copy or closely paraphrase the original text.',
-      '- Do NOT include the article title, links, HTML, or bullet points.',
-      '- Max ~120 words per summary; be concise and factual.',
-      '- Focus on the core event, who/what/when/why it matters.',
-      'Output ONLY valid JSON array: [{"id": 1, "summary": "..."}, ...] with one object per input id in the same order.'
-    ].join('\n');
+  const systemPrompt = [
+    'You are a strict news summarizer.',
+    'For EACH article, write a SHORT 2–3 sentence summary in your own words.',
+    'Rules:',
+    '- Do NOT copy or closely paraphrase the original text.',
+    '- Do NOT include the article title, links, HTML, or bullet points.',
+    '- Max ~120 words per summary; be concise and factual.',
+    '- Focus on the core event, who/what/when/why it matters.',
+    'Output ONLY valid JSON array: [{"id": 1, "summary": "..."}, ...] with one object per input id in the same order.'
+  ].join('\n');
 
-  const userPrompt =
-    'Summarize these articles and return JSON array as specified:\n\n' +
-    JSON.stringify(items, null, 2);
-
-  const openaiUrl = 'https://api.openai.com/v1/chat/completions';
+  const userPrompt = 'Summarize these articles and return JSON array as specified:\n\n' + JSON.stringify(items, null, 2);
 
   try {
-    const res = await fetch(openaiUrl, {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_API_KEY}`
-      },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
         temperature: 0.3,
@@ -331,10 +320,9 @@ async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
     const data: OpenAIResponse = await res.json();
     const raw = data.choices?.[0]?.message?.content || '';
 
-    // Try to parse JSON safely
+    // Parse JSON (even if wrapped in text)
     let parsed: Array<{ id: number; summary: string }> | null = null;
     try {
-      // Extract JSON block if model wrapped it in extra text
       const jsonMatch = raw.match(/\[[\s\S]*\]/);
       parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(raw);
     } catch {
@@ -346,38 +334,23 @@ async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
       return fallbackSummaries(articles);
     }
 
-    // Map id -> clean summary; ensure not copying, not empty, and length-safe
     const idToSummary = new Map<number, string>();
     for (const row of parsed) {
       if (!row || typeof row.id !== 'number' || typeof row.summary !== 'string') continue;
-
       let s = row.summary.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-
-      // Hard limits
       if (s.length > 700) s = s.slice(0, 700) + '…';
-
+      s = decodeEntities(s);
       idToSummary.set(row.id, s);
     }
 
-    // Build final array with robust fallbacks per article
     return articles.map((article, idx) => {
       const id = idx + 1;
       let s = idToSummary.get(id) || '';
 
-      // If missing or suspicious, fall back to extractive 2-sentences from description (not title)
-      if (!s || s.length < 20) {
-        s = makeExtractiveSummary(article.description || article.title || '');
-      }
-
-      // If summary is basically the title, replace with extractive summary
-      if (isTooSimilar(s, article.title)) {
-        s = makeExtractiveSummary(article.description || article.title || '');
-      }
-
-      // If summary matches large chunks of description (copy risk), truncate to first 2 sentences
-      if (isCopyLike(s, article.description || '')) {
-        s = makeExtractiveSummary(article.description || '');
-      }
+      // Guardrails: never title-as-summary; never long copy-paste; ensure content present
+      if (!s || s.length < 20) s = makeExtractiveSummary(article.description || article.title || '');
+      if (isTooSimilar(s, article.title)) s = makeExtractiveSummary(article.description || article.title || '');
+      if (isCopyLike(s, article.description || '')) s = makeExtractiveSummary(article.description || '');
 
       return { ...article, summary: s };
     });
@@ -388,10 +361,21 @@ async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
 }
 
 // ------- Helpers for summarization fallbacks -------
+function decodeEntities(s: string): string {
+  if (!s) return '';
+  return s
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#x2F;/g, '/');
+}
+
 function splitSentences(text: string): string[] {
   const clean = (text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
   if (!clean) return [];
-  // naive sentence split
   return clean.split(/(?<=[.!?])\s+/).filter(Boolean);
 }
 
@@ -412,15 +396,15 @@ function isTooSimilar(a: string, b: string): boolean {
   if (!A || !B) return false;
   const shorter = A.length < B.length ? A : B;
   const longer = A.length < B.length ? B : A;
-  return longer.includes(shorter) && shorter.length > 10; // crude containment check
+  return longer.includes(shorter) && shorter.length > 10;
 }
 
 function isCopyLike(summary: string, description: string): boolean {
   const S = normalized(summary);
   const D = normalized(description);
   if (!S || !D) return false;
-  // If most of the summary appears verbatim in the description, treat as copy
-  const overlap = S.length > 0 ? (S.split(' ').filter(w => D.includes(w)).length / S.split(' ').length) : 0;
+  const sTokens = S.split(' ');
+  const overlap = sTokens.filter((w) => D.includes(w)).length / sTokens.length;
   return overlap > 0.75 && S.length > 80;
 }
 
