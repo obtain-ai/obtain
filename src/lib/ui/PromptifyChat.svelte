@@ -99,7 +99,7 @@
 
   async function generatePromptImprovement(userPrompt: string): Promise<string> {
     try {
-      const response = await fetch('/api/promptify', {
+      const response = await fetch('/promptify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
