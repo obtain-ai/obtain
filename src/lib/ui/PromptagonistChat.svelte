@@ -149,10 +149,10 @@
     userInput = '';
     
     try {
-      // Evaluate the prompt using server API (no client key)
+      // Evaluate the prompt using AI API
       const evaluation = await evaluatePromptWithAI(input, $currentScenario);
       
-      // Generate story response using server API (no client key)
+      // Generate story response using AI API
       const storyResponse = await generateStoryResponseWithAI(input, evaluation, $currentScenario);
       
       // Add AI response with evaluation
@@ -185,51 +185,44 @@
       }, 10);
     }
   }
-  
-  // EDIT: use server endpoints; remove hard-coded API key from client
+
+  //call for api key securely
   async function evaluatePromptWithAI(prompt: string, scenario: StoryScenario): Promise<PromptEvaluation> {
     try {
-      const res = await fetch('/promptagonist/evaluate', {
+      const response = await fetch('/api/promptagonist/evaluate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ prompt, scenario })
       });
       
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-      
-      return {
-        clarity: Number(data.clarity ?? 5),
-        specificity: Number(data.specificity ?? 5),
-        aiInterpretability: Number(data.aiInterpretability ?? 5),
-        overallScore: Number(data.overallScore ?? 5),
-        feedback: String(data.feedback ?? 'No feedback.')
-      };
+      const evaluation = await response.json();
+      return evaluation;
     } catch (error) {
       console.error('Evaluation API error:', error);
       return {
         clarity: 5,
         specificity: 5,
-        aiInterpretibility: 5, // keep original typo in fallback to avoid changing shape elsewhere
+        aiInterpretability: 5,
         overallScore: 5,
         feedback: 'Unable to evaluate prompt. Please try again.'
-      } as unknown as PromptEvaluation;
+      };
     }
   }
   
-  // EDIT: use server endpoints; remove hard-coded API key from client
   async function generateStoryResponseWithAI(prompt: string, evaluation: PromptEvaluation, scenario: StoryScenario): Promise<string> {
     try {
-      const res = await fetch('/promptagonist/story', {
+      const response = await fetch('/api/promptagonist/story', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ prompt, evaluation, scenario })
       });
       
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-      
-      return String(data.response || '').trim() || '...';
+      const data = await response.json();
+      return data.response;
     } catch (error) {
       console.error('Story generation API error:', error);
       return 'Sorry, I encountered an error generating the story response. Please try again.';
@@ -265,16 +258,16 @@
   }
   
   // Track previous message count to detect new messages
-  previousMessageCount = 0;
+previousMessageCount = 0;
 
-  // Auto-scroll to bottom ONLY when new messages are added
-  $: if (chatContainer && $chatMessages.length > previousMessageCount) {
-    setTimeout(() => {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }, 50);
-    
-    previousMessageCount = $chatMessages.length;
-  }
+// Auto-scroll to bottom ONLY when new messages are added
+$: if (chatContainer && $chatMessages.length > previousMessageCount) {
+  setTimeout(() => {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }, 50);
+  
+  previousMessageCount = $chatMessages.length;
+}
 </script>
 
 <!-- Scenario Selection Screen -->
