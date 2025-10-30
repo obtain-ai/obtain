@@ -26,7 +26,7 @@
 			</p>
 		</header>
 
-		<!-- About section card -->
+		<!-- About section -->
 		<div class="mb-16">
 			<InfoDisplay>
 				{#snippet title()}
@@ -38,7 +38,7 @@
 			</InfoDisplay>
 		</div>
 
-		<!-- Action buttons section - 64% width to match InfoDisplay -->
+		<!-- Action buttons section -->
 		<div class="w-[80%] mx-auto space-y-6">
 			<a href="/promptify" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
 				Promptify
