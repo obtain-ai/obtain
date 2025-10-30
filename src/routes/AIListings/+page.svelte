@@ -104,6 +104,8 @@
 				</div>
 			</details>
 
+			<hr class="my-10 border-zinc-700/70">
+
 			<!-- GENERATIVE AI -->
 			<details class="mb-4">
 				<summary class="text-xl font-bold cursor-pointer text-zinc-200 hover:text-purple-400 transition-colors list-none flex items-start gap-3">
@@ -163,6 +165,8 @@
 					</div>
 				</div>
 			</details>
+
+			<hr class="my-10 border-zinc-700/70">
 
 			<!-- AI AGENTS -->
 			<details class="mb-4">
