@@ -228,6 +228,8 @@
 				</div>
 			</details>
 
+			<hr class="my-10 border-zinc-700/70">
+
 			<div class="text-center text-zinc-400 text-sm mt-12">
 				Tip: Choose the right AI tool for your specific task to get the best results.
 			</div>
