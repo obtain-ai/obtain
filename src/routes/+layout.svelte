@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-
-	import { navigating } from '$app/stores';
+	import { page, navigating } from '$app/stores';
 	import { fly } from 'svelte/transition';
 
 	let { children } = $props();
