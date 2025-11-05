@@ -106,7 +106,7 @@ function isTooSimilar(a: string, b: string): boolean {
   return longer.includes(shorter) && shorter.length > 10;
 }
 
-// REPLACED: stronger copy detector using 5-gram overlap (mild thresholds)
+// stronger copy detector using 5-gram overlap (mild thresholds)
 function isCopyLike(summary: string, description: string): boolean {
   const S = normalized(summary);
   const D = normalized(description);
@@ -259,14 +259,71 @@ function calculateRelevanceScore(item: NewsItem): number {
 // ------- AI Content Filter -------
 function isAIRelated(title: string, description: string): boolean {
   const text = (title + ' ' + description).toLowerCase();
-  const aiKeywords = [
-    'artificial intelligence', 'ai', 'machine learning', 'ml', 'deep learning',
-    'chatgpt', 'openai', 'claude', 'gemini', 'automation', 'robotics',
-    'neural network', 'algorithm', 'data science', 'computer vision',
-    'natural language processing', 'nlp', 'generative ai', 'llm',
-    'large language model', 'transformer', 'gpt', 'anthropic', 'nvidia', 'gpu', 'chip'
+  
+  // Strong AI keywords (require word boundaries to avoid partial matches)
+  const strongAIKeywords = [
+    'artificial intelligence', 'machine learning', 'deep learning',
+    'neural network', 'neural networks', 'computer vision',
+    'natural language processing', 'generative ai', 'generative artificial intelligence',
+    'large language model', 'large language models', 'llm', 'llms',
+    'transformer', 'transformers', 'gpt', 'gpt-4', 'gpt-3', 'gpt-3.5',
+    'chatgpt', 'claude', 'gemini', 'copilot', 'dall-e', 'midjourney',
+    'stable diffusion', 'openai', 'anthropic', 'cohere',
+    'hugging face', 'stability ai', 'nvidia', 'gpu', 'tpu',
+    'reinforcement learning', 'supervised learning', 'unsupervised learning',
+    'convolutional neural network', 'cnn', 'recurrent neural network', 'rnn',
+    'language model', 'language models', 'ai model', 'ai models'
   ];
-  return aiKeywords.some((keyword) => text.includes(keyword));
+  
+  // Check for strong AI keywords with word boundaries
+  for (const keyword of strongAIKeywords) {
+    // Use word boundary regex for multi-word phrases and single words
+    const regex = keyword.includes(' ') 
+      ? new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+      : new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    
+    if (regex.test(text)) {
+      return true;
+    }
+  }
+  
+  // Additional check: "ai" as a standalone word (not part of another word)
+  // This must be combined with other AI-related context
+  const aiStandalone = /\bai\b/.test(text);
+  const mlStandalone = /\bml\b/.test(text);
+  
+  if (aiStandalone || mlStandalone) {
+    // Require at least one other AI-related term to avoid false positives
+    const contextKeywords = [
+      'model', 'models', 'system', 'systems', 'tool', 'tools', 'platform', 'platforms',
+      'technology', 'technologies', 'research', 'study', 'development', 'company', 'startup'
+    ];
+    
+    // Check if there's AI-related company/product context
+    const hasAIContext = strongAIKeywords.some(keyword => {
+      const regex = keyword.includes(' ') 
+        ? new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+        : new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+      return regex.test(text);
+    });
+    
+    if (hasAIContext) {
+      return true;
+    }
+    
+    // If just "ai" or "ml" alone, check for surrounding context that suggests AI discussion
+    const aiContextPattern = /\b(ai|ml)\b.*\b(model|system|tool|platform|technology|research|development|company|startup|algorithm|automation)\b/i;
+    if (aiContextPattern.test(text)) {
+      // But exclude if it's clearly about non-AI automation (like business process automation without AI)
+      const nonAIContext = /\b(business process|manufacturing|industrial|factory|assembly line)\s+automation\b/i;
+      if (nonAIContext.test(text)) {
+        return false;
+      }
+      return true;
+    }
+  }
+  
+  return false;
 }
 
 // ------- Source Diversity Filter -------
