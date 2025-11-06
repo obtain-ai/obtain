@@ -14,18 +14,22 @@ Your task is to provide educational feedback that helps them understand how to w
 
 Please provide:
 
-1. Analysis: Briefly analyze what the user's prompt is trying to achieve and identify areas for improvement.
+1. Analysis: Briefly analyze what the user's prompt is trying to achieve and identify areas for improvement. IMPORTANT: Pay special attention to ambiguous or subjective terms in the prompt (like "hard", "good", "quick", "many", "better", "easy", etc.). For each ambiguous term you identify:
+   - Explain what the term might mean in different contexts
+   - Show how the ambiguity could lead to unclear results
+   - Suggest what specific meaning would be most useful for the user's goal
 
 2. 3 Improved Versions: Provide 3 different improved versions of their prompt:
-   - Version 1: More specific and detailed
+   - Version 1: More specific and detailed (make sure to replace ambiguous terms with concrete, measurable criteria)
    - Version 2: Better structured with clear sections
    - Version 3: More creative and engaging approach
 
 3. Why These Are Better: Explain why each improved version is better than the original, focusing on:
-   - Clarity and specificity
+   - Clarity and specificity (especially how ambiguous terms were clarified)
    - Structure and organization
    - Context and background information
    - Action-oriented language
+   - How replacing vague terms with specific definitions improves the prompt
 
 4. General Tips: Provide 3-4 general tips for writing effective prompts that apply to this type of request.
 
