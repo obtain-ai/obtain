@@ -343,14 +343,20 @@ function applySourceDiversity(articles: NewsItem[], maxPerSource: number = 2): N
   return diversified;
 }
 
-// ------- Summarize Articles (robust: no copy-paste, 1:1 mapping) -------
+// ------- Summarize Articles (removes articles if summary fails) -------
 async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
-  if (!articles.length || !OPENAI_API_KEY) return articles;
+  if (!articles.length || !OPENAI_API_KEY) {
+    return []; // Return empty if no API key
+  }
 
-  // If an item has no description, we’ll still try to summarize using title as context.
+  // Prepare articles with HTML removed from both title and description
   const items = articles.map((a, i) => ({
     id: i + 1,
-    title: a.title,
+    title: decodeEntities(
+      (a.title || '')
+        .replace(/<[^>]*>/g, '')
+        .trim()
+    ),
     description: decodeEntities(
       (a.description || a.title || '')
         .replace(/<[^>]*>/g, '')
@@ -375,78 +381,147 @@ async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
     'Summarize these articles and return JSON array as specified:\n\n' +
     JSON.stringify(items, null, 2);
 
-  try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        temperature: 0.3,
-        max_tokens: 900,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ]
-      })
-    });
+  // Retry logic: try up to 2 times
+  let lastError: any = null;
+  let parsed: Array<{ id: number; summary: string }> | null = null;
 
-    if (!res.ok) {
-      console.error('OpenAI API error:', res.status, res.statusText);
-      return fallbackSummaries(articles);
-    }
-
-    const data: OpenAIResponse = await res.json();
-    const raw = data.choices?.[0]?.message?.content || '';
-
-    let parsed: Array<{ id: number; summary: string }> | null = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const jsonMatch = raw.match(/\[[\s\S]*\]/);
-      parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(raw);
-    } catch {
-      parsed = null;
-    }
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
 
-    if (!parsed || !Array.isArray(parsed)) {
-      console.warn('Summarizer returned non-JSON or invalid shape. Using fallback.');
-      return fallbackSummaries(articles);
-    }
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${OPENAI_API_KEY}` 
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          temperature: 0.3,
+          max_tokens: 1500,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ]
+        }),
+        signal: controller.signal
+      });
 
-    const idToSummary = new Map<number, string>();
-    for (const row of parsed) {
-      if (!row || typeof row.id !== 'number' || typeof row.summary !== 'string') continue;
-      let s = row.summary.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-      if (s.length > 700) s = s.slice(0, 700) + '…';
-      s = decodeEntities(s);
-      idToSummary.set(row.id, s);
-    }
+      clearTimeout(timeoutId);
 
-    return articles.map((article, idx) => {
+      if (!res.ok) {
+        const status = res.status;
+        // Don't retry on client errors (4xx) except 429
+        if (status >= 400 && status < 500 && status !== 429) {
+          console.error(`Non-retryable error: ${status}`);
+          lastError = new Error(`API error: ${status}`);
+          break;
+        }
+        console.error(`Retryable error (attempt ${attempt}): ${status}`);
+        lastError = new Error(`API error: ${status}`);
+        if (attempt < 2) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          continue;
+        }
+        break;
+      }
+
+      const data: OpenAIResponse = await res.json();
+      const raw = data.choices?.[0]?.message?.content || '';
+
+      // Parse JSON response
+      try {
+        const jsonMatch = raw.match(/\[[\s\S]*\]/);
+        parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(raw);
+      } catch (parseError) {
+        console.warn(`Failed to parse JSON (attempt ${attempt}):`, parseError);
+        lastError = parseError;
+        if (attempt < 2) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          continue;
+        }
+        break;
+      }
+
+      if (!parsed || !Array.isArray(parsed)) {
+        console.warn(`Invalid response format (attempt ${attempt})`);
+        lastError = new Error('Invalid response format');
+        if (attempt < 2) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          continue;
+        }
+        break;
+      }
+
+      // Success - break out of retry loop
+      console.log(`Successfully generated summaries on attempt ${attempt}`);
+      break;
+
+    } catch (e: any) {
+      lastError = e;
+      if (e?.name === 'AbortError') {
+        console.error(`Timeout on attempt ${attempt}`);
+      } else {
+        console.error(`Error on attempt ${attempt}:`, e);
+      }
+      if (attempt < 2 && (e?.name === 'AbortError' || e?.message?.includes('fetch'))) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
+      }
+      break;
+    }
+  }
+
+  // If we failed completely, return empty array (removes all articles)
+  if (!parsed || !Array.isArray(parsed)) {
+    console.error('Failed to get summaries after retries:', lastError);
+    return []; // Return empty - articles removed from feed
+  }
+
+  // Map summaries by ID and decode HTML entities
+  const idToSummary = new Map<number, string>();
+  for (const row of parsed) {
+    if (!row || typeof row.id !== 'number' || typeof row.summary !== 'string') {
+      console.warn('Invalid summary row:', row);
+      continue;
+    }
+    let s = row.summary
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (s.length > 700) s = s.slice(0, 700) + '…';
+    s = decodeEntities(s);
+    idToSummary.set(row.id, s);
+  }
+
+  // Filter: only return articles with valid summaries (not copied)
+  return articles
+    .map((article, idx) => {
       const id = idx + 1;
       let s = idToSummary.get(id) || '';
 
-      // Guardrails & fallbacks:
-      // - If missing or too short: extractive summary from description, else from title
-      if (!s || s.length < 20) s = makeExtractiveSummary(article.description || article.title || '');
-      // - If essentially title: summarize description/title extractively
-      if (isTooSimilar(s, article.title)) s = makeExtractiveSummary(article.description || article.title || '');
-      // - If looks copied from description: extractive
-      if (isCopyLike(s, article.description || '')) s = makeExtractiveSummary(article.description || article.title || '');
+      // Validation: reject if too similar to title
+      if (s && isTooSimilar(s, article.title)) {
+        console.warn(`Summary for article ${id} too similar to title, removing article`);
+        return null;
+      }
+
+      // Validation: reject if copies description
+      if (s && isCopyLike(s, article.description || '')) {
+        console.warn(`Summary for article ${id} too similar to description, removing article`);
+        return null;
+      }
+
+      // If summary is missing/invalid, remove article
+      if (!s || s.length < 20) {
+        console.warn(`Article ${id} has no valid summary, removing from feed`);
+        return null;
+      }
 
       return { ...article, summary: s };
-    });
-  } catch (e) {
-    console.error('Summarization call failed:', e);
-    return fallbackSummaries(articles);
-  }
-}
-
-// ------- Fallback summarization -------
-function fallbackSummaries(articles: NewsItem[]): NewsItem[] {
-  return articles.map((a) => {
-    const base = /^no description$/i.test(a.description || '') ? (a.title || '') : (a.description || a.title || '');
-    const s = makeExtractiveSummary(base);
-    return { ...a, summary: s };
-  });
+    })
+    .filter((article): article is NewsItem => article !== null); // Remove nulls
 }
 
 // ------- Main News Fetching Function with Week Filtering -------
