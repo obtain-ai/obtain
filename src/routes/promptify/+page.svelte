@@ -1,6 +1,7 @@
 <script lang="ts">
 	import InfoDisplay from '$lib/ui/InfoDisplay.svelte';
 	import PromptifyChat from '$lib/ui/PromptifyChat.svelte';
+	import BackButton from '$lib/ui/BackButton.svelte';
 </script>
 
 <svelte:head>
@@ -11,6 +12,10 @@
 <div class="min-h-screen bg-zinc-800 text-zinc-200 w-full">
 	<!-- Wrapper that maintains 80% width at all screen sizes -->
 	<div class="w-[80%] mx-auto py-16">
+		<!-- Back Button -->
+		<div class="mb-8">
+			<BackButton href="/" />
+		</div>
 		<!-- Header section with title and tagline -->
 		<header class="text-center mb-12">
 			<!-- Gradient title -->
