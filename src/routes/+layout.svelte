@@ -2,26 +2,40 @@
 	import '../app.css';
 	import { page, navigating } from '$app/stores';
 	import { fly } from 'svelte/transition';
-	import { afterNavigate } from '$app/navigation';
+	import { beforeNavigate, afterNavigate } from '$app/navigation';
 	import { tick } from 'svelte';
 
 	let { children } = $props();
 
-	let scroller: HTMLDivElement | null = null;
+	// Scroll all possible containers to top
+	function scrollToTop() {
+		// Scroll window (most common)
+		window.scrollTo(0, 0);
+		// Scroll document element (html)
+		document.documentElement.scrollTop = 0;
+		// Scroll body
+		document.body.scrollTop = 0;
+	}
 
+	// Reset scroll immediately before navigation starts
+	beforeNavigate(() => {
+		scrollToTop();
+	});
+
+	// Also reset after navigation completes (backup)
 	afterNavigate(async (nav) => {
 		if (nav.type !== 'popstate') {
+			scrollToTop();
 			await tick();
-			scroller?.scrollTo({ top: 0, left: 0 });
-			window.scrollTo({ top: 0, left: 0 });
+			scrollToTop();
+			// One more time after transitions might settle
+			setTimeout(scrollToTop, 50);
 		}
 	});
 </script>
 
-<div
-	bind:this={scroller}
-	class="relative min-h-screen overflow-y-auto bg-zinc-800 text-zinc-200"
->
+<!-- overflow-x-hidden clips the fly transition, overflow-y-visible lets body handle vertical scroll -->
+<div class="relative min-h-screen overflow-x-hidden bg-zinc-800 text-zinc-200">
 	{#key $page.url.pathname}
 		<div in:fly={{ x: 300, duration: 300 }} out:fly={{ x: -300, duration: 300 }} class="relative">
 			<div class="relative flex items-center justify-center">

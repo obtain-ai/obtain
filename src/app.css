@@ -5,9 +5,16 @@ html {
 	font-family: 'Inter', sans-serif;
 }
 
-html, body {
+html {
 	height: 100%;
-	overflow-y: auto;
+	overflow-x: hidden;
+	overflow-y: scroll; /* Always show scrollbar to prevent layout shift */
+	scroll-behavior: auto; /* Instant scrolling for navigation resets */
+}
+
+body {
+	min-height: 100%;
+	overflow-x: hidden;
 }
 
 body {
