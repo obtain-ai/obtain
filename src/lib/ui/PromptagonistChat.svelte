@@ -272,8 +272,8 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
 
 <!-- Scenario Selection Screen -->
 {#if $showScenarioSelection}
-  <div class="flex flex-col w-full h-[600px] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
-    <div class="p-6">
+  <div class="flex flex-col w-full min-h-[600px] border border-zinc-300 rounded-lg bg-zinc-50 shadow-lg">
+    <div class="p-6 flex-1">
       <h3 class="text-2xl font-bold text-zinc-800 mb-4 text-center">Choose Your Adventure</h3>
       <p class="text-center text-zinc-600 mb-6">Select a scenario or create your own story!</p>
       
