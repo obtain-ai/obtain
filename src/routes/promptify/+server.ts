@@ -58,8 +58,6 @@ Please provide:
    - Action-oriented language
    - How replacing vague terms with specific definitions improves the prompt, as well as identifying what makes a term vague
 
-4. General Tips: Provide 3-4 general tips for writing effective prompts that apply to this type of request. Be concise and straight to the point
-
 Keep your response educational, encouraging, and easy to understand for people who are new to AI. Use simple language and explain technical concepts clearly.
 Also keep your response concise, in order to make taking the information in easiest for the user.
 
