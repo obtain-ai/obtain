@@ -47,6 +47,17 @@
 			</InfoDisplay>
 		</div>
 
+		<div class="mb-8">
+			<InfoDisplay>
+				{#snippet title()}
+					Tips!
+				{/snippet}
+				{#snippet content()}
+					Make sure your prompt includes context, what your goal is, how you want your prompt to be executed, and details!
+				{/snippet}
+			</InfoDisplay>
+		</div>
+
 		<!-- Chat section scaled to 64% -->
 		<div class="w-[80%] mx-auto mb-8">
 			<PromptifyChat />
