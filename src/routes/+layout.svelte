@@ -4,6 +4,7 @@
 	import { fly } from 'svelte/transition';
 	import { beforeNavigate, afterNavigate } from '$app/navigation';
 	import { tick } from 'svelte';
+	import BackButton from '$lib/ui/BackButton.svelte';
 
 	let { children } = $props();
 
@@ -40,7 +41,9 @@
 		<div in:fly={{ x: 300, duration: 300 }} out:fly={{ x: -300, duration: 300 }} class="relative">
 			<div class="relative flex items-center justify-center">
 				{#if $page.url.pathname != '/'}
-					<a class="absolute left-8 text-xl" href="/"> &lt </a>
+					<div class="absolute left-8">
+						<BackButton href="/" />
+					</div>
 				{/if}
 				<header class="p-8 text-center">
 					<h1 class="title">{$page.data.title ?? 'Default Title'}</h1>
