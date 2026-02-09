@@ -44,14 +44,14 @@
   class="max-w-[75%] p-3 rounded-lg shadow-sm
          {user === 'you' 
            ? 'bg-blue-600 text-white rounded-br-sm' 
-           : 'bg-zinc-100 text-black rounded-bl-sm border border-zinc-200'}
+           : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-bl-sm border border-zinc-300 dark:border-zinc-600'}
          {status === 'loading' ? 'opacity-70' : ''}
-         {status === 'error' ? 'bg-red-50 border-red-300 text-red-700' : ''}"
+         {status === 'error' ? 'bg-red-100 dark:bg-red-900/50 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300' : ''}"
   >
     {#if status === 'loading'}
       <div class="flex items-center gap-2">
-        <div class="animate-spin w-4 h-4 border-2 border-zinc-400 border-t-transparent rounded-full"></div>
-        <span class="text-sm italic">Thinking...</span>
+        <div class="animate-spin w-4 h-4 border-2 border-zinc-400 dark:border-zinc-500 border-t-transparent rounded-full"></div>
+        <span class="text-sm italic text-zinc-600 dark:text-zinc-300">Thinking...</span>
       </div>
     {:else if status === 'error'}
       <div class="flex items-center gap-2">

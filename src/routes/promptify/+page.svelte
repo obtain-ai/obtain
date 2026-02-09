@@ -7,8 +7,8 @@
   <title>Promptify</title>
 </svelte:head>
 
-<!-- Main container with dark background -->
-<div class="min-h-screen bg-zinc-800 text-zinc-200 w-full">
+<!-- Main container with theme-aware background -->
+<div class="min-h-screen bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 w-full">
 	<!-- Wrapper that maintains 80% width at all screen sizes -->
 	<div class="w-[80%] mx-auto py-16">
 		<!-- Header section with title and tagline -->
@@ -19,7 +19,7 @@
 			</h1>
 			
 			<!-- Tagline -->
-			<p class="text-xl text-zinc-300 font-normal">
+			<p class="text-xl text-zinc-600 dark:text-zinc-300 font-normal">
 				Master the art of precise AI prompts
 			</p>
 		</header>
@@ -42,7 +42,7 @@
 					Instructions
 				{/snippet}
 				{#snippet content()}
-					Write a sample prompt you’d normally use with an AI, and Promptify will give you tips on how to make it stronger and get better results.
+					Write a sample prompt you'd normally use with an AI, and Promptify will give you tips on how to make it stronger and get better results.
 				{/snippet}
 			</InfoDisplay>
 		</div>
@@ -70,7 +70,7 @@
 		</div>
 
 		<!-- Footer tip -->
-		<div class="text-center text-zinc-400 text-sm">
+		<div class="text-center text-zinc-500 dark:text-zinc-400 text-sm">
 			Tip: The clearer your intent, the smarter your AI.
 		</div>
 	</div>

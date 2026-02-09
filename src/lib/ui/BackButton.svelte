@@ -27,7 +27,7 @@
 {#if variant === 'minimal'}
   <button
     on:click={handleClick}
-    class="inline-flex items-center gap-2 text-zinc-300 hover:text-purple-400 transition-colors duration-200 group"
+    class="inline-flex items-center gap-2 text-zinc-600 dark:text-zinc-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-200 group"
     aria-label={label}
   >
     <svg
@@ -60,7 +60,13 @@
   <!-- Default variant -->
   <button
     on:click={handleClick}
-    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-zinc-200 font-medium border border-zinc-600 hover:border-purple-500/50 transition-all duration-200 shadow-sm hover:shadow-md group"
+    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg 
+           bg-zinc-200 dark:bg-zinc-700 
+           hover:bg-zinc-300 dark:hover:bg-zinc-600 
+           text-zinc-800 dark:text-zinc-200 
+           font-medium border border-zinc-300 dark:border-zinc-600 
+           hover:border-purple-400 dark:hover:border-purple-500/50 
+           transition-all duration-200 shadow-sm hover:shadow-md group"
     aria-label={label}
   >
     <svg
@@ -74,4 +80,3 @@
     <span>{label}</span>
   </button>
 {/if}
-

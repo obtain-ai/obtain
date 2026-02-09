@@ -1,4 +1,3 @@
-
 <!-- added manual scroll to bottom for chatbot messages -->
 <script lang="ts">
   import { writable } from 'svelte/store';
@@ -161,7 +160,7 @@
     setTimeout(() => adjustTextareaHeight(), 0);
   }
 
-  // Focus input when component mounts //IS THIS AN ISSUEEEEEEEEEEEEEEEEEEEEEEEEE
+  // Focus input when component mounts
   function focusInput() {
     setTimeout(() => {
       if (inputElement) {
@@ -171,12 +170,12 @@
   }
 </script>
 
-<div class="flex flex-col w-full h-[800px] border border-zinc-200 rounded-lg bg-zinc-700 shadow-lg overflow-hidden">
+<div class="flex flex-col w-full h-[800px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-700 shadow-lg overflow-hidden">
   <!-- Reset Button -->
-  <div class="flex justify-between items-center p-3 border-b border-zinc-600 bg-zinc-800">
-    <h3 class="font-semibold text-zinc-200">Promptify Chat</h3>
+  <div class="flex justify-between items-center p-3 border-b border-zinc-300 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-800">
+    <h3 class="font-semibold text-zinc-800 dark:text-zinc-200">Promptify Chat</h3>
     <button 
-      class="px-3 py-1 bg-zinc-600 hover:bg-zinc-500 text-white text-sm rounded-md transition-colors" 
+      class="px-3 py-1 bg-zinc-300 dark:bg-zinc-600 hover:bg-zinc-400 dark:hover:bg-zinc-500 text-zinc-800 dark:text-white text-sm rounded-md transition-colors" 
       on:click={resetChat}
     >
       Reset Chat
@@ -186,7 +185,7 @@
   <!-- Messages Container -->
   <div 
     bind:this={chatContainer} 
-    class="flex-1 overflow-y-auto p-4 space-y-3 bg-zinc-800"
+    class="flex-1 overflow-y-auto p-4 space-y-3 bg-zinc-50 dark:bg-zinc-800"
   >
     {#each $chatMessages as msg (msg.id)}
       <MessageBubble {...msg} />
@@ -194,21 +193,21 @@
 
     <!-- Empty state -->
     {#if $chatMessages.length === 0}
-      <div class="flex items-center justify-center h-full text-zinc-400">
+      <div class="flex items-center justify-center h-full text-zinc-500 dark:text-zinc-400">
         <div class="text-center">
-          <p class="text-lg mb-2 font-semibold text-zinc-200">👋 Welcome to Promptify!</p>
-          <p class="text-sm text-zinc-400">Start by typing your prompt to get AI-powered feedback.</p>
+          <p class="text-lg mb-2 font-semibold text-zinc-700 dark:text-zinc-200">👋 Welcome to Promptify!</p>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">Start by typing your prompt to get AI-powered feedback.</p>
         </div>
       </div>
     {/if}
   </div>
 
   <!-- Input Area -->
-  <div class="p-4 border-t border-zinc-600 bg-zinc-800">
+  <div class="p-4 border-t border-zinc-300 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-800">
     <div class="flex gap-2">
       <textarea
         bind:this={inputElement}
-        class="flex-1 p-3 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-zinc-200 placeholder-zinc-500 bg-zinc-700 resize-none"
+        class="flex-1 p-3 rounded-md border border-zinc-300 dark:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-zinc-800 dark:text-zinc-200 placeholder-zinc-500 dark:placeholder-zinc-400 bg-white dark:bg-zinc-700 resize-none"
         bind:value={userInput}
         placeholder="Type your prompt here.."
         on:keydown={handleKeydown}
@@ -219,7 +218,7 @@
         style="max-height: 150px;"
       />
       <button 
-        class="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
+        class="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-400 dark:disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
         on:click={sendMessage}
         disabled={!userInput.trim() || $chatMessages.some(msg => msg.status === 'loading')}
       >

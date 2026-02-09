@@ -9,8 +9,8 @@
   <title>ObtAIn</title>
 </svelte:head>
 
-<!-- Main container with dark background -->
-<div class="min-h-screen bg-zinc-800 text-zinc-200 w-full">
+<!-- Main container with theme-aware background -->
+<div class="min-h-screen bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 w-full">
 	<!-- Wrapper that maintains 80% width at all screen sizes -->
 	<div class="w-[80%] mx-auto py-16">
 		<!-- Header section with title and tagline -->
@@ -21,7 +21,7 @@
 			</h1>
 			
 			<!-- Tagline with constant size -->
-			<p class="text-xl text-zinc-300 font-normal">
+			<p class="text-xl text-zinc-600 dark:text-zinc-300 font-normal">
 				Your AI Learning Companion
 			</p>
 		</header>

@@ -3,10 +3,16 @@
 	import { page, navigating } from '$app/stores';
 	import { fly } from 'svelte/transition';
 	import { beforeNavigate, afterNavigate } from '$app/navigation';
-	import { tick } from 'svelte';
+	import { tick, onMount } from 'svelte';
 	import BackButton from '$lib/ui/BackButton.svelte';
+	import ThemeToggle from '$lib/ui/ThemeToggle.svelte';
+	import { theme } from '$lib/stores/themeStore';
 
 	let { children } = $props();
+
+	onMount(() => {
+		theme.initialize();
+	});
 
 	// Scroll all possible containers to top
 	function scrollToTop() {
@@ -36,7 +42,12 @@
 </script>
 
 <!-- overflow-x-hidden clips the fly transition, overflow-y-visible lets body handle vertical scroll -->
-<div class="relative min-h-screen overflow-x-hidden bg-zinc-800 text-zinc-200">
+<div class="relative min-h-screen overflow-x-hidden bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
+	<!-- Theme Toggle - Fixed position in top right -->
+	<div class="fixed top-4 right-4 z-50">
+		<ThemeToggle />
+	</div>
+
 	{#key $page.url.pathname}
 		<div in:fly={{ x: 300, duration: 300 }} out:fly={{ x: -300, duration: 300 }} class="relative">
 			<div class="relative flex items-center justify-center">
@@ -54,12 +65,12 @@
 
 			{#if $navigating && $navigating.to?.pathname?.startsWith('/news')}
 				<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-					<div class="rounded-lg bg-zinc-800/90 px-6 py-5 text-center shadow-lg border border-zinc-700">
+					<div class="rounded-lg bg-white/90 dark:bg-zinc-800/90 px-6 py-5 text-center shadow-lg border border-zinc-200 dark:border-zinc-700 transition-none">
 						<div
-							class="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-zinc-400 border-b-purple-600"
+							class="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 dark:border-zinc-400 border-b-purple-600"
 						></div>
-						<p class="text-zinc-200 font-medium">Loading AI News…</p>
-						<p class="text-xs text-zinc-400 mt-1">This may take a few seconds.</p>
+						<p class="text-zinc-800 dark:text-zinc-200 font-medium">Loading AI News…</p>
+						<p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">This may take a few seconds.</p>
 					</div>
 				</div>
 			{/if}

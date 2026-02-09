@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @import 'tailwindcss';
 
+/* Use class-based dark mode (Tailwind v4 uses media query by default) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 html {
 	font-family: 'Inter', sans-serif;
 }
@@ -22,6 +25,7 @@ body {
 	padding: 0;
 }
 
+
 h1 {
 }
 
@@ -35,5 +39,11 @@ p {
 }
 
 .title {
-	@apply text-4xl font-semibold text-shadow-sm/30 text-shadow-zinc-200;
+	@apply text-4xl font-semibold;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode title shadow */
+.dark .title {
+	text-shadow: 0 1px 2px rgba(255, 255, 255, 0.1);
 }
