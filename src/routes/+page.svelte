@@ -16,7 +16,7 @@
 		<!-- Header section with title and tagline -->
 		<header class="text-center mb-16">
 			<!-- Gradient title with constant size -->
-			<h1 class="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+			<h1 class="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
 				ObtAin
 			</h1>
 			
@@ -59,6 +59,7 @@
 				Promptpedia
 				<div class="text-sm font-normal mt-1">Different AI's explained</div>
 			</a>
+
 		</div>
 	</div>
 </div>

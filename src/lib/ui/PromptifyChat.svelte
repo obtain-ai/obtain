@@ -2,6 +2,7 @@
 <script lang="ts">
   import { writable } from 'svelte/store';
   import MessageBubble from './MessageBubble.svelte';
+  
 
   let userInput = '';
   let chatMessages = writable<{ 
@@ -171,9 +172,11 @@
 </script>
 
 <div class="flex flex-col w-full h-[800px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-700 shadow-lg overflow-hidden">
-  <!-- Reset Button -->
+  <!-- Header with Reset Button -->
   <div class="flex justify-between items-center p-3 border-b border-zinc-300 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-800">
-    <h3 class="font-semibold text-zinc-800 dark:text-zinc-200">Promptify Chat</h3>
+    <div class="flex items-center gap-2">
+      <h3 class="font-semibold text-zinc-800 dark:text-zinc-200">Promptify Chat</h3>
+    </div>
     <button 
       class="px-3 py-1 bg-zinc-300 dark:bg-zinc-600 hover:bg-zinc-400 dark:hover:bg-zinc-500 text-zinc-800 dark:text-white text-sm rounded-md transition-colors" 
       on:click={resetChat}

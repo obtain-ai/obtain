@@ -12,7 +12,7 @@
 	<!-- Outer 80% wrapper -->
 	<div class="w-[80%] mx-auto py-16">
 		<header class="text-center mb-12">
-			<h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+			<h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
 				Promptpedia
 			</h1>
 			<p class="text-xl text-zinc-600 dark:text-zinc-300 font-normal">Discover the right AI tool for your needs</p>

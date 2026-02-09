@@ -2,6 +2,7 @@
 <script lang="ts">
   import { writable } from 'svelte/store';
   
+  
   interface StoryScenario {
     id: string;
     title: string;
@@ -163,7 +164,7 @@
         evaluation: evaluation,
         timestamp: new Date()
       }]);
-      
+
     } catch (error) {
       console.error('Error generating response:', error);
       
@@ -369,7 +370,9 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
   <div class="flex flex-col w-full h-[600px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-800 shadow-lg">
     <!-- Header -->
     <div class="flex justify-between items-center p-4 border-b border-zinc-200 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-700 rounded-t-lg">
-      <h3 class="font-semibold text-zinc-800 dark:text-zinc-100">{$currentScenario?.title}</h3>
+      <div class="flex items-center gap-2">
+        <h3 class="font-semibold text-zinc-800 dark:text-zinc-100">{$currentScenario?.title}</h3>
+      </div>
       <div class="flex gap-2">
         <button
           class="px-3 py-1.5 rounded-md text-white text-sm font-medium bg-purple-600 hover:bg-purple-700 active:bg-purple-800 transition-colors shadow-sm"

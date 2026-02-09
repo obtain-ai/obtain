@@ -14,7 +14,7 @@
 		<!-- Header section with title and tagline -->
 		<header class="text-center mb-12">
 			<!-- Gradient title -->
-			<h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+			<h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
 				Promptify
 			</h1>
 			
