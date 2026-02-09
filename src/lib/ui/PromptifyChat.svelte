@@ -2,7 +2,10 @@
 <script lang="ts">
   import { writable } from 'svelte/store';
   import MessageBubble from './MessageBubble.svelte';
-  
+  import { auth } from '$lib/stores/authStore';
+  import { savePromptifySession, getSavedPromptifySessions, type SavedPromptifySession } from '$lib/stores/savedSessionsStore';
+  import { page } from '$app/stores';
+  import { onMount } from 'svelte';
 
   let userInput = '';
   let chatMessages = writable<{ 
@@ -15,9 +18,66 @@
   let inputElement: HTMLTextAreaElement;
   let previousMessageCount = 0;
 
+  // Auto-save tracking
+  let currentSessionId = '';
+  let autoSaveName = '';
+
   // Generate unique IDs for messages
   function generateId() {
     return Math.random().toString(36).substr(2, 9);
+  }
+
+  // Load saved session if ?load= param is present
+  onMount(() => {
+    const loadId = $page.url.searchParams.get('load');
+    if (loadId && $auth) {
+      const sessions = getSavedPromptifySessions($auth.username);
+      const session = sessions.find(s => s.id === loadId);
+      if (session) {
+        loadSession(session);
+      }
+    }
+  });
+
+  function loadSession(session: SavedPromptifySession) {
+    currentSessionId = session.id;
+    autoSaveName = session.name;
+    chatMessages.set(session.messages.map(m => ({
+      ...m,
+      status: m.status as 'normal' | 'loading' | 'error' | undefined
+    })));
+  }
+
+  // Auto-save after each bot response
+  function autoSave() {
+    if (!$auth) return;
+
+    const messagesToSave = $chatMessages.filter(m => m.status !== 'loading');
+    if (messagesToSave.length === 0) return;
+
+    if (!currentSessionId) {
+      currentSessionId = `pf_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+    if (!autoSaveName) {
+      const firstUserMsg = messagesToSave.find(m => m.user === 'you');
+      const preview = firstUserMsg ? firstUserMsg.text.slice(0, 40) : 'Promptify Session';
+      autoSaveName = `${preview}${firstUserMsg && firstUserMsg.text.length > 40 ? '…' : ''} - ${new Date().toLocaleDateString()}`;
+    }
+
+    const session: SavedPromptifySession = {
+      id: currentSessionId,
+      username: $auth.username,
+      messages: messagesToSave.map(m => ({
+        id: m.id,
+        user: m.user,
+        text: m.text,
+        status: m.status
+      })),
+      savedAt: new Date().toISOString(),
+      name: autoSaveName
+    };
+
+    savePromptifySession(session);
   }
 
   async function sendMessage() {
@@ -62,6 +122,9 @@
             : msg
         )
       );
+      
+      // Auto-save after bot responds
+      autoSave();
       
       // Scroll to bottom after content is updated
       setTimeout(() => {
@@ -123,6 +186,8 @@
 
   function resetChat() {
     chatMessages.set([]);
+    currentSessionId = '';
+    autoSaveName = '';
     // Focus input after reset
     setTimeout(() => {
       if (inputElement) {

@@ -1,7 +1,10 @@
 <!-- lib/ui/PromptagonistChat.svelte -->
 <script lang="ts">
   import { writable } from 'svelte/store';
-  
+  import { auth } from '$lib/stores/authStore';
+  import { savePromptagonistSession, getSavedPromptagonistSessions, type SavedPromptagonistSession } from '$lib/stores/savedSessionsStore';
+  import { page } from '$app/stores';
+  import { onMount } from 'svelte';
   
   interface StoryScenario {
     id: string;
@@ -37,6 +40,10 @@
   let showScenarioSelection = writable(true);
   let showCustomForm = writable(false);
   let previousMessageCount = 0;
+  
+  // Auto-save tracking
+  let currentSessionId = '';
+  let autoSaveName = '';
   
   // Custom scenario form
   let customTitle = '';
@@ -83,12 +90,78 @@
     }
   ];
   
+  // Load saved session if ?load= param is present
+  onMount(() => {
+    const loadId = $page.url.searchParams.get('load');
+    if (loadId && $auth) {
+      const sessions = getSavedPromptagonistSessions($auth.username);
+      const session = sessions.find(s => s.id === loadId);
+      if (session) {
+        loadSession(session);
+      }
+    }
+  });
+  
+  function loadSession(session: SavedPromptagonistSession) {
+    currentSessionId = session.id;
+    autoSaveName = session.name;
+    
+    const scenario: StoryScenario = {
+      id: session.id,
+      title: session.scenarioTitle,
+      description: '',
+      initialContext: '',
+      genre: session.scenarioGenre
+    };
+    
+    currentScenario.set(scenario);
+    showScenarioSelection.set(false);
+    showCustomForm.set(false);
+    
+    chatMessages.set(session.messages.map(m => ({
+      ...m,
+      timestamp: new Date(m.timestamp)
+    })));
+  }
+
+  // Auto-save after each AI response
+  function autoSave() {
+    if (!$auth || !$currentScenario) return;
+
+    if (!currentSessionId) {
+      currentSessionId = `pa_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+    if (!autoSaveName) {
+      autoSaveName = `${$currentScenario.title} - ${new Date().toLocaleDateString()}`;
+    }
+
+    const session: SavedPromptagonistSession = {
+      id: currentSessionId,
+      username: $auth.username,
+      scenarioTitle: $currentScenario.title,
+      scenarioGenre: $currentScenario.genre,
+      messages: $chatMessages.map(m => ({
+        id: m.id,
+        type: m.type,
+        content: m.content,
+        evaluation: m.evaluation,
+        timestamp: m.timestamp.toISOString()
+      })),
+      savedAt: new Date().toISOString(),
+      name: autoSaveName
+    };
+
+    savePromptagonistSession(session);
+  }
+  
   function selectScenario(scenario: StoryScenario) {
     currentScenario.set(scenario);
     showScenarioSelection.set(false);
     showCustomForm.set(false);
     chatMessages.set([]);
     userInput = '';
+    currentSessionId = '';
+    autoSaveName = '';
     
     // Add initial story context
     chatMessages.update(msgs => [...msgs, {
@@ -165,6 +238,9 @@
         timestamp: new Date()
       }]);
 
+      // Auto-save after AI responds
+      autoSave();
+
     } catch (error) {
       console.error('Error generating response:', error);
       
@@ -236,6 +312,8 @@
     currentScenario.set(null);
     chatMessages.set([]);
     userInput = '';
+    currentSessionId = '';
+    autoSaveName = '';
   }
 
   function adjustTextareaHeight() {
