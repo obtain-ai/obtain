@@ -53,13 +53,11 @@
 					Tips!
 				{/snippet}
 				{#snippet content()}
-					Make sure your prompt includes:
-					<ul>
-						<li>Context</li>
-						<li>What your goal is</li>
-						<li>How you want your prompt to be executed</li>
-						<li>Details</li>
-					</ul>
+					Make sure your prompt includes:<br><br>
+						• Context<br>
+						• What your goal is<br>
+						• How you want your prompt to be executed<br>
+						• Details<br>
 				{/snippet}
 			</InfoDisplay>
 		</div>
