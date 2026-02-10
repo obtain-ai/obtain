@@ -53,7 +53,7 @@
 					Tips!
 				{/snippet}
 				{#snippet content()}
-					Make sure your prompt includes:<br><br>
+					Make sure your prompt includes:<br>
 						• Context<br>
 						• What your goal is<br>
 						• How you want your prompt to be executed<br>
