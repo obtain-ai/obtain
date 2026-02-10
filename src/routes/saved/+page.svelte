@@ -108,7 +108,6 @@
 			{#if activeTab === 'promptagonist'}
 				{#if promptagonistSessions.length === 0}
 					<div class="text-center py-16">
-						<p class="text-4xl mb-4">🎭</p>
 						<p class="text-xl font-semibold text-zinc-600 dark:text-zinc-300 mb-2">No saved adventures yet</p>
 						<p class="text-zinc-500 dark:text-zinc-400 mb-6">Start a Promptagonist adventure and save it to see it here!</p>
 						<a
