@@ -15,7 +15,7 @@ Prompt Quality Score: ${evaluation.overallScore}/10
       
 ${evaluation.overallScore >= 8 ? 
   'HIGH QUALITY PROMPT: Write an exciting, successful story continuation with positive outcomes, character success, and engaging plot developments.' :
-  evaluation.overallScore >= 6 ?
+  evaluation.overallScore >= 5 ?
   'MEDIUM QUALITY PROMPT: Write a story continuation that progresses but with some challenges, awkward moments, or minor setbacks.' :
   'LOW QUALITY PROMPT: Write a story continuation with chaotic events, character failures, or unexpected obstacles due to the vague prompt.'}
 

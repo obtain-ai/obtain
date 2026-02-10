@@ -481,11 +481,10 @@ async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
     .filter((article): article is NewsItem => article !== null); // Remove nulls
 }
 
-// ------- Main News Fetching Function with Week Filtering -------
-async function fetchAINewsForWindow(weekStartDate: Date, weekEndDate: Date): Promise<NewsItem[]> {
-  console.log('Fetching AI news from direct RSS feeds (windowed)');
+// ------- Fetch all RSS feeds once -------
+async function fetchAllRSSArticles(): Promise<any[]> {
+  console.log('Fetching all RSS feeds in parallel');
 
-  // Fetch all RSS feeds in parallel for dramatically faster load times
   const results = await Promise.allSettled(
     newsRSSFeeds.map((feed) => parseRSSFeed(feed.url, feed.source, feed.authority))
   );
@@ -497,48 +496,46 @@ async function fetchAINewsForWindow(weekStartDate: Date, weekEndDate: Date): Pro
     }
   }
 
-  // O(n) dedup using a Set instead of O(n²) findIndex
+  // O(n) dedup
   const seenTitles = new Set<string>();
-  const uniqueArticles = allArticles.filter((article) => {
+  return allArticles.filter((article) => {
     if (seenTitles.has(article.title)) return false;
     seenTitles.add(article.title);
     return true;
   });
+}
 
-  console.log(`Found ${uniqueArticles.length} unique articles`);
+// ------- Score & rank articles for a given date window -------
+function rankArticlesForWindow(uniqueArticles: any[], weekStart: Date, weekEnd: Date): NewsItem[] {
+  const start = weekStart.getTime();
+  const end = weekEnd.getTime();
 
-  const start = new Date(weekStartDate).getTime();
-  const end = new Date(weekEndDate).getTime();
   const inWindow = uniqueArticles.filter((a) => {
     const t = new Date(a.publishedAt).getTime();
     return !Number.isNaN(t) && t >= start && t < end;
   });
-
   console.log(`In-week items: ${inWindow.length}`);
 
   const aiArticles = inWindow.filter((article) => isAIRelated(article.title, article.description));
   console.log(`Found ${aiArticles.length} AI-related articles`);
 
-  const processedArticles: NewsItem[] = aiArticles.map((article) => {
+  const scored: NewsItem[] = aiArticles.map((article) => {
     const eventType = detectEventType(article.title, article.description);
     const entities = extractAIEntities(article.title, article.description);
-    return { ...article, eventType, entities, relevanceScore: 0 };
+    const item: NewsItem = { ...article, eventType, entities, relevanceScore: 0 };
+    item.relevanceScore = calculateRelevanceScore(item);
+    return item;
   });
 
-  const scoredArticles = processedArticles.map((article) => ({
-    ...article,
-    relevanceScore: calculateRelevanceScore(article)
-  }));
-
-  const sortedArticles = scoredArticles.sort((a, b) => b.relevanceScore - a.relevanceScore);
-  const diversified = applySourceDiversity(sortedArticles, 2);
+  scored.sort((a, b) => b.relevanceScore - a.relevanceScore);
+  const diversified = applySourceDiversity(scored, 2);
 
   console.log(`Returning ${Math.min(diversified.length, 10)} top AI articles`);
   return diversified.slice(0, 10);
 }
 
-// ------- in-memory cache (5 min) -------
-const INMEM_TTL_MS = 5 * 60 * 1000;
+// ------- in-memory cache (30 min — news is weekly, no need to re-fetch constantly) -------
+const INMEM_TTL_MS = 30 * 60 * 1000;
 let inmemWeekKey = '';
 let inmemTimestamp = 0;
 let inmemPayload: { articles: any[]; weekStart: string; isCurrentWeek: boolean } | null = null;
@@ -563,26 +560,33 @@ export const GET: RequestHandler = async ({ url }) => {
     return json(inmemPayload);
   }
 
+  // Fetch RSS feeds ONCE, then filter by week windows without re-fetching
+  const uniqueArticles = await fetchAllRSSArticles();
+  console.log(`Total unique articles from RSS: ${uniqueArticles.length}`);
+
   const nextMonday = new Date(currentWeek);
   nextMonday.setDate(nextMonday.getDate() + 7);
   const prevNextMonday = new Date(previousWeek);
   prevNextMonday.setDate(prevNextMonday.getDate() + 7);
 
-  console.log('Fetching AI news for current week window');
-  let articles = await fetchAINewsForWindow(currentWeek, nextMonday);
+  let articles = rankArticlesForWindow(uniqueArticles, currentWeek, nextMonday);
   let weekStart = currentWeekStart;
   let isCurrentWeek = true;
 
   if (articles.length === 0) {
-    console.log('No current-week items, trying previous week window');
-    articles = await fetchAINewsForWindow(previousWeek, prevNextMonday);
+    console.log('No current-week items, filtering same data for previous week');
+    articles = rankArticlesForWindow(uniqueArticles, previousWeek, prevNextMonday);
     weekStart = previousWeekStart;
     isCurrentWeek = false;
   }
 
-  // Summarize articles (title used if description empty)
+  // Summarize articles — fall back to description if OpenAI fails
   if (articles.length > 0) {
-    articles = await summarizeArticles(articles);
+    const summarized = await summarizeArticles(articles);
+    if (summarized.length > 0) {
+      articles = summarized;
+    }
+    // If summarization failed, keep articles with their RSS descriptions
   }
 
   const processed = articles.map((a) => {
@@ -593,7 +597,7 @@ export const GET: RequestHandler = async ({ url }) => {
       url: a.url,
       source: a.source,
       publishedAt: a.publishedAt,
-      summary: safeSummary || safeDesc // never “No description”; if both empty, UI shows nothing
+      summary: safeSummary || safeDesc
     };
   });
 

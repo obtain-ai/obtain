@@ -16,10 +16,12 @@ IMPORTANT: Only if the user's prompt contains INAPPROPRIATE content (explicitly 
 2. Do NOT quote or build off the inappropriate parts
 3. At the end, append: "⚠️ Please avoid inappropriate content such as explicit sexual material, graphic violence, self-harm, or offensive slurs in your prompts."
 
-Rate the prompt(Be relatively strict here to help the user improve) on:
-1. Clarity (1-10): How clear and unambiguous are the instructions? 
-2. Specificity (1-10): How detailed and specific is the prompt? (Does it provide good context and direction?)
-3. AI Interpretability (1-10): How easy is it for an AI understand and follow these instructions? 
+Rate the prompt fairly and constructively on:
+1. Clarity (1-10): How clear and understandable is the prompt? A straightforward sentence should score at least 5-6.
+2. Specificity (1-10): How much useful detail or direction does the prompt provide? A reasonable sentence with some context should score at least 4-5.
+3. AI Interpretability (1-10): How easy is it for an AI to understand and act on this prompt? Any coherent, grammatical sentence should score at least 5-6.
+
+Scoring guide: 1-3 = genuinely incoherent or empty, 4-5 = basic but understandable, 6-7 = good with room to improve, 8-9 = strong and detailed, 10 = exceptional. Do NOT give scores below 4 unless the prompt is truly nonsensical or empty.
 
 Respond in this exact JSON format:
 {
