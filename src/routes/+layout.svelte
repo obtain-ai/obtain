@@ -50,8 +50,8 @@
 		}
 	});
 
-	function handleLogout() {
-		auth.logout();
+	async function handleLogout() {
+		await auth.logout();
 		dropdownOpen = false;
 		goto('/');
 	}

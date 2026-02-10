@@ -11,36 +11,40 @@
 	let error = '';
 	let isSubmitting = false;
 
-	function handleSubmit() {
+	async function handleSubmit() {
 		error = '';
 		isSubmitting = true;
 
-		if (mode === 'signup') {
-			if (password !== confirmPassword) {
-				error = 'Passwords do not match';
-				isSubmitting = false;
-				return;
-			}
+		try {
+			if (mode === 'signup') {
+				if (password !== confirmPassword) {
+					error = 'Passwords do not match';
+					isSubmitting = false;
+					return;
+				}
 
-			if (!displayName.trim()) {
-				error = 'Display name is required';
-				isSubmitting = false;
-				return;
-			}
+				if (!displayName.trim()) {
+					error = 'Display name is required';
+					isSubmitting = false;
+					return;
+				}
 
-			const result = auth.signup(username.trim(), displayName.trim(), password);
-			if (result.success) {
-				goto('/');
+				const result = await auth.signup(username.trim(), displayName.trim(), password);
+				if (result.success) {
+					goto('/');
+				} else {
+					error = result.error || 'Signup failed';
+				}
 			} else {
-				error = result.error || 'Signup failed';
+				const result = await auth.login(username.trim(), password);
+				if (result.success) {
+					goto('/');
+				} else {
+					error = result.error || 'Login failed';
+				}
 			}
-		} else {
-			const result = auth.login(username.trim(), password);
-			if (result.success) {
-				goto('/');
-			} else {
-				error = result.error || 'Login failed';
-			}
+		} catch {
+			error = 'Something went wrong. Please try again.';
 		}
 
 		isSubmitting = false;
