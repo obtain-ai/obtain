@@ -27,26 +27,49 @@ interface AuthData {
 	sessions: StoredSession[];
 }
 
-const DATA_DIR = join(process.cwd(), 'data');
+// On Vercel, the filesystem is read-only except /tmp
+// Locally, use data/ in the project root
+const IS_VERCEL = !!process.env.VERCEL;
+const DATA_DIR = IS_VERCEL ? '/tmp' : join(process.cwd(), 'data');
 const DATA_FILE = join(DATA_DIR, 'users.json');
 
+// In-memory cache so data survives across requests within the same instance
+let memoryCache: AuthData | null = null;
+
 function readData(): AuthData {
-	if (!existsSync(DATA_FILE)) {
-		return { users: [], sessions: [] };
+	// Return in-memory cache if available
+	if (memoryCache) {
+		return memoryCache;
 	}
-	try {
-		const raw = readFileSync(DATA_FILE, 'utf-8');
-		return JSON.parse(raw);
-	} catch {
-		return { users: [], sessions: [] };
+
+	// Try to load from file
+	if (existsSync(DATA_FILE)) {
+		try {
+			const raw = readFileSync(DATA_FILE, 'utf-8');
+			memoryCache = JSON.parse(raw);
+			return memoryCache!;
+		} catch {
+			// Fall through to default
+		}
 	}
+
+	memoryCache = { users: [], sessions: [] };
+	return memoryCache;
 }
 
 function writeData(data: AuthData): void {
-	if (!existsSync(DATA_DIR)) {
-		mkdirSync(DATA_DIR, { recursive: true });
+	// Always update in-memory cache
+	memoryCache = data;
+
+	// Also persist to disk
+	try {
+		if (!existsSync(DATA_DIR)) {
+			mkdirSync(DATA_DIR, { recursive: true });
+		}
+		writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+	} catch (err) {
+		console.error('[auth] Failed to write data file (continuing with in-memory):', err);
 	}
-	writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
 }
 
 function hashPassword(password: string, salt: string): string {

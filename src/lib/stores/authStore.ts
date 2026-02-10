@@ -19,13 +19,16 @@ function createAuthStore() {
 			password: string
 		): Promise<{ success: boolean; error?: string }> => {
 			try {
+				console.log('[authStore] signup called for:', username);
 				const res = await fetch('/api/auth/signup', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ username, displayName, password })
 				});
 
+				console.log('[authStore] signup response status:', res.status);
 				const data = await res.json();
+				console.log('[authStore] signup response data:', data);
 
 				if (!data.success) {
 					return { success: false, error: data.error || 'Signup failed' };
@@ -33,7 +36,8 @@ function createAuthStore() {
 
 				user.set(data.user);
 				return { success: true };
-			} catch {
+			} catch (err) {
+				console.error('[authStore] signup error:', err);
 				return { success: false, error: 'Network error. Please try again.' };
 			}
 		},
