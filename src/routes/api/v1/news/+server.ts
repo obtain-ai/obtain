@@ -80,19 +80,6 @@ function decodeEntities(s: string): string {
     .replace(/&#x2F;/g, '/');
 }
 
-function splitSentences(text: string): string[] {
-  const clean = (text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-  if (!clean) return [];
-  return clean.split(/(?<=[.!?])\s+/).filter(Boolean);
-}
-
-function makeExtractiveSummary(text: string): string {
-  const sentences = splitSentences(text);
-  if (sentences.length === 0) return '';
-  const pick = sentences.slice(0, 2).join(' ');
-  return pick.length > 700 ? pick.slice(0, 700) + '…' : pick;
-}
-
 function normalized(s: string): string {
   return (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
@@ -256,73 +243,43 @@ function calculateRelevanceScore(item: NewsItem): number {
   );
 }
 
-// ------- AI Content Filter -------
+// ------- AI Content Filter (pre-compiled regexes) -------
+const strongAIKeywords = [
+  'artificial intelligence', 'machine learning', 'deep learning',
+  'neural network', 'neural networks', 'computer vision',
+  'natural language processing', 'generative ai', 'generative artificial intelligence',
+  'large language model', 'large language models', 'llm', 'llms',
+  'transformer', 'transformers', 'gpt', 'gpt-4', 'gpt-3', 'gpt-3.5',
+  'chatgpt', 'claude', 'gemini', 'copilot', 'dall-e', 'midjourney',
+  'stable diffusion', 'openai', 'anthropic', 'cohere',
+  'hugging face', 'stability ai', 'nvidia', 'gpu', 'tpu',
+  'reinforcement learning', 'supervised learning', 'unsupervised learning',
+  'convolutional neural network', 'cnn', 'recurrent neural network', 'rnn',
+  'language model', 'language models', 'ai model', 'ai models'
+];
+
+// Pre-compile once at module load instead of on every call
+const strongAIRegexes = strongAIKeywords.map(
+  (kw) => new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+);
+const aiContextPattern = /\b(ai|ml)\b.*\b(model|system|tool|platform|technology|research|development|company|startup|algorithm|automation)\b/i;
+const nonAIContextPattern = /\b(business process|manufacturing|industrial|factory|assembly line)\s+automation\b/i;
+
 function isAIRelated(title: string, description: string): boolean {
   const text = (title + ' ' + description).toLowerCase();
-  
-  // Strong AI keywords (require word boundaries to avoid partial matches)
-  const strongAIKeywords = [
-    'artificial intelligence', 'machine learning', 'deep learning',
-    'neural network', 'neural networks', 'computer vision',
-    'natural language processing', 'generative ai', 'generative artificial intelligence',
-    'large language model', 'large language models', 'llm', 'llms',
-    'transformer', 'transformers', 'gpt', 'gpt-4', 'gpt-3', 'gpt-3.5',
-    'chatgpt', 'claude', 'gemini', 'copilot', 'dall-e', 'midjourney',
-    'stable diffusion', 'openai', 'anthropic', 'cohere',
-    'hugging face', 'stability ai', 'nvidia', 'gpu', 'tpu',
-    'reinforcement learning', 'supervised learning', 'unsupervised learning',
-    'convolutional neural network', 'cnn', 'recurrent neural network', 'rnn',
-    'language model', 'language models', 'ai model', 'ai models'
-  ];
-  
-  // Check for strong AI keywords with word boundaries
-  for (const keyword of strongAIKeywords) {
-    // Use word boundary regex for multi-word phrases and single words
-    const regex = keyword.includes(' ') 
-      ? new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
-      : new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-    
-    if (regex.test(text)) {
+
+  // Check strong AI keywords (pre-compiled regexes)
+  for (const regex of strongAIRegexes) {
+    if (regex.test(text)) return true;
+  }
+
+  // "ai" / "ml" as standalone words need surrounding context to avoid false positives
+  if (/\bai\b/.test(text) || /\bml\b/.test(text)) {
+    if (aiContextPattern.test(text) && !nonAIContextPattern.test(text)) {
       return true;
     }
   }
-  
-  // Additional check: "ai" as a standalone word (not part of another word)
-  // This must be combined with other AI-related context
-  const aiStandalone = /\bai\b/.test(text);
-  const mlStandalone = /\bml\b/.test(text);
-  
-  if (aiStandalone || mlStandalone) {
-    // Require at least one other AI-related term to avoid false positives
-    const contextKeywords = [
-      'model', 'models', 'system', 'systems', 'tool', 'tools', 'platform', 'platforms',
-      'technology', 'technologies', 'research', 'study', 'development', 'company', 'startup'
-    ];
-    
-    // Check if there's AI-related company/product context
-    const hasAIContext = strongAIKeywords.some(keyword => {
-      const regex = keyword.includes(' ') 
-        ? new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
-        : new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-      return regex.test(text);
-    });
-    
-    if (hasAIContext) {
-      return true;
-    }
-    
-    // If just "ai" or "ml" alone, check for surrounding context that suggests AI discussion
-    const aiContextPattern = /\b(ai|ml)\b.*\b(model|system|tool|platform|technology|research|development|company|startup|algorithm|automation)\b/i;
-    if (aiContextPattern.test(text)) {
-      // But exclude if it's clearly about non-AI automation (like business process automation without AI)
-      const nonAIContext = /\b(business process|manufacturing|industrial|factory|assembly line)\s+automation\b/i;
-      if (nonAIContext.test(text)) {
-        return false;
-      }
-      return true;
-    }
-  }
-  
+
   return false;
 }
 
@@ -528,21 +485,25 @@ async function summarizeArticles(articles: NewsItem[]): Promise<NewsItem[]> {
 async function fetchAINewsForWindow(weekStartDate: Date, weekEndDate: Date): Promise<NewsItem[]> {
   console.log('Fetching AI news from direct RSS feeds (windowed)');
 
-  const allArticles: any[] = [];
+  // Fetch all RSS feeds in parallel for dramatically faster load times
+  const results = await Promise.allSettled(
+    newsRSSFeeds.map((feed) => parseRSSFeed(feed.url, feed.source, feed.authority))
+  );
 
-  // Fetch from all RSS feeds (sequential is fine; you can parallelize if desired)
-  for (const feed of newsRSSFeeds) {
-    try {
-      const articles = await parseRSSFeed(feed.url, feed.source, feed.authority);
-      allArticles.push(...articles);
-    } catch (error) {
-      console.error(`Error fetching from ${feed.source}:`, error);
+  const allArticles: any[] = [];
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      allArticles.push(...result.value);
     }
   }
 
-  const uniqueArticles = allArticles.filter(
-    (article, index, self) => index === self.findIndex((a) => a.title === article.title)
-  );
+  // O(n) dedup using a Set instead of O(n²) findIndex
+  const seenTitles = new Set<string>();
+  const uniqueArticles = allArticles.filter((article) => {
+    if (seenTitles.has(article.title)) return false;
+    seenTitles.add(article.title);
+    return true;
+  });
 
   console.log(`Found ${uniqueArticles.length} unique articles`);
 

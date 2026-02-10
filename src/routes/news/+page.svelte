@@ -12,55 +12,20 @@
     isCurrentWeek: boolean;
   };
 
-  let articles: NewsArticle[] = data.articles || [];
-  let weekStart: string = data.weekStart || '';
-  let loading = articles.length === 0; // Only loading if no preloaded data
+  // Reactive: sync local state when SvelteKit re-runs the load function
+  $: articles = data.articles || [];
+  $: weekStart = data.weekStart || '';
+  $: isCurrentWeek = data.isCurrentWeek ?? true;
+
+  let loading = false;
   let error = '';
   let refreshing = false;
   let refreshPolicy = new RefreshPolicy();
   let statusMessage = '';
   let checkInterval: NodeJS.Timeout | null = null;
-  let isCurrentWeek = data.isCurrentWeek ?? true;
-
-  // Function to get Monday of current week
-  function getMondayOfWeek(date: Date): Date {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(d.setDate(diff));
-  }
-
-  // Function to get the previous week's Monday
-  function getPreviousWeekStart(): string {
-    const now = new Date();
-    const currentWeekStart = getMondayOfWeek(now);
-    const previousWeekStart = new Date(currentWeekStart);
-    previousWeekStart.setDate(previousWeekStart.getDate() - 7);
-    
-    return previousWeekStart.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  }
-
-  // Function to check if articles are from current week
-  function areArticlesCurrentWeek(articles: NewsArticle[], weekStart: string): boolean {
-    if (!articles.length || !weekStart) return false;
-    
-    // Get current date
-    const now = new Date();
-    const currentWeekStart = getMondayOfWeek(now);
-    const currentWeekStartStr = currentWeekStart.toLocaleDateString('en-US', { 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    
-    // Check if weekStart matches current week
-    return weekStart === currentWeekStartStr;
-  }
 
   async function fetchNews(forceRefresh = false) {
-    if (!refreshPolicy.shouldFetch(forceRefresh) && !forceRefresh) {
+    if (!forceRefresh && !refreshPolicy.shouldFetch(false)) {
       return;
     }
 
@@ -77,10 +42,10 @@
       if (!response.ok) {
         throw new Error('Failed to fetch news');
       }
-      const data = await response.json();
-      articles = data.articles || [];
-      weekStart = data.weekStart || '';
-      isCurrentWeek = data.isCurrentWeek ?? true;
+      const result = await response.json();
+      articles = result.articles || [];
+      weekStart = result.weekStart || '';
+      isCurrentWeek = result.isCurrentWeek ?? true;
       
       // Update refresh policy after successful fetch
       refreshPolicy.updateAfterFetch();
@@ -90,6 +55,7 @@
     } finally {
       loading = false;
       refreshing = false;
+      updateStatusMessage();
     }
   }
 
@@ -98,7 +64,6 @@
   }
 
   function updateStatusMessage() {
-    // Only show status message when NOT loading/refreshing
     if (loading || refreshing) {
       statusMessage = '';
     } else {
@@ -107,12 +72,7 @@
   }
 
   onMount(() => {
-    // Only fetch if we don't have preloaded data
-    if (articles.length === 0) {
-      fetchNews();
-    }
-    
-    // Update status message
+    // Data is already preloaded from +page.ts — no need to re-fetch
     updateStatusMessage();
     
     // Check every minute for auto-refresh
@@ -178,17 +138,17 @@
 		<div class="w-[80%] mx-auto">
 			<!-- Refresh Button and Week Header -->
 			<div class="flex items-center justify-between mb-8 mt-8">
-				{#if weekStart && !loading && !error}
-					<h2 class="text-2xl font-bold text-zinc-800 dark:text-zinc-200">
-						{#if areArticlesCurrentWeek(articles, weekStart)}
-							Week of {weekStart}
-						{:else}
-							Last Week's Articles ({getPreviousWeekStart()})
-						{/if}
-					</h2>
-				{:else}
-					<div class="text-2xl font-bold text-zinc-800 dark:text-zinc-200">Loading...</div>
-				{/if}
+			{#if weekStart && !loading && !error}
+				<h2 class="text-2xl font-bold text-zinc-800 dark:text-zinc-200">
+					{#if isCurrentWeek}
+						Week of {weekStart}
+					{:else}
+						Last Week's Articles ({weekStart})
+					{/if}
+				</h2>
+			{:else}
+				<div class="text-2xl font-bold text-zinc-800 dark:text-zinc-200">Loading...</div>
+			{/if}
 				
 				<button 
 					on:click={handleRefresh}
@@ -215,14 +175,12 @@
 			{/if}
 
 			<!-- Week Message -->
-			{#if weekStart && !loading && !error}
-				{#if !areArticlesCurrentWeek(articles, weekStart)}
-					<div class="text-center mb-6">
-						<p class="text-sm text-zinc-500 dark:text-zinc-400">
-							New articles will be available soon!
-						</p>
-					</div>
-				{/if}
+			{#if weekStart && !loading && !error && !isCurrentWeek}
+				<div class="text-center mb-6">
+					<p class="text-sm text-zinc-500 dark:text-zinc-400">
+						New articles will be available soon!
+					</p>
+				</div>
 			{/if}
 
 			<!-- News articles section -->
