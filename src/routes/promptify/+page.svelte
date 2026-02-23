@@ -9,17 +9,17 @@
 
 <!-- Main container with theme-aware background -->
 <div class="min-h-screen bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 w-full">
-	<!-- Wrapper that maintains 80% width at all screen sizes -->
-	<div class="w-[80%] mx-auto py-16">
+	<!-- Wrapper that maintains 80% width on desktop, wider on mobile -->
+	<div class="w-[92%] md:w-[80%] mx-auto py-8 md:py-16">
 		<!-- Header section with title and tagline -->
-		<header class="text-center mb-12">
+		<header class="text-center mb-8 md:mb-12">
 			<!-- Gradient title -->
-			<h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
+			<h1 class="text-4xl md:text-6xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
 				Promptify
 			</h1>
 			
 			<!-- Tagline -->
-			<p class="text-xl text-zinc-600 dark:text-zinc-300 font-normal">
+			<p class="text-lg md:text-xl text-zinc-600 dark:text-zinc-300 font-normal">
 				Master the art of precise AI prompts
 			</p>
 		</header>
@@ -62,8 +62,8 @@
 			</InfoDisplay>
 		</div>
 
-		<!-- Chat section scaled to 64% -->
-		<div class="w-[80%] mx-auto mb-8">
+		<!-- Chat section -->
+		<div class="w-full md:w-[80%] mx-auto mb-8">
 			<PromptifyChat />
 		</div>
 

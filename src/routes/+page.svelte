@@ -11,17 +11,17 @@
 
 <!-- Main container with theme-aware background -->
 <div class="min-h-screen bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 w-full">
-	<!-- Wrapper that maintains 80% width at all screen sizes -->
-	<div class="w-[80%] mx-auto py-16">
+	<!-- Wrapper that maintains 80% width on desktop, wider on mobile -->
+	<div class="w-[92%] md:w-[80%] mx-auto py-8 md:py-16">
 		<!-- Header section with title and tagline -->
-		<header class="text-center mb-16">
+		<header class="text-center mb-10 md:mb-16">
 			<!-- Gradient title with constant size -->
-			<h1 class="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
+			<h1 class="text-4xl md:text-6xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
 				ObtAin
 			</h1>
 			
 			<!-- Tagline with constant size -->
-			<p class="text-xl text-zinc-600 dark:text-zinc-300 font-normal">
+			<p class="text-lg md:text-xl text-zinc-600 dark:text-zinc-300 font-normal">
 				Your AI Learning Companion
 			</p>
 		</header>
@@ -39,25 +39,25 @@
 		</div>
 
 		<!-- Action buttons section -->
-		<div class="w-[80%] mx-auto space-y-6">
-			<a href="/promptify" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
+		<div class="w-full md:w-[80%] mx-auto space-y-4 md:space-y-6">
+			<a href="/promptify" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-xl md:text-2xl rounded-xl flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-6 md:py-8">
 				Promptify
-				<div class="text-sm font-normal mt-1">Improve your prompts</div>
+				<div class="text-xs md:text-sm font-normal mt-1">Improve your prompts</div>
 			</a>
 			
-			<a href="/promptagonist" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
+			<a href="/promptagonist" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-xl md:text-2xl rounded-xl flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-6 md:py-8">
 				Promptagonist
-			   <div class="text-sm font-normal mt-1">Prompt your own story</div>
+			   <div class="text-xs md:text-sm font-normal mt-1">Prompt your own story</div>
 			</a>
 			
-			<a href="/news" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
+			<a href="/news" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-xl md:text-2xl rounded-xl flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-6 md:py-8">
 				Promptpress
-			   <div class="text-sm font-normal mt-1">AI News</div>
+			   <div class="text-xs md:text-sm font-normal mt-1">AI News</div>
 			</a>
 			
-			<a href="/AIListings" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-2xl rounded-xl flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-8">
+			<a href="/AIListings" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-xl md:text-2xl rounded-xl flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 py-6 md:py-8">
 				Promptpedia
-				<div class="text-sm font-normal mt-1">Different AI's explained</div>
+				<div class="text-xs md:text-sm font-normal mt-1">Different AI's explained</div>
 			</a>
 
 		</div>

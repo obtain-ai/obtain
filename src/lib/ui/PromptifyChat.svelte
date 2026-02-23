@@ -236,7 +236,7 @@
   }
 </script>
 
-<div class="flex flex-col w-full h-[800px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-700 shadow-lg overflow-hidden">
+<div class="flex flex-col w-full h-[500px] md:h-[800px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-700 shadow-lg overflow-hidden">
   <!-- Header with Reset Button -->
   <div class="flex justify-between items-center p-3 border-b border-zinc-300 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-800">
     <div class="flex items-center gap-2">

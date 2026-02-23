@@ -68,13 +68,13 @@
 </svelte:head>
 
 <div class="min-h-screen bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 w-full">
-	<div class="w-[80%] mx-auto py-16">
+	<div class="w-[92%] md:w-[80%] mx-auto py-8 md:py-16">
 		<!-- Header -->
-		<div class="text-center mb-8">
-			<h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
+		<div class="text-center mb-6 md:mb-8">
+			<h1 class="text-3xl md:text-5xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
 				Saved Sessions
 			</h1>
-			<p class="text-lg text-zinc-600 dark:text-zinc-300">
+			<p class="text-base md:text-lg text-zinc-600 dark:text-zinc-300">
 				{#if $auth}
 					Welcome back, {$auth.displayName}! Here are your saved sessions.
 				{:else}
@@ -85,9 +85,9 @@
 
 		{#if $auth}
 			<!-- Tab Switcher -->
-			<div class="flex justify-center gap-2 mb-8">
+			<div class="flex flex-col sm:flex-row justify-center gap-2 mb-6 md:mb-8">
 				<button
-					class="px-6 py-3 rounded-lg font-semibold transition-all duration-200 {activeTab === 'promptagonist'
+					class="px-4 md:px-6 py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition-all duration-200 {activeTab === 'promptagonist'
 						? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
 						: 'bg-white dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-600'}"
 					on:click={() => (activeTab = 'promptagonist')}
@@ -95,7 +95,7 @@
 					Promptagonist Adventures ({promptagonistSessions.length})
 				</button>
 				<button
-					class="px-6 py-3 rounded-lg font-semibold transition-all duration-200 {activeTab === 'promptify'
+					class="px-4 md:px-6 py-2.5 md:py-3 rounded-lg text-sm md:text-base font-semibold transition-all duration-200 {activeTab === 'promptify'
 						? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
 						: 'bg-white dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-600'}"
 					on:click={() => (activeTab = 'promptify')}

@@ -98,15 +98,15 @@
 
 <!-- Main container with theme-aware background -->
 <div class="min-h-screen bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 w-full">
-	<!-- Wrapper that maintains 80% width at all screen sizes -->
-	<div class="w-[80%] mx-auto py-16">
+	<!-- Wrapper that maintains 80% width on desktop, wider on mobile -->
+	<div class="w-[92%] md:w-[80%] mx-auto py-8 md:py-16">
 		<!-- Title with gradient -->
-		<div class="text-center mb-24">
-			<h1 class="text-6xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
+		<div class="text-center mb-12 md:mb-24">
+			<h1 class="text-4xl md:text-6xl font-bold mb-3 md:mb-4 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent leading-normal pb-1">
 				PromptPress
 			</h1>
 			<!-- Tagline -->
-			<p class="text-xl text-zinc-600 dark:text-zinc-300 font-normal">
+			<p class="text-lg md:text-xl text-zinc-600 dark:text-zinc-300 font-normal">
 				Stay informed with AI news
 			</p>
 		</div>
@@ -135,11 +135,11 @@
 		</div>
 
 		<!-- 80% wrapper for week header + refresh + articles -->
-		<div class="w-[80%] mx-auto">
+		<div class="w-full md:w-[80%] mx-auto">
 			<!-- Refresh Button and Week Header -->
-			<div class="flex items-center justify-between mb-8 mt-8">
+			<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8 mt-6 md:mt-8">
 			{#if weekStart && !loading && !error}
-				<h2 class="text-2xl font-bold text-zinc-800 dark:text-zinc-200">
+				<h2 class="text-xl md:text-2xl font-bold text-zinc-800 dark:text-zinc-200">
 					{#if isCurrentWeek}
 						Week of {weekStart}
 					{:else}

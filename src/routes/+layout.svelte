@@ -140,11 +140,11 @@
 		<div in:fly={{ x: 300, duration: 300 }} out:fly={{ x: -300, duration: 300 }} class="relative">
 			<div class="relative flex items-center justify-center">
 				{#if $page.url.pathname != '/'}
-					<div class="absolute left-10 top-16">
+					<div class="absolute left-4 top-12 md:left-10 md:top-16">
 						<BackButton href="/" />
 					</div>
 				{/if}
-				<header class="p-8 text-center">
+				<header class="p-4 md:p-8 text-center">
 					<h1 class="title">{$page.data.title ?? 'Default Title'}</h1>
 				</header>
 			</div>

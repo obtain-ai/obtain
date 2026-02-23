@@ -41,9 +41,9 @@
 
 <div class="flex {user === 'you' ? 'justify-end' : 'justify-start'}" data-message>
   <div
-  class="max-w-[75%] p-3 rounded-lg shadow-sm
+  class="max-w-[88%] md:max-w-[75%] p-3 rounded-lg shadow-sm
          {user === 'you' 
-           ? 'bg-blue-600 text-white rounded-br-sm' 
+           ? 'bg-zinc-300 dark:bg-zinc-600 text-zinc-800 dark:text-zinc-200 rounded-br-sm border border-zinc-400 dark:border-zinc-500' 
            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-bl-sm border border-zinc-300 dark:border-zinc-600'}
          {status === 'loading' ? 'opacity-70' : ''}
          {status === 'error' ? 'bg-red-100 dark:bg-red-900/50 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300' : ''}"
@@ -128,8 +128,8 @@
     margin: 0;
   }
 
-  /* No extra spacing between message bubbles */
+  /* Spacing between message bubbles */
   [data-message] {
-    margin-bottom: 0.1rem !important;
+    margin-bottom: 0.5rem !important;
   }
 </style>

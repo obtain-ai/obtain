@@ -351,7 +351,7 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
 
 <!-- Scenario Selection Screen -->
 {#if $showScenarioSelection}
-  <div class="flex flex-col w-full min-h-[600px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-800 shadow-lg">
+  <div class="flex flex-col w-full min-h-[450px] md:min-h-[600px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-800 shadow-lg">
     <div class="p-6 flex-1">
       <h3 class="text-2xl font-bold text-zinc-800 dark:text-zinc-100 mb-4 text-center">Choose Your Adventure</h3>
       <p class="text-center text-zinc-600 dark:text-zinc-400 mb-6">Select a scenario or create your own story!</p>
@@ -445,7 +445,7 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
   </div>
 {:else}
   <!-- Chat Interface -->
-  <div class="flex flex-col w-full h-[600px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-800 shadow-lg">
+  <div class="flex flex-col w-full h-[450px] md:h-[600px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-800 shadow-lg">
     <!-- Header -->
     <div class="flex justify-between items-center p-4 border-b border-zinc-200 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-700 rounded-t-lg">
       <div class="flex items-center gap-2">

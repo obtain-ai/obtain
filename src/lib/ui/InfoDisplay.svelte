@@ -2,7 +2,7 @@
 	let { title, content } = $props();
 </script>
 
-<div class="mx-auto mb-4 w-[80%]">
+<div class="mx-auto mb-4 w-full md:w-[80%]">
 	{#if title}
 		<span class="flex flex-row items-center gap-2 font-bold text-lg text-zinc-800 dark:text-zinc-200 mb-2">
 			{@render title()}
