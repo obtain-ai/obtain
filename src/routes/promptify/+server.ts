@@ -44,7 +44,7 @@ Please provide:
    
    Also consider if the topic might benefit from educational/theoretical framing to ensure the AI can provide helpful responses while maintaining appropriate context.
 
-2. Improved Versions: Provide 3 different improved versions of their prompt:
+2. Improved Versions: Provide 2 different improved versions of their prompt:
    - based on the prompt and it's context provide three different improved versions.
    - for example: if the prompt the user enters is "give me hard mcqs for ap world unit 5"
         - words like hard, mcqs, ap world, unit 5 should all give you context
