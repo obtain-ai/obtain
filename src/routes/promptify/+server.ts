@@ -34,7 +34,7 @@ KEY PATTERNS TO APPLY:
 
 Preface
  - unify formatting of the responses: e.g. if you use "-" keep using "-" and use same amount of spacing and lines between differents sections.
- - if the user prompt is not an actual prompt, for example: "hi" "cool beans", single words or phrases that arent a senetence or have actual meaning in the context of prompting, the api should kindly remind the user what a good prompt is and to re-enter something that is an actual prompt
+ - if the user prompt is not an actual prompt, for example: "hi" "cool beans", single words or phrases that arent a senetence or have actual meaning in the context of prompting,  kindly remind the user what a good prompt is and prompt the user to re-enter something that is an actual prompt
 
 Please provide:
 1. AI Analysis: Briefly attempt to analyze what the user's prompt is trying to achieve and identify areas for improvement. IMPORTANT: Pay special attention to ambiguous or subjective terms in the prompt (like "hard", "good", "quick", "many", "better", "easy", etc.). For each ambiguous term you identify:
