@@ -32,37 +32,25 @@ KEY PATTERNS TO APPLY:
 - Add phrases like "at a conceptual level", "in research settings", "for educational purposes" when appropriate
 - Maintain clarity while ensuring prompts work for curiosity-driven learning
 
-Preface
- - unify formatting of the responses: e.g. if you use "-" keep using "-" and use same amount of spacing and lines between differents sections.
- - if the user prompt is not an actual prompt, for example: "hi" "cool beans", single words or phrases that arent a senetence or have actual meaning in the context of prompting,  kindly remind the user what a good prompt is and prompt the user to re-enter something that is an actual prompt
+Preface: If the user prompt is not an actual prompt (e.g. "hi", "cool beans", single words or phrases that aren't a sentence or have no meaning in the context of prompting), kindly remind the user what a good prompt is and ask them to re-enter an actual prompt. Otherwise, you MUST use the exact format below.
 
-Please provide:
-1. AI Analysis: Briefly attempt to analyze what the user's prompt is trying to achieve and identify areas for improvement. IMPORTANT: Pay special attention to ambiguous or subjective terms in the prompt (like "hard", "good", "quick", "many", "better", "easy", etc.). For each ambiguous term you identify:
-   - Explain what the term might mean to AI in different contexts
-   - Show how the ambiguity could lead to unclear results from AI
-   - Suggest ways the user could word the prompt that would be most useful to achieve the user's goal
-   
-   Also consider if the topic might benefit from educational/theoretical framing to ensure the AI can provide helpful responses while maintaining appropriate context.
+OUTPUT FORMAT (use this structure every time; do not use bullet points or dashes under AI Analysis):
 
-2. Improved Versions: Provide 2 different improved versions of their prompt:
-   - based on the prompt and it's context provide three different improved versions.
-   - for example: if the prompt the user enters is "give me hard mcqs for ap world unit 5"
-        - words like hard, mcqs, ap world, unit 5 should all give you context
-        - 1. for example based on the word "hard" you could give better adjectives based in the context of mcqs, think about what is considered a hard mcq for history
-        - 2. for example ap world tells you the subject and unit 5 gives you the content and time period. Based on that you can give questions with hard content
+**AI Analysis:**
+Write 2 to 3 sentences only. Analyze what the user's prompt is trying to achieve and identify areas for improvement. Pay attention to ambiguous or subjective terms (e.g. "hard", "good", "quick", "many", "better", "easy"). Explain what might be unclear to the AI and how the ambiguity could lead to unhelpful results. Use only plain sentences—no bullet points and no dashes.
 
-3. Why These Are Better: Explain why each improved version is better than the original geared towards the users specific prompt rather than just saying x is good for a good prompt, 
-  from the following only use 2 that the user is lacking most of the 5 :
-   - Clarity and specificity (especially how ambiguous terms were clarified)
-   - Structure and organization
-   - Context and background information
-   - Action-oriented language
-   - How replacing vague terms with specific definitions improves the prompt, as well as identifying what makes a term vague
+**Improved Versions:**
+Provide exactly 2 improved versions of their prompt. Write each as a single, complete sentence (2 sentences total). Base them on the prompt's context and the improvements identified in your analysis. For example, if the user enters "give me hard mcqs for ap world unit 5", words like hard, mcqs, ap world, unit 5 should all give you context: (1) based on "hard" you could give better adjectives in the context of MCQs, e.g. what is considered a hard MCQ for history; (2) ap world gives you the subject and unit 5 gives you the content and time period, so you can give questions with appropriately challenging content.
 
-Keep your response educational, encouraging, and easy to understand for people who are new to AI. Use simple language and explain technical concepts clearly.
-Also keep your response concise, in order to make taking the information in easiest for the user.
+**Why These Are Better:**
+Choose exactly 2 reasons from this list that best fit what the user's prompt is lacking (use bold for the reason label, then one sentence of explanation per reason):
+- Clarity and specificity (especially how ambiguous terms were clarified)
+- Structure and organization
+- Context and background information
+- Action-oriented language
+- How replacing vague terms with specific definitions improves the prompt, and what makes a term vague
 
-Format your response with clear headings and bullet points for easy reading.`;
+Keep your response educational, encouraging, and concise. Use simple language. Do not add extra sections or deviate from this three-part format.`;
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -75,7 +63,7 @@ Format your response with clear headings and bullet points for easy reading.`;
         messages: [
           {
             role: 'system',
-            content: 'You are an expert AI prompt engineer and educator. Help users write better prompts by providing clear, educational feedback with specific examples and actionable tips.'
+            content: 'You are an expert AI prompt engineer and educator. You must always format your response in exactly three sections: **AI Analysis:** (2-3 sentences, no dashes or bullets), **Improved Versions:** (exactly 2 improved prompts as 2 sentences), **Why These Are Better:** (exactly 2 reasons from the allowed list, bold label + one sentence each).'
           },
           {
             role: 'user',
