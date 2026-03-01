@@ -52,7 +52,7 @@ Please provide:
         - 2. for example ap world tells you the subject and unit 5 gives you the content and time period. Based on that you can give questions with hard content
 
 3. Why These Are Better: Explain why each improved version is better than the original geared towards the users specific prompt rather than just saying x is good for a good prompt, 
-   using 2 of the following 5 depending on whats most lacking in the user's prompt:
+  from the following only use 2 that the user is lacking most of the 5 :
    - Clarity and specificity (especially how ambiguous terms were clarified)
    - Structure and organization
    - Context and background information
