@@ -258,7 +258,7 @@
   <!-- Messages Container -->
   <div 
     bind:this={chatContainer} 
-    class="flex-1 overflow-y-auto p-4 space-y-3 bg-zinc-50 dark:bg-zinc-800"
+    class="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50 dark:bg-zinc-800"
   >
     {#each $chatMessages as msg (msg.id)}
       <MessageBubble {...msg} />

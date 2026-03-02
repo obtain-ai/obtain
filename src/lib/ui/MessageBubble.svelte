@@ -128,8 +128,8 @@
     margin: 0;
   }
 
-  /* Spacing between message bubbles */
+  /* Let parent container control vertical spacing */
   [data-message] {
-    margin-bottom: 0.5rem !important;
+    margin-bottom: 0 !important;
   }
 </style>
