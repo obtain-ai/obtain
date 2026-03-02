@@ -37,8 +37,12 @@
     error = '';
     
     try {
-      const url = forceRefresh ? '/api/v1/news?refresh=1' : '/api/v1/news';
-      const response = await fetch(url);
+      const url = forceRefresh
+        ? `/api/v1/news?refresh=1&t=${Date.now()}`
+        : '/api/v1/news';
+      const response = await fetch(url, {
+        cache: forceRefresh ? 'no-store' : 'default'
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch news');
       }
@@ -151,7 +155,7 @@
 			{/if}
 				
 				<button 
-					on:click={handleRefresh}
+					onclick={handleRefresh}
 					disabled={refreshing || loading}
 					class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-400 dark:disabled:bg-zinc-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
 				>
