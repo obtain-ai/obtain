@@ -31,7 +31,7 @@
 
 		<!-- Inner wrapper -->
 		<div class="w-full md:w-[80%] mx-auto">
-			<!-- CHATBOTS -->
+			<!-- Chatbots -->
 			<details class="mb-4">
 				<summary class="text-xl font-bold cursor-pointer text-zinc-800 dark:text-zinc-200 hover:text-purple-600 dark:hover:text-purple-400 transition-colors list-none flex items-start gap-3">
 					<span class="transform transition-transform duration-200 details-open:rotate-90">▶</span>
