@@ -29,15 +29,20 @@
 
   // Load saved session if ?load= param is present
   onMount(() => {
+    focusInput();
+    void loadSessionFromQuery();
+  });
+
+  async function loadSessionFromQuery() {
     const loadId = $page.url.searchParams.get('load');
     if (loadId && $auth) {
-      const sessions = getSavedPromptifySessions($auth.username);
+      const sessions = await getSavedPromptifySessions($auth.username);
       const session = sessions.find(s => s.id === loadId);
       if (session) {
         loadSession(session);
       }
     }
-  });
+  }
 
   function loadSession(session: SavedPromptifySession) {
     currentSessionId = session.id;
@@ -49,7 +54,7 @@
   }
 
   // Auto-save after each bot response
-  function autoSave() {
+  async function autoSave() {
     if (!$auth) return;
 
     const messagesToSave = $chatMessages.filter(m => m.status !== 'loading');
@@ -77,7 +82,7 @@
       name: autoSaveName
     };
 
-    savePromptifySession(session);
+    await savePromptifySession(session);
   }
 
   async function sendMessage() {
@@ -124,7 +129,7 @@
       );
       
       // Auto-save after bot responds
-      autoSave();
+      await autoSave();
       
       // Scroll to bottom after content is updated
       setTimeout(() => {
@@ -281,10 +286,9 @@
         on:keydown={handleKeydown}
         on:input={adjustTextareaHeight}
         disabled={$chatMessages.some(msg => msg.status === 'loading')}
-        on:mount={focusInput}
         rows="1"
         style="max-height: 150px;"
-      />
+      ></textarea>
       <button 
         class="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-400 dark:disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
         on:click={sendMessage}

@@ -92,15 +92,19 @@
   
   // Load saved session if ?load= param is present
   onMount(() => {
+    void loadSessionFromQuery();
+  });
+
+  async function loadSessionFromQuery() {
     const loadId = $page.url.searchParams.get('load');
     if (loadId && $auth) {
-      const sessions = getSavedPromptagonistSessions($auth.username);
+      const sessions = await getSavedPromptagonistSessions($auth.username);
       const session = sessions.find(s => s.id === loadId);
       if (session) {
         loadSession(session);
       }
     }
-  });
+  }
   
   function loadSession(session: SavedPromptagonistSession) {
     currentSessionId = session.id;
@@ -125,7 +129,7 @@
   }
 
   // Auto-save after each AI response
-  function autoSave() {
+  async function autoSave() {
     if (!$auth || !$currentScenario) return;
 
     if (!currentSessionId) {
@@ -151,7 +155,7 @@
       name: autoSaveName
     };
 
-    savePromptagonistSession(session);
+    await savePromptagonistSession(session);
   }
   
   function selectScenario(scenario: StoryScenario) {
@@ -239,7 +243,7 @@
       }]);
 
       // Auto-save after AI responds
-      autoSave();
+      await autoSave();
 
     } catch (error) {
       console.error('Error generating response:', error);
@@ -530,7 +534,7 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
           disabled={$isLoading}
           rows="1"
           style="max-height: 150px;"
-        />
+        ></textarea>
         <button 
           class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 dark:disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
           on:click={sendMessage}

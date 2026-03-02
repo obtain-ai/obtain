@@ -21,26 +21,26 @@
 			goto('/login');
 			return;
 		}
-		loadSessions();
+		void loadSessions();
 	});
 
-	function loadSessions() {
+	async function loadSessions() {
 		if (!$auth) return;
-		promptagonistSessions = getSavedPromptagonistSessions($auth.username);
-		promptifySessions = getSavedPromptifySessions($auth.username);
+		promptagonistSessions = await getSavedPromptagonistSessions($auth.username);
+		promptifySessions = await getSavedPromptifySessions($auth.username);
 	}
 
-	function handleDeletePromptagonist(sessionId: string) {
+	async function handleDeletePromptagonist(sessionId: string) {
 		if (confirm('Are you sure you want to delete this adventure?')) {
-			deletePromptagonistSession(sessionId);
-			loadSessions();
+			await deletePromptagonistSession(sessionId);
+			await loadSessions();
 		}
 	}
 
-	function handleDeletePromptify(sessionId: string) {
+	async function handleDeletePromptify(sessionId: string) {
 		if (confirm('Are you sure you want to delete this session?')) {
-			deletePromptifySession(sessionId);
-			loadSessions();
+			await deletePromptifySession(sessionId);
+			await loadSessions();
 		}
 	}
 
