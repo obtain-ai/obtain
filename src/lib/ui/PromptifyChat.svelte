@@ -239,14 +239,14 @@
   }
 </script>
 
-<div class="flex flex-col w-full h-[500px] md:h-[800px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-700 shadow-lg overflow-hidden">
+<div class="flex flex-col w-full h-[450px] md:h-[600px] border border-zinc-300 dark:border-zinc-600 rounded-lg bg-zinc-100 dark:bg-zinc-800 shadow-lg">
   <!-- Header with Reset Button -->
-  <div class="flex justify-between items-center p-3 border-b border-zinc-300 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-800">
+  <div class="flex justify-between items-center p-4 border-b border-zinc-200 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-700 rounded-t-lg">
     <div class="flex items-center gap-2">
-      <h3 class="font-semibold text-zinc-800 dark:text-zinc-200">Promptify Chat</h3>
+      <h3 class="font-semibold text-zinc-800 dark:text-zinc-100">Promptify Chat</h3>
     </div>
     <button 
-      class="px-3 py-1 bg-zinc-300 dark:bg-zinc-600 hover:bg-zinc-400 dark:hover:bg-zinc-500 text-zinc-800 dark:text-white text-sm rounded-md transition-colors" 
+      class="h-9 w-28 flex items-center justify-center rounded-md text-white text-sm font-medium bg-purple-600 hover:bg-purple-700 active:bg-purple-800 transition-colors shadow-sm"
       on:click={resetChat}
     >
       Reset Chat
@@ -264,23 +264,24 @@
 
     <!-- Empty state -->
     {#if $chatMessages.length === 0}
-      <div class="flex items-center justify-center h-full text-zinc-500 dark:text-zinc-400">
-        <div class="text-center">
-          <p class="text-lg mb-2 font-semibold text-zinc-700 dark:text-zinc-200">👋 Welcome to Promptify!</p>
-          <p class="text-sm text-zinc-500 dark:text-zinc-400">Start by typing your prompt to get AI-powered feedback.</p>
+      <div class="flex justify-start">
+        <div class="max-w-[80%] p-3 rounded-lg border bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-600">
+          <p class="whitespace-pre-wrap text-sm break-words">
+            Welcome to Promptify. Write your prompt and get feedback to make it clearer, more specific, and easier for AI to follow.
+          </p>
         </div>
       </div>
     {/if}
   </div>
 
   <!-- Input Area -->
-  <div class="p-4 border-t border-zinc-300 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-800">
+  <div class="p-4 border-t border-zinc-200 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-700 rounded-b-lg">
     <div class="flex gap-2">
       <textarea
         bind:this={inputElement}
-        class="flex-1 p-3 rounded-md border border-zinc-300 dark:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-zinc-800 dark:text-zinc-200 placeholder-zinc-500 dark:placeholder-zinc-400 bg-white dark:bg-zinc-700 resize-none"
+        class="flex-1 p-3 rounded-md border border-zinc-300 dark:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-zinc-800 dark:text-zinc-200 placeholder-zinc-500 dark:placeholder-zinc-400 bg-white dark:bg-zinc-800 resize-none overflow-y-auto"
         bind:value={userInput}
-        placeholder="Type your prompt here.."
+        placeholder="Write your prompt to improve..."
         on:keydown={handleKeydown}
         on:input={adjustTextareaHeight}
         disabled={$chatMessages.some(msg => msg.status === 'loading')}
@@ -288,7 +289,7 @@
         style="max-height: 150px;"
       ></textarea>
       <button 
-        class="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-400 dark:disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
+        class="h-12 w-24 flex items-center justify-center bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 dark:disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
         on:click={sendMessage}
         disabled={!userInput.trim() || $chatMessages.some(msg => msg.status === 'loading')}
       >

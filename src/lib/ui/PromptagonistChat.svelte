@@ -457,7 +457,7 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
       </div>
       <div class="flex gap-2">
         <button
-          class="px-3 py-1.5 rounded-md text-white text-sm font-medium bg-purple-600 hover:bg-purple-700 active:bg-purple-800 transition-colors shadow-sm"
+          class="h-9 w-28 flex items-center justify-center rounded-md text-white text-sm font-medium bg-purple-600 hover:bg-purple-700 active:bg-purple-800 transition-colors shadow-sm"
           on:click={resetStory}
         >
           Reset Story
@@ -536,7 +536,7 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
           style="max-height: 150px;"
         ></textarea>
         <button 
-          class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 dark:disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
+          class="h-12 w-24 flex items-center justify-center bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 dark:disabled:bg-zinc-600 text-white rounded-md transition-colors font-medium" 
           on:click={sendMessage}
           disabled={!userInput.trim() || $isLoading}
         >
