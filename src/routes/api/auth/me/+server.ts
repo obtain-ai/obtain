@@ -9,6 +9,6 @@ export const GET: RequestHandler = async ({ cookies }) => {
 		return json({ user: null });
 	}
 
-	const user = getUserFromSession(token);
+	const user = await getUserFromSession(token);
 	return json({ user });
 };

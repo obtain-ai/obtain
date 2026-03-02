@@ -6,7 +6,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 	const token = cookies.get('obtain_session');
 
 	if (token) {
-		logout(token);
+		await logout(token);
 	}
 
 	cookies.delete('obtain_session', { path: '/' });

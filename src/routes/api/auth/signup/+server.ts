@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { signup } from '$lib/server/auth';
+import { getSessionMaxAgeSeconds, signup } from '$lib/server/auth';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
@@ -8,7 +8,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		console.log('[signup] request body:', JSON.stringify({ username: body.username, displayName: body.displayName, hasPassword: !!body.password }));
 
 		const { username, displayName, password } = body;
-		const result = signup(username, displayName, password);
+		const result = await signup(username, displayName, password);
 
 		console.log('[signup] result:', JSON.stringify({ success: result.success, error: result.error }));
 
@@ -16,13 +16,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			return json({ success: false, error: result.error }, { status: 400 });
 		}
 
-	cookies.set('obtain_session', result.token!, {
-		path: '/',
-		httpOnly: true,
-		sameSite: 'lax',
-		secure: false, // set to true in production with HTTPS
-		maxAge: 60 * 60 * 24 * 30 // 30 days
-	});
+		cookies.set('obtain_session', result.token!, {
+			path: '/',
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: process.env.NODE_ENV === 'production',
+			maxAge: getSessionMaxAgeSeconds()
+		});
 
 		return json({ success: true, user: result.user });
 	} catch (err) {

@@ -1,6 +1,5 @@
-import { randomBytes, scryptSync, randomUUID } from 'crypto';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { randomBytes, randomUUID, scryptSync } from 'crypto';
+import { neon } from '@neondatabase/serverless';
 
 export interface User {
 	username: string;
@@ -15,75 +14,64 @@ interface StoredUser {
 	salt: string;
 	createdAt: string;
 }
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+let schemaReady: Promise<void> | null = null;
 
-interface StoredSession {
-	token: string;
-	username: string;
-	createdAt: string;
+function getSql() {
+	const databaseUrl = process.env.DATABASE_URL;
+	if (!databaseUrl) {
+		throw new Error('Missing DATABASE_URL environment variable');
+	}
+	return neon(databaseUrl);
 }
 
-interface AuthData {
-	users: StoredUser[];
-	sessions: StoredSession[];
-}
-
-// On Vercel, the filesystem is read-only except /tmp
-// Locally, use data/ in the project root
-const IS_VERCEL = !!process.env.VERCEL;
-const DATA_DIR = IS_VERCEL ? '/tmp' : join(process.cwd(), 'data');
-const DATA_FILE = join(DATA_DIR, 'users.json');
-
-// In-memory cache so data survives across requests within the same instance
-let memoryCache: AuthData | null = null;
-
-function readData(): AuthData {
-	// Return in-memory cache if available
-	if (memoryCache) {
-		return memoryCache;
+async function ensureSchema() {
+	if (schemaReady) {
+		return schemaReady;
 	}
 
-	// Try to load from file
-	if (existsSync(DATA_FILE)) {
-		try {
-			const raw = readFileSync(DATA_FILE, 'utf-8');
-			memoryCache = JSON.parse(raw);
-			return memoryCache!;
-		} catch {
-			// Fall through to default
-		}
-	}
+	schemaReady = (async () => {
+		const sql = getSql();
 
-	memoryCache = { users: [], sessions: [] };
-	return memoryCache;
-}
+		await sql`
+			CREATE TABLE IF NOT EXISTS auth_users (
+				username TEXT PRIMARY KEY,
+				display_name TEXT NOT NULL,
+				password_hash TEXT NOT NULL,
+				salt TEXT NOT NULL,
+				created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+			)
+		`;
 
-function writeData(data: AuthData): void {
-	// Always update in-memory cache
-	memoryCache = data;
+		await sql`
+			CREATE TABLE IF NOT EXISTS auth_sessions (
+				token TEXT PRIMARY KEY,
+				username TEXT NOT NULL REFERENCES auth_users(username) ON DELETE CASCADE,
+				created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+				expires_at TIMESTAMPTZ NOT NULL
+			)
+		`;
 
-	// Also persist to disk
-	try {
-		if (!existsSync(DATA_DIR)) {
-			mkdirSync(DATA_DIR, { recursive: true });
-		}
-		writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-	} catch (err) {
-		console.error('[auth] Failed to write data file (continuing with in-memory):', err);
-	}
+		await sql`CREATE INDEX IF NOT EXISTS auth_sessions_username_idx ON auth_sessions(username)`;
+		await sql`CREATE INDEX IF NOT EXISTS auth_sessions_expires_at_idx ON auth_sessions(expires_at)`;
+	})();
+
+	return schemaReady;
 }
 
 function hashPassword(password: string, salt: string): string {
 	return scryptSync(password, salt, 64).toString('hex');
 }
 
-export function signup(
+export async function signup(
 	username: string,
 	displayName: string,
 	password: string
-): { success: boolean; error?: string; user?: User; token?: string } {
-	const data = readData();
+): Promise<{ success: boolean; error?: string; user?: User; token?: string }> {
+	const normalizedUsername = username.trim().toLowerCase();
+	const normalizedDisplayName = displayName.trim();
 
-	if (username.length < 3) {
+	if (normalizedUsername.length < 3) {
 		return { success: false, error: 'Username must be at least 3 characters' };
 	}
 
@@ -91,98 +79,178 @@ export function signup(
 		return { success: false, error: 'Password must be at least 4 characters' };
 	}
 
-	if (data.users.find((u) => u.username.toLowerCase() === username.toLowerCase())) {
-		return { success: false, error: 'Username already taken' };
+	if (!normalizedDisplayName) {
+		return { success: false, error: 'Display name is required' };
 	}
 
-	const salt = randomBytes(16).toString('hex');
-	const passwordHash = hashPassword(password, salt);
+	try {
+		await ensureSchema();
+		const sql = getSql();
 
-	const newUser: StoredUser = {
-		username: username.toLowerCase(),
-		displayName,
-		passwordHash,
-		salt,
-		createdAt: new Date().toISOString()
-	};
+		const existingUsers = (await sql`
+			SELECT username
+			FROM auth_users
+			WHERE username = ${normalizedUsername}
+			LIMIT 1
+		`) as Array<{ username: string }>;
 
-	data.users.push(newUser);
+		if (existingUsers.length > 0) {
+			return { success: false, error: 'Username already taken' };
+		}
 
-	// Create session
-	const token = randomUUID();
-	data.sessions.push({
-		token,
-		username: newUser.username,
-		createdAt: new Date().toISOString()
-	});
+		const salt = randomBytes(16).toString('hex');
+		const passwordHash = hashPassword(password, salt);
+		const token = randomUUID();
 
-	writeData(data);
+		await sql`
+			INSERT INTO auth_users (username, display_name, password_hash, salt)
+			VALUES (${normalizedUsername}, ${normalizedDisplayName}, ${passwordHash}, ${salt})
+		`;
 
-	return {
-		success: true,
-		user: {
-			username: newUser.username,
-			displayName: newUser.displayName,
-			createdAt: newUser.createdAt
-		},
-		token
-	};
+		await sql`
+			INSERT INTO auth_sessions (token, username, expires_at)
+			VALUES (${token}, ${normalizedUsername}, NOW() + INTERVAL '30 days')
+		`;
+
+		const users = (await sql`
+			SELECT username, display_name, created_at
+			FROM auth_users
+			WHERE username = ${normalizedUsername}
+			LIMIT 1
+		`) as Array<{ username: string; display_name: string; created_at: string }>;
+
+		const createdUser = users[0];
+		const user: StoredUser = {
+			username: createdUser.username,
+			displayName: createdUser.display_name,
+			passwordHash,
+			salt,
+			createdAt: createdUser.created_at
+		};
+
+		return {
+			success: true,
+			user: {
+				username: user.username,
+				displayName: user.displayName,
+				createdAt: user.createdAt
+			},
+			token
+		};
+	} catch (err) {
+		console.error('[auth] signup failed:', err);
+		return { success: false, error: 'Failed to create account' };
+	}
 }
 
-export function login(
+export async function login(
 	username: string,
 	password: string
-): { success: boolean; error?: string; user?: User; token?: string } {
-	const data = readData();
+): Promise<{ success: boolean; error?: string; user?: User; token?: string }> {
+	const normalizedUsername = username.trim().toLowerCase();
 
-	const found = data.users.find((u) => u.username.toLowerCase() === username.toLowerCase());
-	if (!found) {
-		return { success: false, error: 'User not found' };
+	try {
+		await ensureSchema();
+		const sql = getSql();
+
+		const users = (await sql`
+			SELECT username, display_name, password_hash, salt, created_at
+			FROM auth_users
+			WHERE username = ${normalizedUsername}
+			LIMIT 1
+		`) as Array<{
+			username: string;
+			display_name: string;
+			password_hash: string;
+			salt: string;
+			created_at: string;
+		}>;
+
+		const found = users[0];
+		if (!found) {
+			return { success: false, error: 'User not found' };
+		}
+
+		const passwordHash = hashPassword(password, found.salt);
+		if (passwordHash !== found.password_hash) {
+			return { success: false, error: 'Incorrect password' };
+		}
+
+		const token = randomUUID();
+		await sql`
+			INSERT INTO auth_sessions (token, username, expires_at)
+			VALUES (${token}, ${found.username}, NOW() + INTERVAL '30 days')
+		`;
+
+		return {
+			success: true,
+			user: {
+				username: found.username,
+				displayName: found.display_name,
+				createdAt: found.created_at
+			},
+			token
+		};
+	} catch (err) {
+		console.error('[auth] login failed:', err);
+		return { success: false, error: 'Failed to login' };
 	}
-
-	const passwordHash = hashPassword(password, found.salt);
-	if (passwordHash !== found.passwordHash) {
-		return { success: false, error: 'Incorrect password' };
-	}
-
-	// Create session
-	const token = randomUUID();
-	data.sessions.push({
-		token,
-		username: found.username,
-		createdAt: new Date().toISOString()
-	});
-
-	writeData(data);
-
-	return {
-		success: true,
-		user: {
-			username: found.username,
-			displayName: found.displayName,
-			createdAt: found.createdAt
-		},
-		token
-	};
 }
 
-export function logout(token: string): void {
-	const data = readData();
-	data.sessions = data.sessions.filter((s) => s.token !== token);
-	writeData(data);
+export async function logout(token: string): Promise<void> {
+	try {
+		await ensureSchema();
+		const sql = getSql();
+		await sql`
+			DELETE FROM auth_sessions
+			WHERE token = ${token}
+		`;
+	} catch (err) {
+		console.error('[auth] logout failed:', err);
+	}
 }
 
-export function getUserFromSession(token: string): User | null {
-	const data = readData();
-	const session = data.sessions.find((s) => s.token === token);
-	if (!session) return null;
+export async function getUserFromSession(token: string): Promise<User | null> {
+	try {
+		await ensureSchema();
+		const sql = getSql();
 
-	const user = data.users.find((u) => u.username === session.username);
-	if (!user) return null;
+		const users = (await sql`
+			SELECT u.username, u.display_name, u.created_at
+			FROM auth_sessions s
+			JOIN auth_users u ON u.username = s.username
+			WHERE s.token = ${token} AND s.expires_at > NOW()
+			LIMIT 1
+		`) as Array<{ username: string; display_name: string; created_at: string }>;
 
-	return {
-		username: user.username,
-		displayName: user.displayName,
-		createdAt: user.createdAt
-	};
+		const user = users[0];
+		if (!user) {
+			return null;
+		}
+
+		return {
+			username: user.username,
+			displayName: user.display_name,
+			createdAt: user.created_at
+		};
+	} catch (err) {
+		console.error('[auth] session lookup failed:', err);
+		return null;
+	}
+}
+
+export function getSessionMaxAgeSeconds(): number {
+	return SESSION_MAX_AGE_SECONDS;
+}
+
+export async function checkAuthDatabase(): Promise<{ ok: boolean; error?: string }> {
+	try {
+		await ensureSchema();
+		const sql = getSql();
+		await sql`SELECT 1`;
+		return { ok: true };
+	} catch (err) {
+		console.error('[auth] database health check failed:', err);
+		return { ok: false, error: 'Database connection failed' };
+	}
 }
