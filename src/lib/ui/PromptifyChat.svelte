@@ -33,6 +33,12 @@
     void loadSessionFromQuery();
   });
 
+  function focusInputElement() {
+    if (inputElement) {
+      inputElement.focus({ preventScroll: true });
+    }
+  }
+
   async function loadSessionFromQuery() {
     const loadId = $page.url.searchParams.get('load');
     if (loadId && $auth) {
@@ -111,9 +117,7 @@
 
     // Focus immediately after clearing input
     setTimeout(() => {
-      if (inputElement) {
-        inputElement.focus();
-      }
+      focusInputElement();
     }, 0);
 
     try {
@@ -159,9 +163,7 @@
     
     // Focus again after loading is complete
     setTimeout(() => {
-      if (inputElement) {
-        inputElement.focus();
-      }
+      focusInputElement();
     }, 50);
   }
 
@@ -195,9 +197,7 @@
     autoSaveName = '';
     // Focus input after reset
     setTimeout(() => {
-      if (inputElement) {
-        inputElement.focus();
-      }
+      focusInputElement();
     }, 50);
   }
 
@@ -234,9 +234,7 @@
   // Focus input when component mounts
   function focusInput() {
     setTimeout(() => {
-      if (inputElement) {
-        inputElement.focus();
-      }
+      focusInputElement();
     }, 100);
   }
 </script>
