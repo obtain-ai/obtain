@@ -2,49 +2,14 @@
   export let text: string;
   export let user: 'you' | 'bot';
   export let status: 'loading' | 'error' | 'normal' = 'normal';
-
-  // Simple markdown to HTML parser (no external library)
-  function parseMarkdown(md: string): string {
-    let html = md;
-    
-    // Convert bold **text** to <strong>text</strong>
-    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    
-    // Convert headings
-    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-    
-    // Convert unordered lists (- or •)
-    html = html.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
-    
-    // Convert ordered lists (1. item)
-    html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
-    
-    // Wrap consecutive <li> tags in <ul>
-    html = html.replace(/(<li>.*<\/li>\n?)+/gm, (match) => {
-      return '<ul>' + match + '</ul>';
-    });
-    
-    // Convert line breaks
-    html = html.replace(/\n/g, '<br />');
-    
-    // Convert paragraphs (text between br tags)
-    html = html.replace(/([^<>]+)(<br \/>)/g, '<p>$1</p>$2');
-    
-    // Clean up empty paragraphs
-    html = html.replace(/<p>\s*<\/p>/g, '');
-    
-    return html;
-  }
 </script>
 
 <div class="flex {user === 'you' ? 'justify-end' : 'justify-start'}" data-message>
   <div
-  class="max-w-[88%] md:max-w-[75%] p-3 rounded-lg shadow-sm
+  class="max-w-[80%] p-3 rounded-lg border shadow-sm
          {user === 'you' 
-           ? 'bg-zinc-300 dark:bg-zinc-600 text-zinc-800 dark:text-zinc-200 rounded-br-sm border border-zinc-400 dark:border-zinc-500' 
-           : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-bl-sm border border-zinc-300 dark:border-zinc-600'}
+          ? 'bg-purple-600 text-white border-purple-500' 
+          : 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border-zinc-200 dark:border-zinc-600'}
          {status === 'loading' ? 'opacity-70' : ''}
          {status === 'error' ? 'bg-red-100 dark:bg-red-900/50 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300' : ''}"
   >
@@ -59,77 +24,9 @@
         <span class="text-sm">Error: {text}</span>
       </div>
     {:else}
-      {#if user === 'you'}
-        <!-- User messages: display as plain text with NO spacing -->
-        <div class="whitespace-pre-wrap text-sm leading-tight break-words">
-          {text}
-        </div>
-      {:else}
-        <!-- Bot messages: parse markdown but keep compact -->
-        <div class="whitespace-pre-wrap text-sm leading-snug break-words markdown-body">
-          {@html parseMarkdown(text)}
-        </div>
-      {/if}
+      <div class="whitespace-pre-wrap text-sm break-words">
+        {text}
+      </div>
     {/if}
   </div>
 </div>
-
-<style>
-  /* Ultra-compact markdown layout for bot messages */
-  :global(.markdown-body) {
-    line-height: 1.35;
-  }
-
-  /* Remove almost all heading gaps */
-  :global(.markdown-body h1),
-  :global(.markdown-body h2),
-  :global(.markdown-body h3),
-  :global(.markdown-body h4),
-  :global(.markdown-body h5),
-  :global(.markdown-body h6) {
-    font-weight: 600;
-    margin-top: 0.15rem;
-    margin-bottom: 0.05rem;
-  }
-
-  /* Ultra-tight paragraph spacing */
-  :global(.markdown-body p) {
-    margin: 0.05rem 0;
-  }
-
-  /* Ultra-tight list spacing */
-  :global(.markdown-body ul),
-  :global(.markdown-body ol) {
-    margin: 0.15rem 0;
-    padding-left: 1.1rem;
-  }
-
-  :global(.markdown-body li) {
-    margin: 0.02rem 0;
-    line-height: 1.4;
-  }
-
-  /* Remove spacing between nested lists */
-  :global(.markdown-body ul ul),
-  :global(.markdown-body ol ol) {
-    margin: 0.05rem 0;
-  }
-
-  :global(.markdown-body strong) {
-    font-weight: 600;
-  }
-
-  /* Reduce extra spacing around code blocks */
-  :global(.markdown-body pre) {
-    margin: 0.2rem 0;
-  }
-
-  :global(.markdown-body code) {
-    margin: 0;
-  }
-
-  /* Let parent container control vertical spacing */
-  [data-message] {
-    margin-bottom: 0 !important;
-  }
-</style>
