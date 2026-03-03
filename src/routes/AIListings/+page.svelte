@@ -36,7 +36,7 @@
 				<summary class="text-xl font-bold cursor-pointer text-zinc-800 dark:text-zinc-200 hover:text-purple-600 dark:hover:text-purple-400 transition-colors list-none flex items-start gap-3">
 					<span class="transform transition-transform duration-200 details-open:rotate-90">▶</span>
 					<div>
-						<p class="text-lg font-bold mb-2">CHATBOT:</p>
+						<p class="text-lg font-bold mb-2">Chatbots:</p>
 						<p class="text-base font-normal">Why this matters: Chatbots are AI systems designed to simulate conversation with humans. They can answer questions, provide guidance, or help with tasks like research, learning, or customer support. Chatbots are best for interactive problem-solving or information retrieval.</p>
 					</div>
 				</summary>
