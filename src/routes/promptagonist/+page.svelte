@@ -41,7 +41,7 @@
 					How to Use:
 				{/snippet}
 				{#snippet content()}
-					Click Generate Scenario to start.<br><br>
+					Click Random Scenario to start.<br><br>
 					For each step, you can:<br>
 						• Write your own prompt in the input box.<br>
 						• Read the Prompt score and feedback for quick tips on how to improve your prompts.<br>

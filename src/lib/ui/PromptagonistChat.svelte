@@ -41,6 +41,7 @@
   let showScenarioSelection = writable(true);
   let showCustomForm = writable(false);
   let previousMessageCount = 0;
+  let isGeneratingScenario = false;
   
   // Auto-save tracking
   let currentSessionId = '';
@@ -175,6 +176,40 @@
       content: `${scenario.title}\n\n${scenario.initialContext}\n\nWrite a prompt to take action in this story. The better your prompt, the more exciting the story becomes!`,
       timestamp: new Date()
     }]);
+  }
+
+  async function selectRandomScenario() {
+    isGeneratingScenario = true;
+    try {
+      const response = await fetch('/promptagonist/scenario', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate random scenario');
+      }
+
+      const generated = await response.json();
+      const randomScenario: StoryScenario = {
+        id: `ai_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        title: generated.title,
+        description: generated.description,
+        initialContext: generated.initialContext,
+        genre: generated.genre
+      };
+
+      selectScenario(randomScenario);
+    } catch (error) {
+      console.error('Random scenario API error:', error);
+      if (scenarios.length === 0) return;
+      const randomIndex = Math.floor(Math.random() * scenarios.length);
+      selectScenario(scenarios[randomIndex]);
+    } finally {
+      isGeneratingScenario = false;
+    }
   }
   
   function showCustomScenarioForm() {
@@ -438,7 +473,14 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
           {/each}
         </div>
         
-        <div class="text-center">
+        <div class="text-center flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            class="px-6 py-3 rounded-xl text-white font-semibold bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors shadow"
+            on:click={selectRandomScenario}
+            disabled={isGeneratingScenario}
+          >
+            {isGeneratingScenario ? 'Generating...' : 'Random Scenario'}
+          </button>
           <button
             class="px-6 py-3 rounded-xl text-white font-semibold bg-purple-600 hover:bg-purple-700 active:bg-purple-800 transition-colors shadow"
             on:click={showCustomScenarioForm}
