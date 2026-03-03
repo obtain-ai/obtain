@@ -13,6 +13,7 @@ export interface SavedPromptagonistSession {
 			clarity: number;
 			specificity: number;
 			aiInterpretability: number;
+			actionability?: number;
 			overallScore: number;
 			feedback: string;
 		};

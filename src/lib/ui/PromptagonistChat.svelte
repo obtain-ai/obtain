@@ -19,6 +19,7 @@
     clarity: number; // 1-10
     specificity: number; // 1-10
     aiInterpretability: number; // 1-10
+    actionability?: number; // 1-10
     overallScore: number; // 1-10
     feedback: string;
   }
@@ -286,6 +287,7 @@
         clarity: 5,
         specificity: 5,
         aiInterpretability: 5,
+        actionability: 5,
         overallScore: 5,
         feedback: 'Unable to evaluate prompt. Please try again.'
       };
@@ -495,6 +497,9 @@ $: if (chatContainer && $chatMessages.length > previousMessageCount) {
                   Clarity: {msg.evaluation.clarity}/10 | 
                   Specificity: {msg.evaluation.specificity}/10 | 
                   AI Interpretability: {msg.evaluation.aiInterpretability}/10
+                  {#if msg.evaluation.actionability !== undefined}
+                    {' | '}Actionability: {msg.evaluation.actionability}/10
+                  {/if}
                 </div>
                 <div class="text-xs font-medium {
                   msg.evaluation.overallScore >= 8 ? 'text-green-700 dark:text-green-400' :
