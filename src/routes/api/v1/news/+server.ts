@@ -77,7 +77,15 @@ function decodeEntities(s: string): string {
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&nbsp;/g, ' ')
-    .replace(/&#x2F;/g, '/');
+    .replace(/&#x2F;/g, '/')
+    .replace(/&#(\d+);/g, (_, dec) => {
+      const codePoint = Number.parseInt(dec, 10);
+      return Number.isNaN(codePoint) ? _ : String.fromCodePoint(codePoint);
+    })
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+      const codePoint = Number.parseInt(hex, 16);
+      return Number.isNaN(codePoint) ? _ : String.fromCodePoint(codePoint);
+    });
 }
 
 function normalized(s: string): string {
@@ -166,7 +174,11 @@ async function parseRSSFeed(feedUrl: string, source: string, authority: number):
       );
 
       return {
-        title: titleMatch ? titleMatch[1] : 'No title',
+        title: decodeEntities(
+          (titleMatch ? titleMatch[1] : 'No title')
+            .replace(/<[^>]*>/g, '')
+            .trim()
+        ),
         url: linkMatch ? linkMatch[1] : '#',
         publishedAt: pubDateMatch ? pubDateMatch[1] : new Date().toISOString(),
         description: cleanDesc, // no "No description" placeholder
@@ -593,7 +605,7 @@ export const GET: RequestHandler = async ({ url }) => {
     const safeDesc = /^no description$/i.test(a.description || '') ? '' : (a.description || '');
     const safeSummary = /^no description$/i.test(a.summary || '') ? '' : (a.summary || '');
     return {
-      title: a.title,
+      title: decodeEntities(a.title || ''),
       url: a.url,
       source: a.source,
       publishedAt: a.publishedAt,
